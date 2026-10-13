@@ -37,13 +37,17 @@ def payload(report: dict | None = None, meta: dict | None = None) -> dict:
 def test_current_report_promotes_every_admitted_rna_seq_source_without_vectors() -> None:
     result = payload()
     assert result["coverage"] == {
-        "admittedRnaSeqSourceCount": 55,
+        "admittedRnaSeqSourceCount": 59,
         "reportBackedSourceCount": 53,
         "levelPairCount": 1378,
         "responsePairCount": 26,
         "gaps": [
             {"sourceId": "GSE205444", "reason": promotion.GAP_REASON},
             {"sourceId": "TAN2018_TSS", "reason": promotion.GAP_REASON},
+            {"sourceId": "TAN2018_TSS_CONTROL", "reason": promotion.GAP_REASON},
+            {"sourceId": "TAN2018_TSS_DARK", "reason": promotion.GAP_REASON},
+            {"sourceId": "TAN2018_TSS_HIGH_LIGHT", "reason": promotion.GAP_REASON},
+            {"sourceId": "TAN2018_TSS_HIGH_TEMPERATURE", "reason": promotion.GAP_REASON},
         ],
     }
     assert [entry["id"] for entry in result["sources"][:2]] == ["GSE205444", "TAN2018_TSS"]

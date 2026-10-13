@@ -274,15 +274,15 @@ test('every existing cyanobacterial link decodes exactly as before', () => {
   // Three of them pinned field by field: a scheme, a pinned gene with a
   // shortlist, and the chromosome tab.
   assert.deepEqual(decodeState(CYANOBACTERIAL_LINKS[2]), {
-    version: 6, panel: 'axes', colorBy: 'cai', colorScale: 'linear',
+    version: 6, axisY: 'tssInitiation', panel: 'axes', colorBy: 'cai', colorScale: 'linear',
     schemeMap: { TAG: 'TAA', TCG: 'AGC' }, schemeName: 'Syn61', shortlist: [], compareTab: 'radar',
   });
   assert.deepEqual(decodeState(CYANOBACTERIAL_LINKS[3]), {
-    version: 6, panel: 'native', colorBy: 'functionCategory',
+    version: 6, axisY: 'tssInitiation', panel: 'native', colorBy: 'functionCategory',
     shortlist: ['M744_RS00005', 'M744_RS00045'], pinnedId: 'M744_RS00045', compareTab: 'table',
   });
   assert.deepEqual(decodeState(CYANOBACTERIAL_LINKS[4]), {
-    version: 6, panel: 'chromosome', colorBy: 'tssInitiation', colorScale: 'log10',
+    version: 6, axisY: 'tssInitiation', panel: 'chromosome', colorBy: 'tssInitiation', colorScale: 'log10',
     shortlist: ['M744_RS00005'], pinnedId: 'M744_RS00005', compareTab: 'radar', drawOnTop: 'lowest',
   });
   assert.deepEqual(decodeState(CYANOBACTERIAL_LINKS[5]).colorSources, ['utex-2973', 'go-iea']);
@@ -306,17 +306,17 @@ test('a link is read under the organism its address names', () => {
   assert.deepEqual(decodeState('#cs=ecoli', DEFAULT_ORGANISM).colorSources, undefined);
   // Everything that is not an organism fact reads the same under either, and
   // an E. coli link round-trips through its own encoder unchanged.
-  const link = '#ver=7&p=umap&c=cai&s=TAG-TAA&n=amber&csc=linear&l=b0001%2Cb0002&g=b0002&t=table';
+  const link = '#ver=8&p=umap&c=cai&s=TAG-TAA&n=amber&csc=linear&l=b0001%2Cb0002&g=b0002&t=table';
   assert.deepEqual(decodeState(link, ECOLI), decodeState(link));
   assert.equal(encodeState(applyDecoded(defaultState(ECOLI), decodeState(link, ECOLI), ECOLI), ECOLI),
     link.slice(1));
 });
 
 test('each organism opens Metric X vs Y on its own axes, and a link omits only its own', async () => {
-  // The default organism's are the measured pair they have always been.
-  assert.deepEqual(DEFAULT_ORGANISM.freshAxes, { x: 'lengthNt', y: 'tssInitiation' });
+  // The default organism uses the individually selected Tan control condition.
+  assert.deepEqual(DEFAULT_ORGANISM.freshAxes, { x: 'lengthNt', y: 'tssInitiationControl' });
   assert.equal(DEFAULT_METRIC_AXES, DEFAULT_ORGANISM.freshAxes);
-  assert.deepEqual([defaultState().axisX, defaultState().axisY], ['lengthNt', 'tssInitiation']);
+  assert.deepEqual([defaultState().axisX, defaultState().axisY], ['lengthNt', 'tssInitiationControl']);
   // E. coli publishes no measurement, so its pair is two sequence facts.
   assert.deepEqual(ECOLI.freshAxes, { x: 'lengthNt', y: 'gc3' });
   const fresh = defaultState(ECOLI);

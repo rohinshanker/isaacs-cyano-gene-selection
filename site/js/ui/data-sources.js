@@ -29,6 +29,7 @@ import {
   datasetChoiceLabel, dataTypeOfMetric, emptyFilter, formatRange, groupDatasets, normalizeSelection, passesFilters,
   regimeOf, studyColors, summariseSet,
 } from '../core/data-sources.js';
+import { nonPoolingReason } from '../core/type-metrics.js';
 import { renderSourceToggles } from './legend.js';
 import { ConditionGuides } from './condition-guides.js';
 
@@ -439,16 +440,13 @@ export class DataSourcesPanel {
     if (colorType && forType.length) {
       this.list.append(el('li', { className: 'data-sources-type', text: `${kindLabel}: ${included.length} of ${forType.length} included` }));
       const named = this.informing.chosen(colorType);
-      // A fold change, a p-value and a translation-efficiency ratio each belong
-      // to one contrast evaluated by one method, so this kind offers no pooled
-      // row: one included dataset is read, and the row says which it is.
+      // Non-pooling quantities read one included dataset and explain why.
       const pools = this.informing.poolsType?.(colorType) ?? true;
       if (!pools && included.length > 1) {
         this.list.append(el('li', {
           className: 'data-sources-note',
-          text: `These values do not pool: one of the ${included.length} included datasets is read, `
-            + 'because a fold change, a p-value and a translation-efficiency ratio each belong to '
-            + 'one contrast evaluated by one method.',
+          text: `These values do not pool: one of the ${included.length} included datasets is read. `
+            + nonPoolingReason(forType[0]),
         }));
       }
       if (pools && included.length > 1) {

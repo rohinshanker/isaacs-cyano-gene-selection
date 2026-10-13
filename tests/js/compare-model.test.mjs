@@ -16,6 +16,7 @@ import { CATEGORICAL } from '../../site/js/ui/colors.js';
 import { readFileSync } from 'node:fs';
 import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import { LIVE_METRICS } from '../../site/js/core/live-metrics.js';
+import { DATA_APPLIERS } from '../../site/js/core/dataset.js';
 
 test('a missing value has no z-score, so it cannot land on the median ring', () => {
   const scale = robustScale([1, 2, 3, 4, 5]);
@@ -166,13 +167,27 @@ test('an axis with no values at all is named as unavailable, not silently empty'
 test('the default axis list is the documented one, measured evidence first', () => {
   assert.ok(DEFAULT_AXES.includes('gc3'));
   assert.ok(DEFAULT_AXES.includes('targetFraction'));
-  assert.equal(DEFAULT_AXES[0], 'tssInitiation');
+  assert.equal(DEFAULT_AXES[0], 'tssInitiationControl');
   // CAI and tAI stay available, below every other default axis.
   assert.deepEqual(DEFAULT_AXES.slice(-2), ['cai', 'tai']);
-  assert.ok(DEFAULT_AXES.indexOf('tssInitiation') < DEFAULT_AXES.indexOf('cai'));
+  assert.ok(DEFAULT_AXES.indexOf('tssInitiationControl') < DEFAULT_AXES.indexOf('cai'));
   // A borrowed measurement is never an implicit default axis.
   assert.ok(!DEFAULT_AXES.includes('expression'));
   assert.ok(!DEFAULT_AXES.includes('expressionPercentile'));
+});
+
+test('comparison defaults prefer control and retain the pooled fallback only for older data', () => {
+  const metrics = ['tssInitiation', 'tssInitiationControl', 'gc3', 'enc']
+    .map((key) => ({ key, read: (i) => i }));
+  const registry = { metrics, byKey: new Map(metrics.map((metric) => [metric.key, metric])) };
+  const scaleFor = () => robustScale([1, 2, 3]);
+  assert.deepEqual(defaultAxes(registry, scaleFor).axes.map((metric) => metric.key),
+    ['tssInitiationControl', 'gc3', 'enc']);
+  registry.byKey.delete('tssInitiationControl');
+  assert.deepEqual(defaultAxes(registry, scaleFor).axes.map((metric) => metric.key),
+    ['tssInitiation', 'gc3', 'enc']);
+  assert.deepEqual(normalizeCompareAxes(['tssInitiation', 'gc3', 'enc']),
+    ['tssInitiation', 'gc3', 'enc'], 'explicit legacy comparisons stay explicit');
 });
 
 test('a gap in the data becomes a gap in the line', () => {
@@ -263,6 +278,8 @@ test('dropped-axis guidance separates its lead-in without a double colon', () =>
 const shippedFile = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
 const shippedMeta = shippedFile('../../site/data/meta.json');
 const shippedGenes = shippedFile('../../site/data/genes.json');
+DATA_APPLIERS.expressionLayers({ meta: shippedMeta, genes: shippedGenes },
+  shippedFile('../../site/data/expression_layers.json'));
 const shippedRegistry = buildMetricRegistry(shippedMeta, shippedGenes, Object.fromEntries(
   LIVE_METRICS.map((metric) => [metric.key, new Float64Array(shippedGenes.length)]),
 ));
@@ -273,7 +290,7 @@ test('a promoted measurement states its replicate depth and coverage in the comp
   const note = measurementLimitNote([tss], shippedDataset);
 
   assert.match(note, /^Measurement limits —/);
-  assert.match(note, /TSS initiation \(UTEX 2973\)/);
+  assert.match(note, /TSS initiation, four conditions pooled \(UTEX 2973\)/);
   assert.match(note, /2 replicates per condition across 4 conditions/);
   assert.match(note, /1,727 of 2,715 genes have a value/);
 });
@@ -283,7 +300,7 @@ test('every measurement on display is covered once, and conventions add nothing'
     .map((key) => shippedRegistry.byKey.get(key));
   const note = measurementLimitNote(metrics, shippedDataset);
 
-  assert.equal(note.match(/TSS initiation \(UTEX 2973\):/g).length, 1, 'no repeats');
+  assert.equal(note.match(/TSS initiation, four conditions pooled \(UTEX 2973\):/g).length, 1, 'no repeats');
   assert.match(note, /Expression \(PCC 7942\): WT, fresh BG-11, day 1, mean of 3 replicates/);
   // A percentile derived from the same study does not repeat that study's limits.
   const withPercentile = measurementLimitNote(
@@ -308,7 +325,7 @@ test('the default comparison axes always come with a measurement note', () => {
     const values = shippedGenes.map((gene) => gene[metric.key]);
     return robustScale(values);
   });
-  assert.equal(axes[0].key, 'tssInitiation');
+  assert.equal(axes[0].key, 'tssInitiationControl');
   assert.ok(measurementLimitNote(axes, shippedDataset));
 });
 

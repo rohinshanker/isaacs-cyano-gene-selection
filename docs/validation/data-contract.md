@@ -566,13 +566,14 @@ names every selected source explicitly, and the loader reads only what it lists:
     "id": "TAN2018_TSS",
     "file": "tan2018_utex2973_tss_initiation.tsv",
     "metricKey": "tssInitiation",
-    "label": "TSS initiation (UTEX 2973)",
+    "label": "TSS initiation, four conditions pooled (UTEX 2973)",
     "organism": "Synechococcus elongatus UTEX 2973",
     "isTargetOrganism": true,
     "assay": "dRNA-seq transcription start site initiation",
     "units": "summed mean TSS counts",
     "condition": "Tan et al. 2018, four conditions pooled",
-    "caveat": "Initiation strength, NOT transcript abundance."
+    "caveat": "Initiation strength, NOT transcript abundance.",
+    "quantity": "tss_initiation"   // see measured-quantity-contract.md
   }
 ]
 ```
@@ -593,6 +594,20 @@ normalization, model, uncertainty, and conflicts under the cross-organism policy
 Adding a source is a manifest entry plus its table. Nothing downstream is hardcoded to a
 particular source, and the existing `cai`, `tai`, `expressionProxy` and every other
 metric remain filterable exactly as before.
+
+A source that is one condition of a multi-condition study names it in
+`conditionLayer`: `{"condition", "replicates", "siteSet"}`. The four Tan 2018 layers
+(`TAN2018_TSS_CONTROL`, `_DARK`, `_HIGH_LIGHT`, `_HIGH_TEMPERATURE`; metric keys
+`tssInitiationControl`, `…Dark`, `…HighLight`, `…HighTemperature`) carry it. Each is,
+per gene, the sum over its Table S1 gTSS rows (exact current locus tag) of one
+condition's two-replicate mean, published fractions kept; 1,789 genes have a value and
+the other 926 are `null`. They declare `quantity: "tss_initiation"`, so
+`quantityPools` is `false` and the browser must not combine them; each is selected on
+its own. They do not average to the legacy `tssInitiation` pool, whose recovered site
+set and 1,727-gene membership differ. Groups: control `other` (33 °C is outside the
+standard range), high light `elevated`, dark and high temperature `stress`.
+`tools/tan2018_condition_initiation.py check` rebuilds the four tables and their
+manifest checksums.
 
 ### Expression: measured first, proxy as a labelled fallback
 

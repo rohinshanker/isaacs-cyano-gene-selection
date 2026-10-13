@@ -11,7 +11,7 @@
  * value for an axis a record does not report: an unreported axis neither passes
  * nor fails a comparison, and is drawn as missing, never as zero.
  */
-import { DEFAULT_POOLED_STUDIES, isTypeKey, typeKeyFor } from './type-metrics.js';
+import { DEFAULT_POOLED_STUDIES, TAN_CONTROL_SOURCE, isTypeKey, typeKeyFor } from './type-metrics.js';
 
 /** A source choice keeps sample/replicate identity beside its culture condition. */
 export function datasetChoiceLabel(dataset) {
@@ -366,7 +366,9 @@ export function conditionGrid(datasets) {
  * site shipped before the window existed, so an old link shows what it showed
  * before (owner decision, 2026-10-05). The shipped set is recognised by the
  * two legacy metric keys rather than listed here, so a rebuild that renames a
- * source does not silently change the default.
+ * source does not silently change the default. The Tan control condition replaces
+ * its old pooled default when available (owner request, 2026-10-12); explicit
+ * legacy selections still retain the pooled source.
  *
  * A default-pooled study comes in whole (owner decision, 2026-10-07): all 90
  * Fitness Browser conditions are selected, so what a fresh reader sees is the
@@ -378,8 +380,11 @@ export function conditionGrid(datasets) {
 export function defaultSelection(datasets) {
   const legacy = new Set(['expression', 'tssInitiation']);
   const pooled = new Set(DEFAULT_POOLED_STUDIES);
+  const splitTan = datasets.some((dataset) => dataset.id === TAN_CONTROL_SOURCE);
   return datasets
-    .filter((d) => d.record.group === 'standard' || legacy.has(d.metricKey) || pooled.has(d.record.studyId))
+    .filter((dataset) => !(splitTan && dataset.id === 'TAN2018_TSS'))
+    .filter((d) => d.id === TAN_CONTROL_SOURCE || d.record.group === 'standard'
+      || legacy.has(d.metricKey) || pooled.has(d.record.studyId))
     .map((d) => d.id)
     .sort();
 }

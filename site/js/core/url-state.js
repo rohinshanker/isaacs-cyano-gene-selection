@@ -57,6 +57,7 @@ const KEYS = {
  * comparison metrics (`cm`) is why version 4 became 5, moving those chosen
  * metrics out of the link into browser storage is why version 5 became 6, and
  * independent X/Y dataset contributor lists are why version 6 became 7.
+ * The condition-specific Tan default is why version 7 became 8.
  *
  * The colour scale `csc` deliberately did not bump it. A version number is only
  * useful where the absence of a field has to mean two different things to two
@@ -93,11 +94,13 @@ const KEYS = {
  * were visible by default then and had no persisted state at all. So an
  * omitted `mk` has exactly one meaning and no older one to preserve.
  */
-export const STATE_VERSION = 7;
+export const STATE_VERSION = 8;
+export const TAN_CONDITION_SELECTION_VERSION = 8;
 
 /**
- * The first encoder version whose omitted `ax`/`ay` mean today's measured
- * fresh-view axes. Up to and including version 2 an omitted axis pair meant CDS
+ * The first encoder version whose omitted `ax`/`ay` mean measured fresh-view
+ * axes. Versions 3–7 used the pooled Tan score on Y; version 8 uses control.
+ * Up to and including version 2 an omitted axis pair meant CDS
  * length against CAI, so a link shared then must keep plotting that pair: the
  * hash is the experiment someone recorded, and re-reading it as a different
  * pair of metrics would silently change what a colleague was shown.
@@ -562,6 +565,10 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   if (Number.isFinite(state.version) && state.version < MEASURED_AXES_VERSION) {
     if (!values.has(KEYS.axisX)) state.axisX = LEGACY_METRIC_AXES.x;
     if (!values.has(KEYS.axisY)) state.axisY = LEGACY_METRIC_AXES.y;
+  } else if (Number.isFinite(state.version) && state.version < TAN_CONDITION_SELECTION_VERSION
+    && organism.id === 'utex2973' && !values.has(KEYS.axisY)) {
+    // Encoded versions 3–7 omitted Y when they meant the legacy pooled score.
+    state.axisY = 'tssInitiation';
   }
   return state;
 }

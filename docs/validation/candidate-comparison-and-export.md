@@ -6,6 +6,13 @@ drawn where a typical value sits, and an exported number can lose the scheme tha
 produced it. Both have happened in this repository. This document states the
 contracts that prevent them and the checks that prove they hold.
 
+Fresh comparisons prefer Tan Table S1 control-condition initiation when the
+dataset publishes it. A saved comparison can still request the legacy pooled
+metric explicitly. Older datasets without the control layer keep the prior
+pooled fallback; neither missing measurements nor other organisms acquire
+invented Tan values. Every selected measurement retains its own condition and
+coverage note.
+
 ## 1. Missing must look missing
 
 A gene with no measurement has **no position**. It is never the median, never

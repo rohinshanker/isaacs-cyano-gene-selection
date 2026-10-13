@@ -112,7 +112,7 @@
     "id": "TAN2018_TSS",
     "file": "tan2018_utex2973_tss_initiation.tsv",
     "metricKey": "tssInitiation",
-    "label": "TSS initiation (UTEX 2973)",
+    "label": "Legacy TSS initiation, four conditions pooled (UTEX 2973)",
     "organism": "Synechococcus elongatus UTEX 2973",
     "isTargetOrganism": true,
     "assay": "dRNA-seq transcription initiation strength",
@@ -120,7 +120,7 @@
     "condition": "Tan et al. 2018: control (33 °C, 50 µmol photons m⁻² s⁻¹, 3% CO2), high light, high temperature, and dark conditions pooled",
     "sha256": "5ebd8043e70309a2ea04fcec37e475069cb8540397f9d052bd246401aa6325be",
     "licence": "CC BY 4.0",
-    "caveat": "Transcription initiation strength, not transcript abundance; genes without an associated TSS are unknown, not zero.",
+    "caveat": "Legacy layer. Transcription initiation strength, not transcript abundance; genes without an associated TSS are unknown, not zero. Its derivation was recovered, not documented: the values are reproduced exactly when fractional published counts are truncated and a TSS counts only at or after the gene's lowest coordinate, which drops most upstream gTSS of forward-strand genes but keeps those of reverse-strand genes. It is not the average of the four Table S1 condition layers, whose gTSS site set and 1,789-gene membership differ.",
     "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md",
     "citationId": "tan-2018",
     "record": {
@@ -129,7 +129,7 @@
       "platform": "RNA-seq",
       "strain": "UTEX 2973",
       "basis": "direct",
-      "conditionSet": "Control, dark, high light and high temperature, pooled (summed mean TSS counts)",
+      "conditionSet": "Legacy pool: control, dark, high light and high temperature",
       "samples": "two replicate cultures per condition, four conditions pooled into one score per gene",
       "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
       "citation": {
@@ -177,7 +177,7 @@
           "text": "constant illumination in the control, pooled with a 2 h dark condition"
         },
         "co2": {
-          "quote": "3% CO2 aeration",
+          "quote": "3% CO 2 aeration",
           "where": "paper PMC6091082, Methods",
           "status": "reported",
           "lo": 3,
@@ -196,7 +196,7 @@
           "text": "BG-11"
         },
         "format": {
-          "quote": "3% CO2 aeration",
+          "quote": "3% CO 2 aeration",
           "where": "paper PMC6091082, Methods",
           "status": "reported",
           "value": "planktonic liquid",
@@ -212,6 +212,478 @@
           "text": "growth phase at sampling not recorded in the shipped provenance"
         }
       }
+    },
+    "quantity": "tss_initiation"
+  },
+  {
+    "record": {
+      "studyId": "PRJNA420395",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "UTEX 2973",
+      "basis": "direct",
+      "conditionSet": "Control (CT1, CT2)",
+      "samples": "CT1 and CT2: Additional file 1, Table S1 columns CT1_RawReads and CT2_RawReads",
+      "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
+      "citation": {
+        "text": "Tan X, et al. The primary transcriptome of the fast-growing cyanobacterium Synechococcus elongatus UTEX 2973. Biotechnol Biofuels 2018;11:218.",
+        "url": "https://doi.org/10.1186/s13068-018-1215-8",
+        "pmid": "30127850"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two replicate cultures (CT1, CT2)",
+        "where": "paper PMC6091082, Methods, RNA extraction, cDNA synthesis and sequencing; replicate names from Additional file 1 Table S1"
+      },
+      "treatments": [],
+      "group": "other",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "quote": "subjected to standard (control) culture conditions (33 °C, 50 μmol photons/m 2 /s constant illumination, 3% CO 2 aeration)",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "lo": 33,
+          "hi": 33,
+          "unit": "°C",
+          "text": "33 °C"
+        },
+        "lightIntensity": {
+          "quote": "subjected to standard (control) culture conditions (33 °C, 50 μmol photons/m 2 /s constant illumination, 3% CO 2 aeration)",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "lo": 50,
+          "hi": 50,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "50 µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "quote": "subjected to standard (control) culture conditions (33 °C, 50 μmol photons/m 2 /s constant illumination, 3% CO 2 aeration)",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "constant illumination"
+        },
+        "co2": {
+          "quote": "subjected to standard (control) culture conditions (33 °C, 50 μmol photons/m 2 /s constant illumination, 3% CO 2 aeration)",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "lo": 3,
+          "hi": 3,
+          "unit": "%",
+          "text": "3% CO2 aeration"
+        },
+        "medium": {
+          "quote": "was inoculated at an initial OD 730 of 0.05 in BG-11 medium",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11; the treated cultures were transferred, not resuspended"
+        },
+        "format": {
+          "quote": "30 mL of cultures with or without treatments was collected",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "aerated liquid culture, 30 mL collected per sample"
+        },
+        "phase": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "growth phase of the untreated control at sampling is not stated; the treated cultures were exponential (OD730 ≈ 0.5) when transferred"
+        }
+      }
+    },
+    "id": "TAN2018_TSS_CONTROL",
+    "file": "tan2018_utex2973_tss_initiation_control.tsv",
+    "metricKey": "tssInitiationControl",
+    "label": "TSS initiation, control (UTEX 2973)",
+    "organism": "Synechococcus elongatus UTEX 2973",
+    "isTargetOrganism": true,
+    "assay": "dRNA-seq transcription initiation strength",
+    "units": "summed two-replicate mean gTSS counts",
+    "condition": "Tan et al. 2018 control (standard culture): 33 °C, 50 µmol photons m⁻² s⁻¹ constant illumination, 3% CO2 aeration, BG-11; replicates CT1 and CT2",
+    "sha256": "1264631c1fd9f041082c970828cf2a3a40c87999b692601f6de8aa4d53b4eb65",
+    "licence": "CC BY 4.0",
+    "caveat": "Transcription initiation counts for one condition, not transcript abundance and not a differential result. Per gene, the sum over its Table S1 gene-associated TSS (gTSS) rows, joined by exact current locus tag, of the CT1/CT2 mean; published fractional counts are kept. Genes with no mapped gTSS row are unknown, not zero. Its 1,789-gene membership and values differ from the legacy pooled TSS initiation layer, which used a different, recovered site set; the four condition layers do not average to it.",
+    "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md",
+    "citationId": "tan-2018",
+    "payload": "expression_layers.json",
+    "quantity": "tss_initiation",
+    "conditionLayer": {
+      "condition": "control",
+      "replicates": [
+        "CT1",
+        "CT2"
+      ],
+      "siteSet": "Table S1 gTSS rows joined by exact current locus tag"
+    }
+  },
+  {
+    "record": {
+      "studyId": "PRJNA420395",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "UTEX 2973",
+      "basis": "direct",
+      "conditionSet": "Dark (D1, D2)",
+      "samples": "D1 and D2: Additional file 1, Table S1 columns D1_RawReads and D2_RawReads",
+      "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
+      "citation": {
+        "text": "Tan X, et al. The primary transcriptome of the fast-growing cyanobacterium Synechococcus elongatus UTEX 2973. Biotechnol Biofuels 2018;11:218.",
+        "url": "https://doi.org/10.1186/s13068-018-1215-8",
+        "pmid": "30127850"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two replicate cultures (D1, D2)",
+        "where": "paper PMC6091082, Methods, RNA extraction, cDNA synthesis and sequencing; replicate names from Additional file 1 Table S1"
+      },
+      "treatments": [
+        "darkness"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "not restated for this treatment; the Methods give 33 °C for standard culture only"
+        },
+        "lightIntensity": {
+          "quote": "exponential phase cultures (OD 730 ≈ 0.5) were transferred to three different conditions: (i) high light, 1000 μmol photons/m 2 /s for 30 min; (ii) high temperature, 45 °C for 30 min; and (iii) darkness, no illumination for 2 h.",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "lo": 0,
+          "hi": 0,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "no illumination for 2 h"
+        },
+        "lightRegime": {
+          "quote": "exponential phase cultures (OD 730 ≈ 0.5) were transferred to three different conditions: (i) high light, 1000 μmol photons/m 2 /s for 30 min; (ii) high temperature, 45 °C for 30 min; and (iii) darkness, no illumination for 2 h.",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "constant illumination, then no illumination for 2 h before sampling"
+        },
+        "co2": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not restated for this treatment; the Methods give 3% CO2 aeration for standard culture only"
+        },
+        "medium": {
+          "quote": "was inoculated at an initial OD 730 of 0.05 in BG-11 medium",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11; the treated cultures were transferred, not resuspended"
+        },
+        "format": {
+          "quote": "30 mL of cultures with or without treatments was collected",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "aerated liquid culture, 30 mL collected per sample"
+        },
+        "phase": {
+          "quote": "exponential phase cultures (OD 730 ≈ 0.5) were transferred to three different conditions: (i) high light, 1000 μmol photons/m 2 /s for 30 min; (ii) high temperature, 45 °C for 30 min; and (iii) darkness, no illumination for 2 h.",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "label": "exponential",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 730,
+          "text": "exponential phase (OD730 ≈ 0.5) when transferred to the treatment"
+        }
+      }
+    },
+    "id": "TAN2018_TSS_DARK",
+    "file": "tan2018_utex2973_tss_initiation_dark.tsv",
+    "metricKey": "tssInitiationDark",
+    "label": "TSS initiation, dark (UTEX 2973)",
+    "organism": "Synechococcus elongatus UTEX 2973",
+    "isTargetOrganism": true,
+    "assay": "dRNA-seq transcription initiation strength",
+    "units": "summed two-replicate mean gTSS counts",
+    "condition": "Tan et al. 2018 darkness: exponential-phase culture (OD730 ≈ 0.5) without illumination for 2 h; replicates D1 and D2",
+    "sha256": "330c4bd5536f1fa0740b8ccc7c80156b4e0a3710957b785ab093409ee4a0ee51",
+    "licence": "CC BY 4.0",
+    "caveat": "Transcription initiation counts for one condition, not transcript abundance and not a differential result. Per gene, the sum over its Table S1 gene-associated TSS (gTSS) rows, joined by exact current locus tag, of the D1/D2 mean; published fractional counts are kept. Genes with no mapped gTSS row are unknown, not zero. Its 1,789-gene membership and values differ from the legacy pooled TSS initiation layer, which used a different, recovered site set; the four condition layers do not average to it.",
+    "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md",
+    "citationId": "tan-2018",
+    "payload": "expression_layers.json",
+    "quantity": "tss_initiation",
+    "conditionLayer": {
+      "condition": "dark",
+      "replicates": [
+        "D1",
+        "D2"
+      ],
+      "siteSet": "Table S1 gTSS rows joined by exact current locus tag"
+    }
+  },
+  {
+    "record": {
+      "studyId": "PRJNA420395",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "UTEX 2973",
+      "basis": "direct",
+      "conditionSet": "High light (HL1, HL2)",
+      "samples": "HL1 and HL2: Additional file 1, Table S1 columns HL1_RawReads and HL2_RawReads",
+      "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
+      "citation": {
+        "text": "Tan X, et al. The primary transcriptome of the fast-growing cyanobacterium Synechococcus elongatus UTEX 2973. Biotechnol Biofuels 2018;11:218.",
+        "url": "https://doi.org/10.1186/s13068-018-1215-8",
+        "pmid": "30127850"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two replicate cultures (HL1, HL2)",
+        "where": "paper PMC6091082, Methods, RNA extraction, cDNA synthesis and sequencing; replicate names from Additional file 1 Table S1"
+      },
+      "treatments": [
+        "high light"
+      ],
+      "group": "elevated",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "not restated for this treatment; the Methods give 33 °C for standard culture only"
+        },
+        "lightIntensity": {
+          "quote": "exponential phase cultures (OD 730 ≈ 0.5) were transferred to three different conditions: (i) high light, 1000 μmol photons/m 2 /s for 30 min; (ii) high temperature, 45 °C for 30 min; and (iii) darkness, no illumination for 2 h.",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "lo": 1000,
+          "hi": 1000,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "1,000 µmol photons m⁻² s⁻¹"
+        },
+        "lightRegime": {
+          "quote": "Total RNA was isolated from cells transferred to darkness or high light for 2 h, maintained at an elevated temperature for 30 min, or maintained in control conditions",
+          "where": "paper PMC6091082, Results, Transcriptional start sites; contradicts paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973 ('high light, 1000 μmol photons/m 2 /s for 30 min')",
+          "status": "conflicting",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "constant high light; its duration is 30 min in the Methods and 2 h in the Results"
+        },
+        "co2": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not restated for this treatment; the Methods give 3% CO2 aeration for standard culture only"
+        },
+        "medium": {
+          "quote": "was inoculated at an initial OD 730 of 0.05 in BG-11 medium",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11; the treated cultures were transferred, not resuspended"
+        },
+        "format": {
+          "quote": "30 mL of cultures with or without treatments was collected",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "aerated liquid culture, 30 mL collected per sample"
+        },
+        "phase": {
+          "quote": "exponential phase cultures (OD 730 ≈ 0.5) were transferred to three different conditions: (i) high light, 1000 μmol photons/m 2 /s for 30 min; (ii) high temperature, 45 °C for 30 min; and (iii) darkness, no illumination for 2 h.",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "label": "exponential",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 730,
+          "text": "exponential phase (OD730 ≈ 0.5) when transferred to the treatment"
+        }
+      }
+    },
+    "id": "TAN2018_TSS_HIGH_LIGHT",
+    "file": "tan2018_utex2973_tss_initiation_high_light.tsv",
+    "metricKey": "tssInitiationHighLight",
+    "label": "TSS initiation, high light (UTEX 2973)",
+    "organism": "Synechococcus elongatus UTEX 2973",
+    "isTargetOrganism": true,
+    "assay": "dRNA-seq transcription initiation strength",
+    "units": "summed two-replicate mean gTSS counts",
+    "condition": "Tan et al. 2018 high light: exponential-phase culture (OD730 ≈ 0.5) shifted to 1,000 µmol photons m⁻² s⁻¹ (duration 30 min in the Methods, 2 h in the Results); replicates HL1 and HL2",
+    "sha256": "e45a034a78ff42541ff334e2bd2a5929656e91fc091411daaf986a368e513e13",
+    "licence": "CC BY 4.0",
+    "caveat": "Transcription initiation counts for one condition, not transcript abundance and not a differential result. Per gene, the sum over its Table S1 gene-associated TSS (gTSS) rows, joined by exact current locus tag, of the HL1/HL2 mean; published fractional counts are kept. Genes with no mapped gTSS row are unknown, not zero. Its 1,789-gene membership and values differ from the legacy pooled TSS initiation layer, which used a different, recovered site set; the four condition layers do not average to it. The source gives the high-light duration as 30 min (Methods) and 2 h (Results); no duration is asserted here.",
+    "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md",
+    "citationId": "tan-2018",
+    "payload": "expression_layers.json",
+    "quantity": "tss_initiation",
+    "conditionLayer": {
+      "condition": "high_light",
+      "replicates": [
+        "HL1",
+        "HL2"
+      ],
+      "siteSet": "Table S1 gTSS rows joined by exact current locus tag"
+    }
+  },
+  {
+    "record": {
+      "studyId": "PRJNA420395",
+      "dataType": "transcriptomics",
+      "platform": "RNA-seq",
+      "strain": "UTEX 2973",
+      "basis": "direct",
+      "conditionSet": "High temperature (HT1, HT2)",
+      "samples": "HT1 and HT2: Additional file 1, Table S1 columns HT1_RawReads and HT2_RawReads",
+      "archiveUrl": "https://www.ebi.ac.uk/ena/browser/view/PRJNA420395",
+      "citation": {
+        "text": "Tan X, et al. The primary transcriptome of the fast-growing cyanobacterium Synechococcus elongatus UTEX 2973. Biotechnol Biofuels 2018;11:218.",
+        "url": "https://doi.org/10.1186/s13068-018-1215-8",
+        "pmid": "30127850"
+      },
+      "replicates": {
+        "count": 2,
+        "text": "two replicate cultures (HT1, HT2)",
+        "where": "paper PMC6091082, Methods, RNA extraction, cDNA synthesis and sequencing; replicate names from Additional file 1 Table S1"
+      },
+      "treatments": [
+        "high temperature"
+      ],
+      "group": "stress",
+      "conditionTableRow": null,
+      "conditions": {
+        "temperature": {
+          "quote": "exponential phase cultures (OD 730 ≈ 0.5) were transferred to three different conditions: (i) high light, 1000 μmol photons/m 2 /s for 30 min; (ii) high temperature, 45 °C for 30 min; and (iii) darkness, no illumination for 2 h.",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "lo": 45,
+          "hi": 45,
+          "unit": "°C",
+          "text": "45 °C for 30 min"
+        },
+        "lightIntensity": {
+          "quote": "using RNA from cells grown under standard, high light, high light coupled with high-temperature and dark conditions",
+          "where": "paper PMC6091082, Background; paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973 names only 45 °C for 30 min",
+          "status": "conflicting",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "not stated by the Methods for the 45 °C treatment; the Background describes this condition as high light coupled with high temperature"
+        },
+        "lightRegime": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "kind": null,
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "not restated for this treatment; the Methods give constant illumination for standard culture only"
+        },
+        "co2": {
+          "quote": "",
+          "where": "",
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "not restated for this treatment; the Methods give 3% CO2 aeration for standard culture only"
+        },
+        "medium": {
+          "quote": "was inoculated at an initial OD 730 of 0.05 in BG-11 medium",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "base": "BG-11",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11; the treated cultures were transferred, not resuspended"
+        },
+        "format": {
+          "quote": "30 mL of cultures with or without treatments was collected",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "aerated liquid culture, 30 mL collected per sample"
+        },
+        "phase": {
+          "quote": "exponential phase cultures (OD 730 ≈ 0.5) were transferred to three different conditions: (i) high light, 1000 μmol photons/m 2 /s for 30 min; (ii) high temperature, 45 °C for 30 min; and (iii) darkness, no illumination for 2 h.",
+          "where": "paper PMC6091082, Methods, Strains and culture conditions of S. elongatus UTEX 2973",
+          "status": "reported",
+          "label": "exponential",
+          "od": [
+            0.5,
+            0.5
+          ],
+          "odNm": 730,
+          "text": "exponential phase (OD730 ≈ 0.5) when transferred to the treatment"
+        }
+      }
+    },
+    "id": "TAN2018_TSS_HIGH_TEMPERATURE",
+    "file": "tan2018_utex2973_tss_initiation_high_temperature.tsv",
+    "metricKey": "tssInitiationHighTemperature",
+    "label": "TSS initiation, high temperature (UTEX 2973)",
+    "organism": "Synechococcus elongatus UTEX 2973",
+    "isTargetOrganism": true,
+    "assay": "dRNA-seq transcription initiation strength",
+    "units": "summed two-replicate mean gTSS counts",
+    "condition": "Tan et al. 2018 high temperature: exponential-phase culture (OD730 ≈ 0.5) shifted to 45 °C for 30 min; replicates HT1 and HT2",
+    "sha256": "92b865680c18388794a1636a3a8ffd7b66d0f8d1541c56dc35caac9233ae6816",
+    "licence": "CC BY 4.0",
+    "caveat": "Transcription initiation counts for one condition, not transcript abundance and not a differential result. Per gene, the sum over its Table S1 gene-associated TSS (gTSS) rows, joined by exact current locus tag, of the HT1/HT2 mean; published fractional counts are kept. Genes with no mapped gTSS row are unknown, not zero. Its 1,789-gene membership and values differ from the legacy pooled TSS initiation layer, which used a different, recovered site set; the four condition layers do not average to it. The Methods name only 45 °C for 30 min, while the Background describes this condition as high light coupled with high temperature; its light level is recorded as conflicting.",
+    "provenanceDoc": "data/expression/TAN2018_TSS_PROVENANCE.md",
+    "citationId": "tan-2018",
+    "payload": "expression_layers.json",
+    "quantity": "tss_initiation",
+    "conditionLayer": {
+      "condition": "high_temperature",
+      "replicates": [
+        "HT1",
+        "HT2"
+      ],
+      "siteSet": "Table S1 gTSS rows joined by exact current locus tag"
     }
   },
   {

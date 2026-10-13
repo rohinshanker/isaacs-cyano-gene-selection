@@ -89,7 +89,7 @@ function bucketOccupancy(values, scale) {
  * moves a metric across the 90% line is then seen here, in review, rather than
  * discovered in the picture.
  */
-test('the shipped release opens logarithmic on thirty-nine metrics, symmetric log on twenty-nine, linear on the rest', async () => {
+test('the shipped release opens logarithmic on forty-three metrics, symmetric log on twenty-nine, linear on the rest', async () => {
   const { dataset, registry } = await shipped();
   const chosen = new Map();
   for (const metric of metricsInDisplayOrder(registry)) {
@@ -119,7 +119,9 @@ test('the shipped release opens logarithmic on thirty-nine metrics, symmetric lo
     'exprGse79726NMinus', 'exprGse79726NPlus', 'expression',
     'protPxd000510Ld175To265', 'protPxd000510Ld305To385', 'protPxd000510Ld415To505',
     'protPxd000510Ld65To145', 'protPxd005851Bg11Nacl', 'protPxd030282L1118Log',
-    'protPxd030282L1118Stationary', 'protPxd062851Dia', 'tssInitiation'
+    'protPxd030282L1118Stationary', 'protPxd062851Dia', 'tssInitiation',
+    'tssInitiationControl', 'tssInitiationDark', 'tssInitiationHighLight',
+    'tssInitiationHighTemperature'
   ]);
   assert.deepEqual(keysFor('symlog'), [
     'exprGse103462WtDusk', 'exprGse103463RelAPlusDawn', 'exprGse103644RelAPlusT0',

@@ -19,10 +19,11 @@
  *
  * A source may declare the `quantity` its values are, and then that
  * declaration — not the assay sentence — decides the kind, the label, the
- * metric family and whether the type pools at all. Three quantities do not
- * pool: a log2 fold change, a p-value and a translation-efficiency ratio each
+ * metric family and whether the type pools at all. A log2 fold change,
+ * a p-value and a translation-efficiency ratio each
  * belong to one contrast evaluated by one method, so such a type reads one
- * dataset however many are selected and says which. See
+ * dataset however many are selected and says which. Condition-specific TSS
+ * initiation counts also remain separate. See
  * `scripts/expression_table.py` for the contract and
  * `docs/validation/data-contract.md` for the reader-facing rules.
  */
@@ -128,6 +129,16 @@ export function typeGroups(datasets) {
 /** The two sources the site shipped first; they inform their types unless the reader chooses. */
 const LEGACY_PREFERRED = ['GSE205444', 'TAN2018_TSS'];
 
+/** Owner-selected replacement for the Tan study's four-condition pooled default. */
+export const TAN_CONTROL_SOURCE = 'TAN2018_TSS_CONTROL';
+
+/** Why a non-pooling type reads one explicitly identified dataset. */
+export function nonPoolingReason(dataset) {
+  return assayKind(dataset) === 'initiation'
+    ? 'Initiation counts from different growth conditions are kept separate; choose one condition at a time. The labelled legacy pooled score remains available explicitly.'
+    : 'A fold change, a p-value and a translation-efficiency ratio each belong to one contrast evaluated by one method, so they are never averaged across contrasts.';
+}
+
 /**
  * Studies whose condition sets pool with each other by default.
  *
@@ -154,6 +165,8 @@ export const DEFAULT_POOLED_STUDIES = ['FitnessBrowser_SynE'];
 export function defaultDatasetsOfType(typeKey, datasets) {
   const group = typeGroups(datasets).get(typeKey);
   if (!group) return [];
+  const control = group.datasets.find((dataset) => dataset.id === TAN_CONTROL_SOURCE);
+  if (control) return [control];
   const pooled = group.datasets.filter(
     (d) => DEFAULT_POOLED_STUDIES.includes(d.record?.studyId),
   );
@@ -226,7 +239,8 @@ export function normalizeTypeSources(value, datasets, selection) {
  *
  * A type that does not pool always names one, because there is no pooled value
  * for it to fall back to: with several selected and none named, the first of
- * them in manifest order is read. That choice is deterministic rather than
+ * them in manifest order is read, with Tan control preferred when present.
+ * That choice is deterministic rather than
  * clever, and the interface says a single dataset is being read so the reader
  * is never shown one contrast while believing they are shown several.
  */
@@ -241,7 +255,8 @@ export function informingOfType(group, candidates, namedId) {
   const chosen = candidates.find((d) => d.id === namedId);
   if (chosen) return chosen;
   if (candidates.length === 1) return candidates[0];
-  return datasetPools(group.datasets[0]) ? null : candidates[0] ?? null;
+  if (datasetPools(group.datasets[0])) return null;
+  return candidates.find((dataset) => dataset.id === TAN_CONTROL_SOURCE) ?? candidates[0] ?? null;
 }
 
 /** The datasets a type reads: the named one alone, else every selected dataset of the type. */
@@ -304,9 +319,7 @@ export function buildTypeMetrics(datasets, { contributing, metricOf, selected, g
       if (pools || count < 2) return null;
       const read = current()[0]?.provenance?.id ?? contributing(group.key)[0]?.id ?? 'one dataset';
       return `${count} datasets of this kind are selected, and ${read} alone is read: `
-        + 'a fold change, a p-value and a translation-efficiency ratio each belong to one '
-        + 'contrast evaluated by one method, so they are never averaged across contrasts. '
-        + 'Choose another under Data Sources.';
+        + `${nonPoolingReason(first)} Choose another under Data Sources.`;
     };
     const pooledProvenance = (list) => {
       const { ingest: _firstIngest, ...first } = list[0].provenance ?? {};

@@ -51,7 +51,7 @@ export const UTEX2973 = {
   },
   searchAliasExample: 'rubisco',
   // Metric X vs Y opens on CDS length against the strongest measured evidence.
-  freshAxes: { x: 'lengthNt', y: 'tssInitiation' },
+  freshAxes: { x: 'lengthNt', y: 'tssInitiationControl' },
   locusExample: 'M744_RS00005',
   // Colour sources for the function category, in precedence order.
   annotationSources: [

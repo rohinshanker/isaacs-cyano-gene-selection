@@ -17,6 +17,11 @@ import {
   PCC_ESSENTIALITY_BUCKETS, PCC_ESSENTIALITY_LABEL, describeBucketStatuses, pccPendingSentence,
 } from './pcc-essentiality.js';
 
+const TAN_CONDITION_METHOD = 'Sum the means of the two biological-replicate raw counts '
+  + 'for this condition across Table S1 gTSS rows with an exact locus-tag match. '
+  + 'Published fractional counts are preserved. No site is removed by a coordinate cutoff, '
+  + 'and conditions are never averaged together. This measures initiation, not gene-body abundance.';
+
 /**
  * How each metric is calculated, in words that hold for any organism.
  *
@@ -61,7 +66,11 @@ const METHODS = Object.freeze({
   operonPosition: 'One-based order within a predicted same-strand group of CDSs separated by at most 100 nt; singleton position is unknown.',
   operonSize: 'Number of CDSs in that predicted same-strand, at-most-100-nt group, including singletons.',
   expression: 'Normalized transcript counts from the declared expression study; no value is imputed for an unmatched locus.',
-  tssInitiation: 'Per locus, sum across the separately pinned Figshare per-TSS feature set of the mean of eight raw start-site count fields. This pooled score is independent of the Table S1 site list and is initiation, not gene-body abundance.',
+  tssInitiation: 'Legacy pooled score: per locus, sum across the separately pinned Figshare per-TSS feature set of the mean of eight start-site count fields. Its values reproduce only after truncating counts and omitting sites before the gene’s lowest coordinate; these recovered operations were undocumented. This pooled score is independent of the Table S1 site list and is initiation, not gene-body abundance.',
+  tssInitiationControl: TAN_CONDITION_METHOD,
+  tssInitiationDark: TAN_CONDITION_METHOD,
+  tssInitiationHighLight: TAN_CONDITION_METHOD,
+  tssInitiationHighTemperature: TAN_CONDITION_METHOD,
   targetCount: 'Sense-codon target count plus one when the active scheme reassigns this gene’s terminal stop; the start codon is never edited.',
   targetStopEdit: 'One if the active scheme reassigns this gene’s terminal stop, otherwise zero.',
   targetFraction: 'Target count, including a possible stop edit, divided by sense-codon count; the start codon is not a target.',
@@ -94,6 +103,10 @@ const METHODS_CITATIONS = Object.freeze({
   expressionPercentile: ['simkovsky-2022', 'deseq2'],
   expressionProxy: ['sharp-li-cai', 'dos-reis-tai'],
   tssInitiation: ['tan-2018'],
+  tssInitiationControl: ['tan-2018'],
+  tssInitiationDark: ['tan-2018'],
+  tssInitiationHighLight: ['tan-2018'],
+  tssInitiationHighTemperature: ['tan-2018'],
   recodedEnc: ['wright-enc'], dEnc: ['wright-enc'],
 });
 

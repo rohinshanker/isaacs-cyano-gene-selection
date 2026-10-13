@@ -19,10 +19,11 @@ async function published() {
 test('the published agreement payload joins every admitted RNA-seq source by exact id', async () => {
   const { payload, meta } = await published();
   const agreement = validateExpressionAgreement(payload, meta);
-  assert.equal(agreement.sources.length, 55);
+  assert.equal(agreement.sources.length, 59);
   assert.equal(agreement.sources.filter((source) => source.agreement).length, 53);
   assert.deepEqual(agreement.sources.filter((source) => !source.agreement).map((source) => source.id),
-    ['GSE205444', 'TAN2018_TSS']);
+    ['GSE205444', 'TAN2018_TSS', 'TAN2018_TSS_CONTROL', 'TAN2018_TSS_DARK',
+      'TAN2018_TSS_HIGH_LIGHT', 'TAN2018_TSS_HIGH_TEMPERATURE']);
   const pair = agreement.levelPair(
     'GSE103462_wt_subjective_dawn', 'GSE103462_wt_subjective_dusk',
   );
@@ -48,7 +49,7 @@ test('the published agreement payload joins every admitted RNA-seq source by exa
 test('the browser validator refuses malformed, partial, and unknown source joins', async () => {
   const { payload, meta } = await published();
   const unknown = structuredClone(payload);
-  unknown.sources[2].id = 'UNKNOWN';
+  unknown.sources.find((source) => source.id === 'GSE288532_subjective_day').id = 'UNKNOWN';
   assert.throws(() => validateExpressionAgreement(unknown, meta), /expected GSE288532_subjective_day/);
 
   const partial = structuredClone(payload);
@@ -64,7 +65,8 @@ test('the browser validator refuses malformed, partial, and unknown source joins
   assert.throws(() => validateExpressionAgreement(stale, meta), /stale studyId/);
 
   const denominator = structuredClone(payload);
-  denominator.sources[2].agreement.empiricalSampleRange.definedCorrelationCount += 1;
+  denominator.sources.find((source) => source.id === 'GSE288532_subjective_day')
+    .agreement.empiricalSampleRange.definedCorrelationCount += 1;
   assert.throws(() => validateExpressionAgreement(denominator, meta),
     /sample-pair count disagrees/);
 

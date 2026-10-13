@@ -64,6 +64,11 @@ export function resolveAxisContributors(
   const selected = normalizeAxisDatasetSelection(metricKey, ids, datasets) ?? [];
   const requested = isTypeKey(metricKey)
     ? contributingDatasets(metricKey, {}, datasets, selected) : [];
+  return readableAxisContributors({ selected, requested }, { metricOf, resourceStateOf });
+}
+
+/** Resolve file readiness live; cached membership must never hide a landing or retry. */
+function readableAxisContributors({ selected, requested }, { metricOf, resourceStateOf }) {
   const available = [];
   const affected = [];
   for (const dataset of requested) {
@@ -75,6 +80,33 @@ export function resolveAxisContributors(
   const state = affected.some((entry) => entry.state === 'failed') ? 'failed'
     : affected.some((entry) => entry.state === 'loading') ? 'loading' : null;
   return { selected, requested, available, affected, state };
+}
+
+/**
+ * Resolve membership once per immutable axis selection, not once per plotted gene.
+ * Callers replace catalogue/ID arrays when their contents change. Metric objects,
+ * values and resource readiness remain live, including later file arrivals.
+ */
+export function createAxisContributorResolver() {
+  let previousKey;
+  let previousIds;
+  let previousDatasets;
+  let membership;
+  return (metricKey, ids, datasets, readers) => {
+    if (!membership || metricKey !== previousKey || ids !== previousIds
+      || datasets !== previousDatasets) {
+      Object.freeze(datasets);
+      if (ids) Object.freeze(ids);
+      const selected = Object.freeze(normalizeAxisDatasetSelection(metricKey, ids, datasets) ?? []);
+      const requested = Object.freeze(isTypeKey(metricKey)
+        ? contributingDatasets(metricKey, {}, datasets, selected) : []);
+      membership = { selected, requested };
+      previousKey = metricKey;
+      previousIds = ids;
+      previousDatasets = datasets;
+    }
+    return readableAxisContributors(membership, readers);
+  };
 }
 
 /** URL readiness follows requested inputs, including unreadable pending layers. */
@@ -94,6 +126,6 @@ export function axisDatasetSelectionLabel(metricKey, ids, datasets, pools = true
     return `${dataset?.record?.studyId ?? selected[0]} · ${dataset?.record?.conditionSet ?? 'selected dataset'}`;
   }
   if (pools) return `Pooled (${selected.length} of ${available.length} datasets)`;
-  const first = available.find((candidate) => candidate.id === selected[0]);
-  return `${first?.record?.studyId ?? selected[0]} reads alone (${selected.length} selected)`;
+  const first = contributingDatasets(metricKey, {}, datasets, selected)[0];
+  return `${first?.record?.studyId ?? selected[0]} · ${first?.record?.conditionSet ?? 'selected dataset'} reads alone (${selected.length} selected)`;
 }

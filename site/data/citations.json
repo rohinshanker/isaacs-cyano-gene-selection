@@ -104,7 +104,7 @@
           "id": "tan-2018",
           "citation": "Tan X, Hou S, Song K, Georg J, Klähn S, Lu X, Hess WR. The primary transcriptome of the fast-growing cyanobacterium Synechococcus elongatus UTEX 2973. Biotechnology for Biofuels 11, 218 (2018). doi:10.1186/s13068-018-1215-8.",
           "url": "https://doi.org/10.1186/s13068-018-1215-8",
-          "contribution": "Primary UTEX 2973 dRNA-seq source for mapped transcription-start sites, per-site counts, and the authors’ condition-versus-control DESeq2 results. Table S1 supplies two biological culture replicates per condition (control, dark, high light, high temperature). The site also computes a separately labelled, pooled TSS-initiation score. These are initiation measurements, not replicated gene-body transcript abundance. Publisher processed data: Figshare 5712016 (CC BY 4.0). Both repository TSVs are project-derived extracts, not the original XLSX supplement.",
+          "contribution": "Primary UTEX 2973 dRNA-seq source for mapped transcription-start sites, per-site counts, and the authors’ condition-versus-control DESeq2 results. Table S1 supplies two biological culture replicates per condition (control, dark, high light, high temperature). The site computes four condition TSS-initiation layers from Table S1’s gene-associated TSS rows, each summing one condition’s two-replicate mean per gene, and keeps a separately labelled legacy pooled score whose site set was recovered from Figshare 5712016 rather than documented. These are initiation measurements, not replicated gene-body transcript abundance. Publisher processed data: Figshare 5712016 (CC BY 4.0). The repository TSVs are project-derived extracts, not the original XLSX supplement or GenBank archive.",
           "downloads": [
             {
               "filename": "tan2018_utex2973_tss_table_s1.tsv",
@@ -116,7 +116,31 @@
               "filename": "tan2018_utex2973_tss_initiation.tsv",
               "repoPath": "data/expression/tan2018_utex2973_tss_initiation.tsv",
               "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/tan2018_utex2973_tss_initiation.tsv",
-              "kind": "Project-derived TSS score"
+              "kind": "Project-derived legacy pooled TSS score"
+            },
+            {
+              "filename": "tan2018_utex2973_tss_initiation_control.tsv",
+              "repoPath": "data/expression/tan2018_utex2973_tss_initiation_control.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/tan2018_utex2973_tss_initiation_control.tsv",
+              "kind": "Project-derived control TSS initiation layer (Table S1)"
+            },
+            {
+              "filename": "tan2018_utex2973_tss_initiation_dark.tsv",
+              "repoPath": "data/expression/tan2018_utex2973_tss_initiation_dark.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/tan2018_utex2973_tss_initiation_dark.tsv",
+              "kind": "Project-derived dark TSS initiation layer (Table S1)"
+            },
+            {
+              "filename": "tan2018_utex2973_tss_initiation_high_light.tsv",
+              "repoPath": "data/expression/tan2018_utex2973_tss_initiation_high_light.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/tan2018_utex2973_tss_initiation_high_light.tsv",
+              "kind": "Project-derived high-light TSS initiation layer (Table S1)"
+            },
+            {
+              "filename": "tan2018_utex2973_tss_initiation_high_temperature.tsv",
+              "repoPath": "data/expression/tan2018_utex2973_tss_initiation_high_temperature.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/tan2018_utex2973_tss_initiation_high_temperature.tsv",
+              "kind": "Project-derived high-temperature TSS initiation layer (Table S1)"
             }
           ]
         },

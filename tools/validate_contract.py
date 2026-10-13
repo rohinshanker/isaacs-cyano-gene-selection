@@ -1569,6 +1569,12 @@ EXPRESSION_QUANTITIES: dict[str, dict[str, Any]] = {
         },
         "bounds": {"nonnegative": True, "integral": False, "unitInterval": True},
     },
+    "tss_initiation": {
+        "column": "abundance", "family": "Expression", "pools": False,
+        "signed": False, "logScale": False,
+        "platforms": {"RNA-seq": ("initiation", "Transcription initiation (RNA-seq)")},
+        "bounds": {"nonnegative": True, "integral": False, "unitInterval": False},
+    },
     "translation_efficiency_log2_fold_change": {
         "column": "translation_efficiency_log2_fold_change",
         "family": "Translation efficiency", "pools": False,

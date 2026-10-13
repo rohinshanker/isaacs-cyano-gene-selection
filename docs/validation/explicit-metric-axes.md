@@ -2,8 +2,8 @@
 
 `Metric X vs Y` is a separate map tab. Its default X axis is CDS length
 (`lengthNt`, nt) and its default Y axis is the strongest measurement this
-release publishes for UTEX 2973 — Tan 2018 TSS initiation (`tssInitiation`,
-summed mean TSS counts) today. `resolveDefaultMetricAxes` reads the registry's
+release publishes for UTEX 2973 — Tan 2018 control-condition TSS initiation
+(`tssInitiationControl`, summed mean TSS counts) today. `resolveDefaultMetricAxes` reads the registry's
 declared provenance, so a future native assay becomes the default with no code
 change: this organism's own measurement leads, then a borrowed measurement with
 its caveat, then any published metric that is not a codon-usage convention.
@@ -28,6 +28,18 @@ against CAI, so a link shared before the change keeps plotting what its author
 saw. See [viewer-interaction-state.md](viewer-interaction-state.md). The
 candidate export manifest records the active panel, colour metric, axis keys,
 and axis scales in `viewState`; numeric CSV rows remain unchanged.
+
+Version 8 switches fresh Tan selections to the Table S1 control condition.
+Versions 3–7 with omitted Y retain `tssInitiation`, the legacy pooled score;
+their omitted global source selection also retains `TAN2018_TSS`. Explicit
+legacy choices stay selectable. New links carry independent condition ids on
+X and Y, and a colour/filter source change cannot alter either axis.
+The four Table S1 conditions share the initiation type but never pool: one
+condition supplies raw counts even when several conditions are selected. The
+interface identifies that condition and explains the single-source rule.
+Verify this migration and the selection rules with
+`tests/js/tan-condition-selection.test.mjs`, then restore old and new links in
+the rendered application and inspect the exported contributor ids.
 
 ## Independent dataset contributors
 
@@ -65,6 +77,12 @@ selection intact; loading changes to the full established pool as soon as its
 file settles. A transient empty in-memory column therefore does not disable
 Log10, reset the URL to linear, claim that the metric is absent, or emit
 coverage conclusions that require loaded values.
+
+Axis membership is resolved once per immutable catalogue and selected-ID array,
+using `createAxisContributorResolver`. Per-gene reads reuse that membership while
+looking up metric objects and file readiness live. This avoids whole-catalogue
+scans during plotting without caching stale loading, retry, or newly joined data.
+Replace the selection arrays when changing them; never mutate a snapshot.
 
 The shared scatter renderer applies independent X/Y fit factors only to this
 tab. Hit testing, keyboard neighbor selection, zoom, pan, ticks, pin and

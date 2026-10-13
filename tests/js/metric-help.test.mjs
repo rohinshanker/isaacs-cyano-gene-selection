@@ -9,10 +9,12 @@ import { renderMetricHelp, renderProjectionHelp } from '../../site/js/ui/metric-
 import { buildTypeMetrics } from '../../site/js/core/type-metrics.js';
 import { datasetsFrom } from '../../site/js/core/data-sources.js';
 import { organismById } from '../../site/js/core/organisms.js';
+import { DATA_APPLIERS } from '../../site/js/core/dataset.js';
 
 const file = (path) => JSON.parse(readFileSync(new URL(path, import.meta.url)));
 const meta = file('../../site/data/meta.json');
 const genes = file('../../site/data/genes.json');
+DATA_APPLIERS.expressionLayers({ meta, genes }, file('../../site/data/expression_layers.json'));
 const codonPca = file('../../site/data/codon_pca.json');
 const citations = file('../../site/data/citations.json');
 const citationIds = new Set(citations.sections.flatMap((section) =>
@@ -49,8 +51,8 @@ test('Syn57 pipeline, proxy and live origins use a readable design source phrase
   }
 });
 
-test('all 218 selectable metrics have a calculation, origin, missingness and real citations', () => {
-  assert.equal(registry.metrics.length, 218);
+test('all 222 selectable metrics have a calculation, origin, missingness and real citations', () => {
+  assert.equal(registry.metrics.length, 222);
   // Hand-written method lines cover every metric except the layers the
   // ingestion tool made, whose method is derived from their provenance.
   const ingested = registry.metrics.filter((metric) => metric.provenance?.ingest);
@@ -85,12 +87,28 @@ test('priority conventions and measured-source boundaries are explicit', () => {
   assert.match(help('tssInitiation').origin, /UTEX 2973/);
   assert.match(help('tssInitiation').method, /separately pinned Figshare per-TSS feature set/);
   assert.match(help('tssInitiation').method, /independent of the Table S1 site list/);
+  assert.match(help('tssInitiation').method, /Legacy.*truncating counts.*undocumented/);
   assert.match(help('targetFraction').method, /stop edit/);
   assert.match(help('encExpected').method, /2 \+ s \+ 29/);
   assert.doesNotMatch(help('encExpected').summary, /20 to 61/);
   assert.match(help('lengthCodons').summary, /target fraction\./);
   assert.match(help('lengthCodons').summary, /Targets per kilobase instead uses full CDS length/);
   assert.match(help('targetPerKb').method, /full CDS length in nt/);
+});
+
+test('each Table S1 condition explains its own two-replicate counts and exact mapping', () => {
+  for (const suffix of ['Control', 'Dark', 'HighLight', 'HighTemperature']) {
+    const metric = registry.byKey.get(`tssInitiation${suffix}`);
+    const help = metricHelp(metric, dataset);
+    assert.match(help.method, /two biological-replicate raw counts/);
+    assert.match(help.method, /Table S1 gTSS rows with an exact locus-tag match/);
+    assert.match(help.method, /fractional counts are preserved/);
+    assert.match(help.method, /conditions are never averaged together/);
+    assert.match(help.coverage, /1,789 of 2,715/);
+    assert.match(help.origin, /UTEX 2973/);
+    assert.ok(help.citations.includes('tan-2018'));
+    assert.equal(metric.provenance.quantityPools, false);
+  }
 });
 
 test('CAI and tAI are explained as convention-derived supporting context', () => {
@@ -158,7 +176,7 @@ test('map help lists the actual distinct feature matrices', () => {
 
 test('explicit-axis help defaults to the fresh-view measured axes', () => {
   const help = projectionHelp('axes', dataset, registry);
-  assert.deepEqual(help.features.map((feature) => feature.key), ['lengthNt', 'tssInitiation']);
+  assert.deepEqual(help.features.map((feature) => feature.key), ['lengthNt', 'tssInitiationControl']);
   assert.match(help.features[1].label, /^Y: TSS initiation/);
   assert.match(help.features[1].role, /UTEX 2973/);
 });
