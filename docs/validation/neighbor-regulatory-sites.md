@@ -66,7 +66,10 @@ sites sharing pixels. At dense chromosome zoom, line markers and their pointer
 targets are suppressed when fewer than 12 pixels per mark are available; N and
 the list still inspect every site, with the active site drawn explicitly. This
 keeps gene colours and gene selection usable. Every line marker has a contrasting
-outline, including on a CDS with the same categorical colour. Both gene viewers
+outline, including on a CDS with the same categorical colour. The active
+chromosome line is painted last and has a two-pixel teal ring isolated by white
+on both sides, so it remains distinguishable from inactive lines on purple CDS.
+Both gene viewers
 explain the line separately from self-associated start sites.
 Site action keys contain structured source identifiers. Focus restoration must
 compare these as opaque dataset values rather than interpolate them into CSS
@@ -91,4 +94,8 @@ its process exits zero. The state check exercises loading, failure/retry,
 conditions, empty results and coincident sites; its synthetic payload must carry
 matching manifest bytes and SHA-256 rather than bypassing release integrity.
 The repository's three full gates and all-organism release checks remain required.
+For active-state contrast and zoom-limit feedback, run
+`tools/ui/check_neighbor_sites_repair.js` in the same manner. Compare inactive,
+Inspect and keyboard-N states on purple CDS at 375/1280 px and 1×/4× device pixel
+ratio; inspect the screenshots as well as the ring pixel/width assertions.
 No visual baselines change.

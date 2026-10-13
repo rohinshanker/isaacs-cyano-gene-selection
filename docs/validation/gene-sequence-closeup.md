@@ -271,6 +271,7 @@ does on the chromosome tracks.
   nucleotides now shown. Clamp the requested scale before calculating the
   anchored window. At either scale limit, repeated button, keyboard or wheel
   zoom leaves the window fixed, so an inspected site cannot drift out of view.
+  Buttons and keys announce the reached limit; wheel attempts remain quiet.
 - **Pan** by dragging the strip, by Shift with the wheel or a mostly horizontal
   wheel, and by Left and Right, which move 15% of a window, or a whole window with
   Shift.

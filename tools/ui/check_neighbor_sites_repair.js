@@ -1,4 +1,4 @@
-/** Targeted DEM-391 repair check; run in an own Playwright CLI session. */
+/** Check neighbouring-site focus contrast and sequence zoom-limit feedback. */
 async (page) => {
   const { root, appUrl, baseline } = await page.evaluate(() => ({
     root: new URL(location.href).searchParams.get('uiArtifacts'),

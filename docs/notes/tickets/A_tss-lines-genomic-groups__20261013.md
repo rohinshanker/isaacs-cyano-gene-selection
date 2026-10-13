@@ -41,11 +41,11 @@ calculation. Unit and browser checks confirm that repeated button/wheel zoom
 at the limit preserves an inspected site's position. The reusable contract is
 in `docs/validation/gene-sequence-closeup.md`.
 
-**TL-R1 — open:** DEM-392 found the active chromosome line too subtle on purple
+**TL-R1 — repaired in `a6642ce`, review pending:** DEM-392 found the active chromosome line too subtle on purple
 CDS (only a 1 px teal edge against purple). DEM-391 owns a focused contrast and
 active-state repair, with rendered inactive/active comparison.
 
-**TL-R2 — open:** The zoom-limit no-op needs feedback through the existing
+**TL-R2 — repaired in `a6642ce`, review pending:** The zoom-limit no-op needs feedback through the existing
 announcement channel for keyboard/button users. DEM-391 owns this small repair.
 
 ## Cleanup
