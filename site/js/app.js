@@ -117,7 +117,7 @@ import { createSourceSelectionResolver } from './core/source-selection.js';
 import {
   availableAxisDatasets, axisDatasetSelectionLabel, defaultAxisDatasetSelection,
   legacyAxisDatasetSelection, normalizeAxisDatasetSelection, requestedAxisFileKeys,
-  resolveAxisContributors,
+  createAxisContributorResolver,
 } from './core/axis-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
@@ -2227,9 +2227,13 @@ function metricForAxis(axis, key) {
   return context.axisTypeMetrics[axis]?.get(key) ?? context.registry.byKey.get(key);
 }
 
+const resolveAxisMembership = {
+  x: createAxisContributorResolver(), y: createAxisContributorResolver(),
+};
+
 /** Requested and currently readable contributors for one applied axis. */
 function axisContributorState(axis, key = state[axisMetricField(axis)]) {
-  return resolveAxisContributors(key, axisSourceSelection(axis, key), context.datasets ?? [], {
+  return resolveAxisMembership[axis](key, state[axisSourceField(axis)], context.datasets ?? [], {
     metricOf: (dataset) => context.registry.byKey.get(dataset.metricKey) ?? null,
     resourceStateOf: (metric) => (metric.fileKey
       ? pendingState(context.dataset, metric.fileKey) : null),

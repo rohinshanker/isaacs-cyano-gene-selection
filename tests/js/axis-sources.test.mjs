@@ -4,7 +4,7 @@ import { dataset } from './data-sources-fixture.mjs';
 import {
   availableAxisDatasets, axisDatasetSelectionLabel, defaultAxisDatasetSelection,
   legacyAxisDatasetSelection, normalizeAxisDatasetSelection, requestedAxisFileKeys,
-  resolveAxisContributors,
+  resolveAxisContributors, createAxisContributorResolver,
 } from '../../site/js/core/axis-sources.js';
 import { buildTypeMetrics, typeKeyFor } from '../../site/js/core/type-metrics.js';
 
@@ -116,4 +116,49 @@ test('a non-pooling quantity never substitutes a different selected contrast whe
   assert.deepEqual(result.requested.map((entry) => entry.id), ['D']);
   assert.deepEqual(result.available, []);
   assert.deepEqual(result.affected.map(({ dataset: entry }) => entry.id), ['D']);
+});
+
+
+test('axis membership is reused for gene reads while metrics and file readiness stay live', () => {
+  const rows = fixture();
+  let catalogueReads = 0;
+  const platform = rows[0].record.platform;
+  Object.defineProperty(rows[0].record, 'platform', {
+    get: () => { catalogueReads += 1; return platform; },
+  });
+  const key = typeKeyFor(rows[0]);
+  const ids = ['B'];
+  let fileState = 'loading';
+  let metric = { read: () => 1 };
+  const readers = { metricOf: () => metric, resourceStateOf: () => fileState };
+  const resolve = createAxisContributorResolver();
+  const first = resolve(key, ids, rows, readers);
+  const reads = catalogueReads;
+  for (let gene = 0; gene < 2715; gene += 1) {
+    const current = resolve(key, ids, rows, readers);
+    assert.equal(current.selected, first.selected);
+    assert.equal(current.requested, first.requested);
+    assert.equal(current.state, 'loading');
+    assert.equal(current.available.length, 0);
+  }
+  assert.equal(catalogueReads, reads, 'a whole gene scan must not rescan the catalogue');
+  assert.throws(() => ids.push('A'), TypeError, 'selection snapshots are immutable');
+  assert.throws(() => rows.pop(), TypeError, 'catalogue snapshots are immutable');
+  fileState = 'failed';
+  assert.equal(resolve(key, ids, rows, readers).state, 'failed');
+  fileState = null;
+  assert.deepEqual(resolve(key, ids, rows, readers).available.map(row => row.id), ['B']);
+  metric = null;
+  assert.equal(resolve(key, ids, rows, readers).available.length, 0, 'metric lookup stays live');
+  metric = { read: () => 2 };
+  assert.equal(resolve(key, ids, rows, readers).available.length, 1);
+
+  assert.deepEqual(resolve(key, ['A'], rows, readers).selected, ['A']);
+  assert.deepEqual(resolve(typeKeyFor(rows[2]), ['C'], rows, readers).selected, ['C']);
+  assert.deepEqual(resolve(key, ['B'], rows.filter(row => row.id !== 'B'), readers).selected, []);
+  assert.deepEqual(resolve('cai', null, rows, readers).requested, []);
+  assert.deepEqual(resolve('cai', undefined, rows, readers).available, []);
+  const otherAxis = createAxisContributorResolver();
+  assert.deepEqual(otherAxis(key, ['A'], rows, readers).selected, ['A']);
+  assert.deepEqual(resolve(key, ids, rows, readers).selected, ['B']);
 });
