@@ -112,6 +112,7 @@ pre {
 }
 .header-text { max-width: 62ch; }
 .tagline { color: var(--ink-muted); margin: 0; }
+.site-byline { margin: 0.25rem 0 0; color: var(--ink-muted); font-size: 0.82rem; }
 /* The organism selector: two direct organism links, one conventional-strain
    disclosure, and the exact strain and assembly being shown. */
 .organism-selector { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
@@ -193,9 +194,9 @@ pre {
 
 /* While the data loads the page is an empty version of itself: the header bar,
    the left column, the right column, and the centre area, with only an empty
-   grid and the chromosome loading bar in the centre. No text is shown until the
-   reveal. Children are hidden with `visibility`, which keeps each box its real
-   size, so the bars and columns are the page's own and not a separate skeleton
+   grid and the chromosome loading bar, credit and status in the centre. Page
+   content is hidden until the reveal. Children use `visibility`, keeping each
+   box its real size, so the bars and columns are the page's own and not a separate skeleton
    that could drift from it. */
 .is-loading .site-header > *,
 .is-loading .column.controls > .card > *,
@@ -213,6 +214,9 @@ pre {
 /* One column on a narrow screen stacks controls, map, detail. The grid is what
    the visitor is waiting on, so while loading it leads and stays within view. */
 @media (max-width: 959px) {
+  /* Long hidden organism descriptions must not push progress below the fold.
+     Failed loads restore the header text so organism navigation stays usable. */
+  .is-loading:not(.load-failed) .header-text { display: none; }
   .is-loading .analysis { order: -1; }
   .is-loading .column.controls > .card { min-height: 3.5rem; }
   .is-loading .column.detail { min-height: 5rem; }
@@ -244,6 +248,7 @@ pre {
   width: min(80%, 34rem);
 }
 .load-progress { width: 100%; }
+.load-byline { margin: 0; text-align: center; }
 .load-progress-status {
   margin: 0;
   color: var(--ink-muted);
@@ -278,6 +283,7 @@ pre {
   place-items: stretch;
 }
 .load-tail .load-progress-presentation { width: min(100%, 34rem); }
+.load-tail .load-byline { display: none; }
 .load-failures { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
 .load-failure { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; color: var(--danger); }
 .load-failure .chip-button { min-height: 28px; padding: 0.1rem 0.6rem; }

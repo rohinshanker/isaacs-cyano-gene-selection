@@ -130,7 +130,8 @@
 </head>
 <!-- The page opens as an empty shell: the header bar, the three columns, and an
      empty grid with the chromosome loading bar. `is-loading` holds every piece
-     of text back until the reveal; see docs/validation/progressive-loading.md. -->
+     of page text back except the loading credit and status until the reveal;
+     see docs/validation/progressive-loading.md. -->
 <body class="is-loading">
 <button type="button" class="skip-link map-jump" aria-controls="map-section">Skip to the map</button>
 
@@ -147,6 +148,7 @@
       <span id="organism-strain">UTEX 2973</span>, arranged so you can
       see which genes a recoding scheme would disturb, and build a shortlist to compare.
     </p>
+    <p class="site-byline">By Rohin Shanker</p>
   </div>
   <div class="header-actions">
     <div class="header-action-controls">
@@ -457,6 +459,7 @@ if (window.location.protocol === 'file:') {
       <div id="load-stage" class="load-stage">
         <div class="load-grid" aria-hidden="true"></div>
         <div id="load-progress-presentation" class="load-progress-presentation">
+          <p class="site-byline load-byline" data-no-scramble>By Rohin Shanker</p>
           <div id="load-progress" class="load-progress" role="progressbar"
                aria-label="Loading the gene data" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
                aria-valuetext="Loading genes, 0%.">

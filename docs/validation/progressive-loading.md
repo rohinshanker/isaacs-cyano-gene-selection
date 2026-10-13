@@ -10,6 +10,22 @@ registry in `site/js/core/data-files.js`. The page side is `boot` and the
 functions around it in `site/js/app.js`. Everything below is a property of the
 first two unless it names another file.
 
+## Author credit
+
+The shared page shell displays “By Rohin Shanker” above the initial chromosome
+loading bar and, after reveal, as a smaller subtitle beneath the organism
+paragraph for every registered organism. Keep the loading credit outside the
+progressbar and live status region. It is excluded from text scrambling and
+hidden when the progress presentation moves into the compact header slot, so
+only the page subtitle remains visible after reveal.
+On single-column screens, the successful loading shell does not reserve space
+for the hidden organism description; long strain names must not push the credit
+and progress below the viewport. Failed loads restore that header so organism
+navigation remains available.
+
+Verify the credit at initial paint, during loading, after reveal and while
+later files remain pending, including narrow screens and reduced motion.
+
 ## Loading is not missing
 
 The one rule every other section serves. A file that has not landed has
@@ -628,7 +644,8 @@ Rendered validation is required for any change here. A fast local connection
 hides every state this document is about, so throttle the network and disable
 the cache, then check at **375, 768, 1280 and 1440 px**:
 
-- the shell: no visible text, the grid within the viewport, the whole track
+- the shell: loading credit and status visible, page content hidden, the grid
+  within the viewport, the whole track
   present and a value text set before the page's script has run, `aria-valuenow`
   and the value text then reporting the real fraction while the genes light in
   blocks that never run ahead of it, no horizontal overflow;
