@@ -2,7 +2,7 @@
 
 In-repository extraction from the papers Claude Science could not read, under
 the owner's decision of 2026-10-05 that an in-repository read with a mechanical
-quote match is sufficient ([ticket](../tickets/O_unreadable-literature-workarounds__20261005.md)).
+quote match is sufficient ([ticket](../tickets/A_unreadable-literature-workarounds__20261005.md)).
 
 - Table: `cyano_package_BC_addendum_20261006.tsv`, SHA-256 `aada503cbd79909ec66c2a32344942661ca4a59326313bfccfe8211b1b6f1d3f`, 15 data rows in
   the package B columns. Each row names the package B data row it amends in

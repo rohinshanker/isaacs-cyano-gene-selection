@@ -1,13 +1,21 @@
-# O_unreadable-literature-workarounds__20261005 — Open
+# A_unreadable-literature-workarounds__20261005 — Active
 
 - **Scope:** Get the methods and licence text of the papers Claude Science could not
   read, by routes that circumvent nothing, and return the extracted values through
   intake. Covers `docs/` only; no paper is committed to this public repository.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-06
+- **Updated:** 2026-10-14
 
 ## Current state
+
+Claimed by cyano-lit-unreach (80c81443-1791314087) on 2026-10-14 at the owner's
+request. Sole writer: work/unreadable-literature-20261014, baseline 40047f0.
+Scope remains documentation only. Reproduce existing extraction/intake evidence,
+reconcile the later four-paper methods verification, retain optional/unresolved
+limitations, and close only after independent read-only audit DEM-396. Other
+sessions' tickets, worktrees and running processes are outside this scope.
+
 
 Opened at the owner's request. Packages B and C could not read eight papers, and the
 methods memo read 15 of its 44 sources from abstracts only. Those gaps left 11
