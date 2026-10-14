@@ -132,6 +132,13 @@ GSE103704, GSE105774, GSE102914 and GSE18902. Their earlier distribution decisio
 were superseded by the owner's citation-only policy; use the
 [current source ledger](source-ledger.md), not the old recommendation cells.
 
+A provenance-only edit to an RNA-seq ingestion spec still changes its checksum.
+Review the exact spec diff, refresh its pin in `config/expression_agreement.json`,
+and use the [agreement reproduction commands](expression-agreement.md#inputs-and-reproduction)
+to rebuild the current summary. Verify every statistic is unchanged when no
+scientific input changed; retain the generator's verified implementation identity.
+Refresh browser promotion and the data manifest after rebuilding site metadata.
+
 The [19-pair re-score](../notes/handoff/cyano_package_D_rescore_20261006.tsv)
 is a frozen application of the thresholds then in force to the newly extracted
 PXD036717 conditions. It contains 15 changes from undecidable to not comparable,

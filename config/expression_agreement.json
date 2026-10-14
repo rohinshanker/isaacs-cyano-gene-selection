@@ -1622,7 +1622,7 @@
     },
     {
       "spec": "data/expression/ingest/GSE51112.json",
-      "specSha256": "a77a0cf791e2c130a1f1a338c94cd57a2182f46bb2b2834a4970d1ba0b652e22",
+      "specSha256": "e525b837271d90829b3904e744a2fce576389b4018d612cea6f9067a103dd8ed",
       "layers": [
         {
           "id": "GSE51112_wt_ll",
