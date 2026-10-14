@@ -3,7 +3,7 @@
 Scope: Assess computational candidates for RBS and other regulatory/cryptic-site predictions requested by the owner, using repository/open-ticket context and primary sources.
 Status: active
 Opened: 2026-10-08
-Updated: 2026-10-12
+Updated: 2026-10-14
 
 ## Current State
 
@@ -24,6 +24,24 @@ by itself preclude exploratory candidates. This ticket owns Promoter Calculator,
 standalone TransTermHP, STREME, Rfam/Infernal, IntaRNA and new ViennaRNA regulatory
 uses. RBS's missing-code dependency and iDOG's execution hold remain in their
 linked tickets. No donor coordinates are relabelled as native UTEX coordinates.
+
+## Completion pass, 2026-10-14
+
+Owner: `cyano-regulatory-sites`, at the owner’s request to complete this ticket.
+Canonical baseline: `40047f02e0f64032f85cefe404b784bbed456a29`; coordinator
+worktree: `work/regulatory-completion-20261014`. Other Agent Deck sessions are
+not contacted, stopped or edited. Separate workers own disjoint tool/test/runbook
+files for STREME, ViennaRNA accessibility and IntaRNA; the coordinator owns
+Promoter evaluation, integration and ticket closure. No browser layer is admitted.
+
+Completion criteria: execute reproducible bounded pilots where inputs are
+available; resolve the S1 motif-recovery finding with explicit quantitative
+recovery rather than an exact-consensus claim; record independent evaluation
+limits and all source/runtime/coordinate identities; independently review new
+producers; run repository gates. Any genuine transcript-identity or biological
+validation dependency must have a concrete outcome and retained owner, not be
+silently presented as a successful regulatory-site call. The RBS missing-code
+and iDOG hold tickets remain separate and open.
 
 ## Implementation and evaluation, 2026-10-12
 
