@@ -2,7 +2,7 @@
 
 - **Scope:** Get the methods and licence text of the papers Claude Science could not
   read, by routes that circumvent nothing, and return the extracted values through
-  intake. Covers `docs/` only; no paper is committed to this public repository.
+  intake. Covers literature receipts, scoped condition metadata, deterministic replay and published source labels; no paper is committed to this public repository.
 - **Status:** active
 - **Opened:** 2026-10-05
 - **Updated:** 2026-10-14
@@ -11,7 +11,7 @@
 
 Claimed by cyano-lit-unreach (80c81443-1791314087) on 2026-10-14 at the owner's
 request. Sole writer: work/unreadable-literature-20261014, baseline 40047f0.
-Scope remains documentation only. Reproduce existing extraction/intake evidence,
+Scope includes the previously missed PXD000510 source intake, replay and four published metadata records. Reproduce existing extraction/intake evidence,
 reconcile the later four-paper methods verification, retain optional/unresolved
 limitations, and close only after independent read-only audit DEM-396. Other
 sessions' tickets, worktrees and running processes are outside this scope.
@@ -157,3 +157,32 @@ changes only after intake of the addendum.
 On resolution, fold the working routes into
 [claude-science-handoff.md](../../validation/claude-science-handoff.md), update
 `validation/INDEX.md` if its row changes, then delete this ticket and its index row.
+
+## Closure audit, 2026-10-14
+
+Closing owner: cyano-lit-unreach (80c81443-1791314087), 2026-10-14.
+Independent initial audit DEM-396 found F1–F11. Resolution commit and exact-patch
+review are pending; all findings are open until that review finishes.
+
+| Finding | Status and implementation |
+| --- | --- |
+| DEM-396 F1 / LIT-04 | open: primary-method addendum, pinned quotations, conservative row-58 overlay, all 19 affected pairs replayed, four shipped metadata records refreshed. Numeric sampling unknowns remain unknown; TMT pooled-reference wording corrected. |
+| DEM-396 F2 / AUD-03 | open: bounded Rubin/Adomako primary read, 17 anchored-source-check receipt and pinned workbook/schema verification; no original-S3 comparison or UTEX equivalence claimed. |
+| DEM-396 F3 / LIT-08 | open: ordinary article page read; generic PMC notice only, no article-specific reuse grant located. Current owner citation policy retained. |
+| DEM-396 F4 | open: four later methods-paper reads reconciled in literature-recovery.md; 11 remaining abstract-only labels retained. |
+| DEM-396 F5 | open: dated intake fields added to the blocked register; historical observations preserved. |
+| DEM-396 F6 | open: B/C manifest and private-library README now point to the durable guide; RNA-seq ingestion and separate array queue described accurately. |
+| DEM-396 F7 | open: historical GSE103606 rows explicitly identified as stale but unused; source ledger now names the accepted Puszyńska read. |
+| DEM-396 F8 | open: Singh supplement accounted for; Guerreiro supplement remains optional; source manifest counts documents used rather than duplicate downloads. |
+
+The durable source manifests and literature-recovery.md retain reading routes,
+quoted evidence, hashes, intake boundaries and every residual source limitation.
+Other sessions' tickets, worktrees and processes are untouched.
+
+Additional DEM-396 findings from the 2026-10-14 follow-up:
+
+| Finding | Status and implementation |
+| --- | --- |
+| DEM-396 F9 / LIT-02 | open: GSE51112 spec and four published replication provenance fields now cite the recovered Table S7C; all values and count descriptions retained. |
+| DEM-396 F10 | open: Rubin receipt now describes calls refined across four standard laboratory outgrowth conditions. |
+| DEM-396 F11 | open: durable guide distinguishes sampling not reported from known routine-growth context and the recovery inventory's partial status. |

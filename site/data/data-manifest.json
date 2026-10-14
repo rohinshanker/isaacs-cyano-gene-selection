@@ -26,7 +26,7 @@
     },
     "expression_agreement.json": {
       "bytes": 334731,
-      "sha256": "61f1f2d98ea90289721115357e3d40d8704d8e07bc2f8992cfdf63512f2a1145"
+      "sha256": "a3558fcc8c50c426b02457ad95204ba3925cd8c888978290cad0343cbcb65381"
     },
     "expression_layers.json": {
       "bytes": 3073413,
@@ -57,8 +57,8 @@
       "sha256": "16362fa4618e5f83c224af33513e9fd71462a625c35525898d5dda6e7dada4df"
     },
     "meta.json": {
-      "bytes": 1056024,
-      "sha256": "c6b667ab225d9c8f29865815ad833168520b66610811c9ee0c3105c47b499098"
+      "bytes": 1044888,
+      "sha256": "cf8be9a09c74aae846c26a331459b1fbf37f4dbaeddd98bbd709885179cf0125"
     },
     "pcc7942-essentiality-v1.json": {
       "bytes": 603979,

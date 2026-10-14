@@ -208,3 +208,41 @@ def test_every_fitness_layer_describes_a_weighted_normalized_score():
         assert "weighted" in units and "normalized" in units and "log2" in units
         assert "Wetmore et al. 2015" in units
         assert "ratio of barcode abundance" not in units
+
+
+def test_pxd000510_recovered_methods_are_scoped_and_rebuildable():
+    from tools.ingest_expression import build_record
+
+    spec = json.loads((ROOT / 'data/expression/ingest/PXD000510.json').read_text())
+    sources = json.loads((ROOT / 'data/expression/sources.json').read_text())
+    actual = {item['id']: item for item in sources if item['record']['studyId'] == 'PXD000510'}
+    assert len(actual) == 4
+    for layer in spec['layers']:
+        rebuilt = build_record(spec, layer, {}, {})
+        assert actual[layer['id']]['record'] == rebuilt
+        validate_record(rebuilt, layer['id'])
+        conditions = rebuilt['conditions']
+        assert all(item['status'] != 'not retrieved' for item in conditions.values())
+        for key in ('temperature', 'lightIntensity', 'co2'):
+            assert conditions[key]['status'] == 'not reported'
+            assert conditions[key]['lo'] is None and conditions[key]['hi'] is None
+        assert conditions['phase']['od'] is None and conditions['phase']['label'] is None
+        assert conditions['medium']['status'] == 'not reported'
+        assert conditions['medium']['base'] is None
+        assert conditions['format']['value'] == 'planktonic liquid'
+        assert conditions['format']['status'] == 'reported'
+        assert conditions['lightRegime']['photoperiod'] == '12:12'
+        assert conditions['lightRegime']['spectrumClass'] is None
+        assert rebuilt['replicates']['count'] is None
+        assert 'Five sampling channels plus one pooled-reference channel' in rebuilt['replicates']['text']
+        assert 'not exclusive to its named time window' in actual[layer['id']]['caveat']
+
+
+def test_markson_replicate_provenance_uses_the_recovered_workbook():
+    spec = json.loads((ROOT / 'data/expression/ingest/GSE51112.json').read_text())
+    sources = json.loads((ROOT / 'data/expression/sources.json').read_text())
+    expected = 'Markson et al. 2013, Table S7C (owner-supplied workbook); verified package B/C addendum for condition row 53.'
+    assert spec['replicates']['where'] == expected
+    layers = [item for item in sources if item['record']['studyId'] == 'GSE51112']
+    assert len(layers) == 4
+    assert all(item['record']['replicates']['where'] == expected for item in layers)

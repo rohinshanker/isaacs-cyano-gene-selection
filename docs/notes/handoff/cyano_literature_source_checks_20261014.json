@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "verified": "2026-10-14",
+  "sources": [
+    {
+      "document": "guerreiro2014",
+      "private_path": "verified-20261014/PMC4125736.html",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4125736/",
+      "retrieved": "2026-10-14",
+      "source_sha256": "ed2965399bda51ea995fa7c009aecba220c2132653438cb066e5587aa50ab1cf",
+      "text_sha256": "b34744426fa596522f0d92f5d43270563950409a6be8aff398967861c6420aa2",
+      "extraction": "HTMLParser convert_charrefs=True; all handle_data strings space-joined, script/style excluded",
+      "quotations": [
+        {
+          "anchor": "sec1",
+          "quote": "routinely grown photoautotrophically in BG11 medium"
+        },
+        {
+          "anchor": "sec1",
+          "quote": "continuous stream of air"
+        },
+        {
+          "anchor": "sec1",
+          "quote": "one day before the sampling started"
+        },
+        {
+          "anchor": "F1",
+          "quote": "20 independent time points"
+        },
+        {
+          "anchor": "sec1",
+          "quote": "Two separate experiments"
+        }
+      ],
+      "accepted_scope": "LIT-04/LIT-09: primary methods read; scoped values and uncertainties are in cyano_pxd000510_condition_addendum_20261014.json. No supplemental methods claimed."
+    },
+    {
+      "document": "wang2016",
+      "private_path": "verified-20261014/PMC5167140.html",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5167140/",
+      "retrieved": "2026-10-14",
+      "source_sha256": "223ade0217801cb0cc689fc267bbf47db2780aeb2a085bb0813348594951bcc9",
+      "text_sha256": "8599f4367f4421656fd640a28fd2fea610b3d206a3c4807d8cbe95de95847c12",
+      "extraction": "HTMLParser convert_charrefs=True; all handle_data strings space-joined, script/style excluded",
+      "quotations": [
+        {
+          "anchor": "clp_a",
+          "quote": "PMC Copyright notice"
+        }
+      ],
+      "accepted_scope": "LIT-08/LIT-09: the article page was read and its copyright-information block contains only the generic PMC notice. No article-specific reuse grant was located on the PMC page; the publisher page was not assessed; access is no longer missing. The owner citation policy already governs the ledger; this is not a licence grant."
+    },
+    {
+      "document": "rubin2015",
+      "private_path": "verified-20261014/PMC4672817.html",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4672817/",
+      "retrieved": "2026-10-14",
+      "source_sha256": "e820737bab809c4ac623fb00a4c193d0728c768016866896523b163d4f3dc2ae",
+      "text_sha256": "51697f116007ab3d955e231778b9701db8fdf452b3c3d5f9c0ca859bf0b86810",
+      "extraction": "HTMLParser convert_charrefs=True; all handle_data strings space-joined, script/style excluded",
+      "quotations": [
+        {
+          "anchor": "abstract2",
+          "quote": "718"
+        },
+        {
+          "anchor": "abstract2",
+          "quote": "2,723"
+        },
+        {
+          "anchor": "s18",
+          "quote": "All cultures were grown at 30 °C."
+        },
+        {
+          "anchor": "fig02",
+          "quote": "beneficial (growth defect when mutated)"
+        },
+        {
+          "anchor": "s22",
+          "quote": "four conditions"
+        },
+        {
+          "anchor": "s25",
+          "quote": "ambiguous group"
+        }
+      ],
+      "accepted_scope": "AUD-03: primary text supports a PCC 7942 transposon-mutant assay with essential, beneficial and nonessential categories refined across four standard laboratory outgrowth conditions, and unresolved categories. It is not a UTEX 2973 experiment. Original Dataset S3 was not compared."
+    },
+    {
+      "document": "adomako2022",
+      "private_path": "verified-20261014/PMC9239245.html",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9239245/",
+      "retrieved": "2026-10-14",
+      "source_sha256": "5815a99381932b6308a8efaed06ff5b19eb4bdbb02a1db625d9e580aeb89e55f",
+      "text_sha256": "598454281a413c3cf1ed304a896d3849ca913343a2ba1cfc4771dabf0202516b",
+      "extraction": "HTMLParser convert_charrefs=True; all handle_data strings space-joined, script/style excluded",
+      "quotations": [
+        {
+          "anchor": "s2-1",
+          "quote": "gene essentiality"
+        },
+        {
+          "anchor": "s3-5",
+          "quote": "PCC 7942"
+        },
+        {
+          "anchor": "dataS1",
+          "quote": "Data Set S1"
+        },
+        {
+          "anchor": "dataS1",
+          "quote": "Copyright © 2022 Adomako et al."
+        },
+        {
+          "anchor": "dataS1",
+          "quote": "Creative Commons Attribution 4.0 International license"
+        }
+      ],
+      "accepted_scope": "AUD-03: body text attributes PCC essentiality to reference 18 (Rubin 2015), and Data Set S1 is the pangenome metadata source with its own CC BY 4.0 legend. Rechecked the repository workbook hash and PG_metadata fields; no new locus join or essentiality transfer is made."
+    }
+  ],
+  "essentiality_workbook": {
+    "path": "data/essentiality/source/mbio.00862-22-s0001.xlsx",
+    "sha256": "b988b744c4c939ce6f47232eacfc30338907a9b911830999eb23414cbe6c331b",
+    "sheet": "PG_metadata",
+    "columns": [
+      "PCC 7942 essentiality",
+      "PCC 7942 NCBI",
+      "UTEX 2973 NCBI"
+    ]
+  },
+  "limits": "Mechanical matches verify wording; cited body sections and source scope were read separately. Whole articles and extracts remain private. Historical package tables are not rewritten.",
+  "package_b_addendum": {
+    "path": "cyano_package_B_addendum_20261014.tsv",
+    "sha256": "1ca76c24ddcc531364e910e1bc78cb503ccb5c02a33c9d36c8c98e700fb7a4a3",
+    "original_row": 58,
+    "expected_quotations": 5
+  }
+}
