@@ -1,8 +1,9 @@
 # Promoter Calculator compatibility evaluation
 
-This prepares the public v1.0 model for local Python 3 evaluation. It does not
-calibrate the model for UTEX, predict a complete regulatory-site layer, or publish
-scores. The model uses E. coli calibration constants; an unrecognized organism
+This prepares the public v1.0 model and evaluates native UTEX gTSS windows in
+Python 3. It does not calibrate the model for UTEX, predict a complete
+regulatory-site layer, or publish scores. The model uses E. coli calibration
+constants; an unrecognized organism
 name falls through to those same constants. Use its E. coli identity explicitly.
 
 ## Source and adaptation
@@ -123,6 +124,60 @@ homologous/overlapping loci together when partitioning evaluation data. Do not f
 thresholds on the same sites reported as evaluation. Source and computed evidence
 retain the separate origin contract in [regulatory-methods.md](regulatory-methods.md).
 
+## Native gTSS localization pilot
+
+`tools/regulatory_promoter.py` verifies the pinned genome, the admitted Tan gTSS
+table, and all six prepared model files before execution. It selects windows
+before scoring using the SHA-256 order of `seed:tss_id`, excludes repeated
+loci, physically overlapping windows (on either strand, including the circular
+origin), and identical/reverse-complement windows. These exclusions reduce
+correlated observations; they do not prove absence of divergent homology.
+There is no UTEX training, threshold fitting or model selection in this pilot.
+
+```sh
+.venv/bin/python tools/regulatory_promoter.py \
+  --fasta data/raw/GCF_000817325.1_ASM81732v1_genomic.fna.gz \
+  --tss data/expression/tan2018_utex2973_tss_table_s1.tsv \
+  --prepared .playwright-cli/regulatory-promoter/prepared \
+  --output .playwright-cli/regulatory-promoter/native-pilot \
+  --max-sites 128 --seed 2973
+```
+
+Use a fresh output directory with an existing parent. `--max-sites 2475` lets
+all eligible nonoverlapping, distinct-locus windows enter; it still evaluates
+only the selected measured-anchor neighborhoods, not an unbiased genome-wide
+scan. The exact eligible and excluded denominators are recorded. Failed runs
+remove only their newly created output directory; cleanup failures retain the
+original error and name the remaining path.
+
+Each input contains 87 bases before the TSS, the TSS base, and 40 bases after it,
+in transcription orientation. Score all 41 candidate starts from −20 through
++20 relative to that anchor, each with all 30 spacer/discriminator layouts.
+All component sequences and intervals are checked against their input; every
+candidate has full model context. Preserve the one-based native position of
+every window base, including circular wrap and minus-strand orientation.
+The model host is explicitly E. coli K-12 MG1655.
+
+Pair each window with one deterministic mononucleotide shuffle that preserves
+length and base counts, but not dinucleotide/trinucleotide frequencies. Control
+positions refer to the synthetic sequence; they are never native coordinates.
+The output records sequences, hashes, per-start energy/rate curves, all tied
+optima, and the known anchor's best/worst energy rank. The fixed ±5-nt
+localization summary reports both any and all tied optima within that radius;
+ties are never broken toward the known TSS. This radius is a descriptive check,
+not a fitted calling threshold. Model rates retain their E. coli identity;
+neither scores nor localization counts are UTEX transcription measurements,
+regulatory probabilities, biological false-positive rates or whole-genome
+accuracy estimates. Missing and unassayed sites are not negatives.
+
+The native source table is SHA-256
+`d06524cf492aa8f009bf004c596a5d305ac54acbe7537ec98bbc7992ce164bff`.
+[LaFleur et al. 2022](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9440211/fullTextXML)
+describes its four test datasets as being measured “inside E. coli cells”
+(Results); the exact phrase was matched in retrieved XML on 2026-10-14,
+SHA-256 `b0418e683a6fd23906dc3e8329ef74dd166298aab39c64b54ec1f96428b2d625`.
+This supports the model-host caveat, not cross-host calibration.
+
 ## Automated verification
 
 Offline tests use small synthetic source files to exercise validation, adaptation
@@ -138,3 +193,17 @@ Without that variable the external-artifact integration test is explicitly
 skipped; the other tests run without downloads. The integration test checks the
 real pins and runs both orientations of a synthetic input in a separate process.
 The native-window smoke above supplies the separate native-coordinate check.
+
+Run the pilot's synthetic failure/coordinate tests and its real eight-anchor
+check with the pinned prepared model and native FASTA available:
+
+```sh
+PROMOTER_CALCULATOR_PREPARED_DIR="$PWD/.playwright-cli/regulatory-promoter/prepared" \
+REGULATORY_FASTA="$PWD/data/raw/GCF_000817325.1_ASM81732v1_genomic.fna.gz" \
+  .venv/bin/python -m pytest -q tests/test_regulatory_promoter.py
+```
+
+The actual-artifact check is explicitly skipped when either environment variable
+is absent. Offline tests cover both strands, circular-origin windows, cohort
+selection, input/model pins, full-state coverage, ties, control provenance and
+failure/interruption cleanup. No upstream model files are distributed here.
