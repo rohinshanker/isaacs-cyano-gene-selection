@@ -69,7 +69,7 @@ decision.
 | ID / retrieved source | Located quote | Raw SHA-256 |
 | --- | --- | --- |
 | S1: [Sebesta & Peebles 2020](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6940699/fullTextXML) | Discussion: “The RBS Calculator poorly predicted the relative expression of bisabolene synthase in S. 6803.” | `eed6bc4d8c21b65d6d76e9b906b0fad38b0000ca98647ba60d8bd77d7a776416` |
-| S2: [LaFleur et al. 2022](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9440211/fullTextXML) | Results, four test datasets: “inside E. coli cells” | `b0418e683a6fd23906dc3e8329ef74dd166298aab39c64b54ec1f96428b2d625` |
+| S2: [LaFleur et al. 2022](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9440211/fullTextXML) | Results, three in-vivo test datasets (fourth dataset in vitro): “inside E. coli cells” | `b0418e683a6fd23906dc3e8329ef74dd166298aab39c64b54ec1f96428b2d625` |
 | S3: [Cascino et al. 2026](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13289151/fullTextXML) | Introduction; Results on intrinsic termination; data availability: “only 22% of all TUs” | `395f7369492c25359e86df0ae479d864ddb14edd35100dc7fefdfd10a356b279` |
 | S4: [Gale et al. 2021](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7843447/fullTextXML) | Results, UTEX terminator library / Fig. 4: “correlation of TE values between UTEX 2973 and E. coli was low” | `a392ca971b6ab1e75f754ef125a01edc82d72a0c5d5ee17487fdca15f3347350` |
 | S5: [STREME manual](https://meme-suite.org/meme/doc/streme.html) | --hofract: “including those in the hold-out set” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
@@ -79,4 +79,3 @@ decision.
 | S9: [Tan et al. 2018](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6091082/fullTextXML) | Results, PsrR1 homology: “was identified as a homolog of the sRNA PsrR1” | `7063969b6577a330390269bec64df5f22c696203239257cb06fc21ef5148f7d8` |
 | S10: [IntaRNA v3.4.1 README](https://raw.githubusercontent.com/BackofenLab/IntaRNA/v3.4.1/README.md) | Opening capability description: “Efficient RNA-RNA interaction prediction incorporating accessibility and seeding of interaction sites” | `67ae5c17c94ccff9a68484d4b7fefb950587dc22b0f85d91afd8c3742c0c0fc8` |
 | S11: [RNAplfold manual](https://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/html/man/RNAplfold.html) | Description, unpaired regions: “probability that a stretch of x consequtive nucleotides is unpaired” | `b94acfbb25b2735761d3f5993cd233dd24b0ce3bc55c4d626749c093d876e140` |
-

@@ -4,6 +4,7 @@ from collections import Counter
 import csv
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import sys
@@ -151,6 +152,26 @@ def test_scoring_keeps_every_tied_optimum():
     assert result["anchor_energy_rank_worst"] == 41
     assert result["best_distance_min_nt"] == 0
     assert result["best_distance_max_nt"] == 20
+
+
+@pytest.mark.parametrize("other_index", [89, 107])
+def test_one_ulp_energy_ties_are_kept_in_offsets_and_ranks(other_index):
+    class NearlyTied(Calculator):
+        def predict(self, sequence, indices):
+            states, layouts = super().predict(sequence, indices)
+            energy = -1.343288068408127
+            states[87]["dG_total"] = energy
+            states[other_index]["dG_total"] = math.nextafter(energy, -math.inf)
+            states[95]["dG_total"] = energy + 4 * pilot.ENERGY_TIE_ATOL
+            return states, layouts
+
+    result = pilot.score_window(NearlyTied(), "A" * 128)
+    assert result["best_offsets_nt"] == [0, other_index - 87]
+    assert result["anchor_energy_rank_best"] == 1
+    assert result["anchor_energy_rank_worst"] == 2
+    assert result["best_distance_min_nt"] == 0
+    assert result["best_distance_max_nt"] == other_index - 87
+    assert result["score_curve"][other_index - 67]["dG_total"] < result["score_curve"][20]["dG_total"]
 
 
 @pytest.mark.parametrize("damage,message", [

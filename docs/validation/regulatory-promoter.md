@@ -165,8 +165,12 @@ length and base counts, but not dinucleotide/trinucleotide frequencies. Control
 positions refer to the synthetic sequence; they are never native coordinates.
 The output records sequences, hashes, per-start energy/rate curves, all tied
 optima, and the known anchor's best/worst energy rank. The fixed ±5-nt
-localization summary reports both any and all tied optima within that radius;
-ties are never broken toward the known TSS. This radius is a descriptive check,
+localization summary reports both any and all tied optima within that radius.
+The optimum minimizes `dG_total` (maximizes the model rate). Best-offset sets
+and both ranks use an absolute energy tolerance of `1e-12`, with zero relative
+tolerance, so binary roundoff does not break decimal-parameter ties. Raw scores
+remain unchanged, and the tolerance is recorded in the report. Ties are never
+broken toward the known TSS. This radius is a descriptive check,
 not a fitted calling threshold. Model rates retain their E. coli identity;
 neither scores nor localization counts are UTEX transcription measurements,
 regulatory probabilities, biological false-positive rates or whole-genome
@@ -175,10 +179,13 @@ accuracy estimates. Missing and unassayed sites are not negatives.
 The native source table is SHA-256
 `d06524cf492aa8f009bf004c596a5d305ac54acbe7537ec98bbc7992ce164bff`.
 [LaFleur et al. 2022](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9440211/fullTextXML)
-describes its four test datasets as being measured “inside E. coli cells”
-(Results); the exact phrase was matched in retrieved XML on 2026-10-14,
+describes three in-vivo test datasets measured “inside E. coli cells” and a
+fourth, in-vitro RNAP/σ70 transcription dataset (Results). The cellular phrase
+and “the three in vivo datasets” were matched in retrieved XML on 2026-10-14,
 SHA-256 `b0418e683a6fd23906dc3e8329ef74dd166298aab39c64b54ec1f96428b2d625`.
 This supports the model-host caveat, not cross-host calibration.
+The upstream constructor's `sigmaLevels` dictionary is unused by `predict()`;
+this pilot does not describe it as an applied sigma weighting.
 
 ## Automated verification
 

@@ -35,6 +35,7 @@ ANCHOR_INDEX = UPSTREAM
 LENGTH = UPSTREAM + DOWNSTREAM + 1
 COMPLEMENT = str.maketrans("ACGT", "TGCA")
 FEATURES = ("UP", "hex35", "spacer", "hex10", "disc")
+ENERGY_TIE_ATOL = 1e-12
 
 
 def digest(text: str) -> str:
@@ -178,12 +179,19 @@ def score_window(calculator, sequence: str) -> dict:
         curve.append({"offset_nt": i - ANCHOR_INDEX,
                       "dG_total": energy, "ecoli_model_Tx_rate": rate})
     best_energy = min(row["dG_total"] for row in curve)
-    best = [row["offset_nt"] for row in curve if row["dG_total"] == best_energy]
+    def tied(left, right):
+        return math.isclose(left, right, rel_tol=0, abs_tol=ENERGY_TIE_ATOL)
+
+    best = [row["offset_nt"] for row in curve if tied(row["dG_total"], best_energy)]
     anchor_energy = curve[RADIUS]["dG_total"]
     # Retain every tied best offset. Do not break ties toward the known TSS.
     return {"score_curve": curve, "best_offsets_nt": best,
-            "anchor_energy_rank_best": 1 + sum(row["dG_total"] < anchor_energy for row in curve),
-            "anchor_energy_rank_worst": sum(row["dG_total"] <= anchor_energy for row in curve),
+            "anchor_energy_rank_best": 1 + sum(
+                row["dG_total"] < anchor_energy and not tied(row["dG_total"], anchor_energy)
+                for row in curve),
+            "anchor_energy_rank_worst": sum(
+                row["dG_total"] < anchor_energy or tied(row["dG_total"], anchor_energy)
+                for row in curve),
             "best_distance_min_nt": min(abs(offset) for offset in best),
             "best_distance_max_nt": max(abs(offset) for offset in best)}
 
@@ -264,8 +272,8 @@ def run(fasta: Path, tss: Path, prepared: Path, output: Path,
                            "candidate_offset_range_inclusive": [-RADIUS, RADIUS],
                            "coordinate_basis": "1-based circular native positions in transcription order",
                            "layouts_per_candidate": 30,
-                           "sigma_levels": {"70": 1.0, "19": 0.0, "24": 0.0,
-                                            "28": 0.0, "32": 0.0, "38": 0.0, "54": 0.0},
+                           "energy_tie_absolute_tolerance": ENERGY_TIE_ATOL,
+                           "optimum": "minimum dG_total (maximum E. coli model Tx_rate)",
                            "control": "One mononucleotide shuffle per oriented window"},
             "cohort": {"input_anchors": len(anchors), "excluded": excluded},
             "summary": summarize(results), "results": results,
