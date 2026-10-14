@@ -26,7 +26,7 @@ Salis-lab code absent from its repository; the owner reports no existing code,
 API access or compatible installation and explicitly says to retain the RBS
 dependency as open. Do not fabricate predictions or silently substitute another
 method. The broader selected-method source/runtime assessment is recorded in
-A_regulatory-methods-shortlist__20261008. Generic gene annotation rendering is
+[the method contracts](../../validation/regulatory-methods.md). Generic gene annotation rendering is
 separate and can finish without admitting an RBS layer.
 
 Implementation resumed by the owner on 2026-10-08; this supersedes the earlier record-only instruction in this ticket. `cyano-ui-fixes` owns coordination/integration/closure. Standing claim-specific and source-access constraints still apply.
@@ -116,7 +116,7 @@ The retrieved Sebesta & Peebles study (PCC 6803) reports poor RBS Calculator
 relative-expression predictions. It supports trying a computational comparison,
 but cautions against treating cross-species scores as reliable rates. Its tested
 versions do not establish v1.0 or UTEX accuracy. Source, located quote and checksum
-are S1 in the [shared transfer assessment](A_regulatory-methods-shortlist__20261008.md#cross-organism-transfer-assessment-2026-10-09).
+are S1 in the [shared transfer assessment](../../validation/regulatory-transfer.md).
 
 Possible output is an exploratory initiation-context candidate and raw score,
 with any binding interval emitted only if the selected model actually supplies
@@ -198,8 +198,8 @@ That metric still requires its own definition and evidence decisions.
 
 Cross-organism follow-up: owner confirmed the RBS ticket identity; the transfer
 proposal and PCC 6803 limitation link to mechanically verified S1 in the shared
-assessment. Ticket remains open. Current source/link checks and repository gates
-are recorded in [the shared assessment](A_regulatory-methods-shortlist__20261008.md#verification).
+assessment. Ticket remains open. Source evidence is preserved in
+[the transfer contract](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
 
 Owner follow-up verified 2026-10-09 by `cyano-regulatory-sites`: open filename,
 H1/status, local links, live index entry, retained CS-1 row and repository-review
@@ -230,7 +230,7 @@ its live queue and pending-claim entries. Do not retain task narration.
 RBS Calculator remains a primary candidate. The owner requested a broader list
 of computational methods that could identify regulatory/cryptic regulatory sites,
 including iDOG and methods already mentioned in the repository/open tickets.
-A_regulatory-methods-shortlist__20261008 records the primary-source candidate list.
+[The transfer contract](../../validation/regulatory-transfer.md) records the primary-source candidate assessment.
 This does not select a model version, calibration threshold, host-specific parameter
 or source-admission outcome; those remain method/evaluation decisions.
 
@@ -239,7 +239,7 @@ Calculator, ViennaRNA, STREME, Rfam + Infernal, and IntaRNA. Methods outside the
 requested recommendation should have slightly transparent tags and lower overlap
 precedence; the exact category and opacity are not yet specified. Hover outlines
 apply to annotations, including initiation/termination sites, in both gene
-viewers. See A_regulatory-methods-shortlist__20261008 and
+viewers. See [the method contracts](../../validation/regulatory-methods.md) and
 O_gene-sequence-structural-features__20261007 for the shared display requirement.
 **Record only; do not evaluate, run or integrate the methods yet.** Existing
 scientific, dependency, licence and iDOG-hold constraints remain in force.

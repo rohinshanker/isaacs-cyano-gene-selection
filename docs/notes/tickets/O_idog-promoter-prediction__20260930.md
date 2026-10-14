@@ -168,7 +168,7 @@ source remains useful for inspection and portability, not proof of a missing
 genomic promoter predictor.
 
 Standalone TransTermHP can be assessed independently of the iDOG hold. The
-[shared transfer assessment](A_regulatory-methods-shortlist__20261008.md#cross-organism-transfer-assessment-2026-10-09)
+[shared transfer assessment](../../validation/regulatory-transfer.md)
 records native UTEX scoring, PCC 7942 transcript-end evidence (Cascino 2026,
 GSE309256) and UTEX reporter-part evidence (Gale 2021), with located primary-source
 receipts S3/S4. Intrinsic terminator candidates cover only one termination
@@ -254,8 +254,8 @@ from measured sites; sister-strain coordinates never become UTEX coordinates.
 Transfer-planning update checked by `cyano-regulatory-sites`, 2026-10-09:
 open status, retained execution/closure hold, local links and source-receipt
 references verified. Corrected the stale single-condition description of Tan
-2018 against S9 (four conditions). Current passing repository gates are recorded
-in [the shared assessment](A_regulatory-methods-shortlist__20261008.md#verification).
+2018 against S9 (four conditions). Source evidence is preserved
+in [the transfer contract](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
 No iDOG code, prediction layer or UI changed.
 
 Future work: reproducible pinned-code assessment and benchmark; then `npm test`,

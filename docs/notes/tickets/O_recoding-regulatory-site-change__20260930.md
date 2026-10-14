@@ -11,7 +11,7 @@
 
 Owner direction, 2026-10-09: investigate very rough regulatory candidates
 transferred from other cyanobacteria, E. coli and other prokaryotes. The
-[selected-method transfer assessment](A_regulatory-methods-shortlist__20261008.md#cross-organism-transfer-assessment-2026-10-09)
+[selected-method transfer assessment](../../validation/regulatory-transfer.md)
 now records routes for every selected method. These may become exploratory
 inputs to this metric, with source host, native sequence and mapping provenance.
 This research request does not choose the metric's unit, aggregation, coverage
@@ -114,8 +114,8 @@ active scheme against original scheme.
 
 Transfer-planning update checked by `cyano-regulatory-sites`, 2026-10-09:
 open status, retained metric-definition decisions, local links and live queue
-verified; current passing repository gates are recorded in
-[the shared assessment](A_regulatory-methods-shortlist__20261008.md#verification).
+verified; source evidence is preserved in
+[the transfer contract](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
 No metric implementation, dataset or UI changed.
 
 Future implementation: run `npm test`, `.venv/bin/python -m pytest -q`, and
