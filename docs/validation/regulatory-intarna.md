@@ -68,9 +68,12 @@ The demonstrated macOS arm64 build uses Apple Clang 21.0.0, Boost 1.85.0,
 ViennaRNA 2.7.0 and scratch-local LLVM OpenMP. Its executable SHA-256 is
 `4ef77a1e6b5fe655af6a79c328667d53530f6ffcf983d9304f74bbe23b4f5b58`.
 Other builds may differ; the banner records linked ViennaRNA and Boost versions.
-The reproducibility evidence bundle carries `dependency-packages.json` with the
-35 package URLs, versions, build IDs, SHA-256 and MD5, and an `@EXPLICIT` package
-manifest. Each downloaded package was mechanically verified against that hash.
+The checked-in [package identities](regulatory-intarna-dependencies-osx-arm64.json)
+retain all 35 package URLs, versions, build IDs, SHA-256 and MD5. Use the
+[explicit package manifest](regulatory-intarna-dependencies-osx-arm64.txt) to
+reproduce this solved set. Verify every downloaded archive against those hashes
+before extraction/assembly. These dependency files are build inputs, not
+biological data admission.
 
 For isolated dependencies, use a scratch-local micromamba 2.3.2 with a scratch
 root prefix and `--download-only --no-rc --no-env`. This downloads/extracts without
@@ -81,14 +84,52 @@ linking an environment or registering one in the user's shared environment list:
   --root-prefix "$scratch/mamba" --prefix "$scratch/deps" \
   --override-channels -c conda-forge -c bioconda --platform osx-arm64 \
   --download-only -y boost-cpp=1.85 viennarna=2.7.0 llvm-openmp pkg-config
-# For the exact solved package set instead, supply --file dependencies-explicit.txt.
+# For the exact solved package set instead of the three package constraints,
+# supply --file docs/validation/regulatory-intarna-dependencies-osx-arm64.txt.
 ```
 
-The evidence bundle's `assemble_dependencies.py` copies manifest-listed files
-into scratch and replaces package-prefix placeholders with the existing conda
-`update_prefix` API. Run it with `PYTHONDONTWRITEBYTECODE=1`; it does not invoke an
-environment install or registration. Adapt only its scratch path. No shared
-environment, brew installation or shell profile is changed.
+Assemble the downloaded package files in scratch using an existing interpreter
+with conda's `update_prefix` API (on this Mac, `/opt/miniconda3/bin/python`). The
+following is the complete assembly recipe; it does not install/register an
+environment or alter shared packages. Use a fresh `deps` directory. Set
+`INTARNA_SCRATCH` to the same absolute scratch root used above, and keep
+`PYTHONDONTWRITEBYTECODE=1` when invoking the interpreter.
+
+```python
+import json
+import os
+from pathlib import Path
+import shutil
+from conda.core.portability import update_prefix
+from conda.models.enums import FileMode
+
+root = Path(os.environ["INTARNA_SCRATCH"])
+prefix = root / "deps"
+prefix.mkdir()  # Refuse existing output.
+for package in sorted((root / "mamba/pkgs").iterdir()):
+    manifest = package / "info/paths.json"
+    if not manifest.is_file():
+        continue
+    for row in json.loads(manifest.read_text())["paths"]:
+        source = package / row["_path"]
+        target = prefix / row["_path"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if source.is_symlink():
+            if target.exists() or target.is_symlink():
+                target.unlink()
+            target.symlink_to(source.readlink())
+        else:
+            shutil.copy2(source, target)
+        if row.get("prefix_placeholder"):
+            update_prefix(str(target), str(prefix), row["prefix_placeholder"],
+                          FileMode(row["file_mode"]), subdir="osx-arm64")
+```
+
+The scratch package cache must contain only this verified manifest's packages.
+If assembly fails, retain diagnostics and remove only that new scratch `deps`
+directory before a retry. Source archives, compiler and package tooling stay
+outside the tracked repository. No shared environment, brew installation or
+shell profile is changed.
 
 On this Mac, explicitly include the SDK C++ headers because the compiler's
 default C++ header directory lacks `ctime`. The conda RNAlib `RNAlib2.pc` passes
