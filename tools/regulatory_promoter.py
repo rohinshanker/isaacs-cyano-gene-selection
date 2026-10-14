@@ -259,6 +259,7 @@ def run(fasta: Path, tss: Path, prepared: Path, output: Path,
                         **{name: sys.modules[name].__version__
                            for name in ("numpy", "sklearn", "scipy", "Bio")}},
             "parameters": {"max_sites": max_sites, "seed": seed,
+                           "locus_basis": "Tan Table S1 source locus tags; no current-CDS join",
                            "upstream_nt": UPSTREAM, "downstream_nt": DOWNSTREAM,
                            "candidate_offset_range_inclusive": [-RADIUS, RADIUS],
                            "coordinate_basis": "1-based circular native positions in transcription order",

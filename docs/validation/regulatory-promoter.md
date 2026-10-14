@@ -133,6 +133,8 @@ loci, physically overlapping windows (on either strand, including the circular
 origin), and identical/reverse-complement windows. These exclusions reduce
 correlated observations; they do not prove absence of divergent homology.
 There is no UTEX training, threshold fitting or model selection in this pilot.
+The `locus` field retains Tan's source locus tag for grouping; it does not imply
+a join to the current CDS annotation or a per-gene abundance measurement.
 
 ```sh
 .venv/bin/python tools/regulatory_promoter.py \
