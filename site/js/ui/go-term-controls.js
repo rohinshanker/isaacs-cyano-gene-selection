@@ -1,8 +1,15 @@
 import { GO_EVIDENCE_BUCKETS, filterGoTerms } from '../core/go-term-evidence.js';
 import { makeSwatch } from './legend.js';
 import { CATEGORICAL, MISSING_COLOR } from './colors.js';
+import { panelsFor } from './panels.js';
+import { CHROMOSOME_TAB } from './chromosome-view.js';
 
 export const GO_EVIDENCE_COLORS = [CATEGORICAL[0], CATEGORICAL[1], CATEGORICAL[5], MISSING_COLOR, CATEGORICAL[7]];
+
+export function goTermControlsVisible(organism, panelId) {
+  return Boolean(organism?.functionalAnnotations)
+    && [...panelsFor(organism), CHROMOSOME_TAB].some((panel) => panel.id === panelId);
+}
 
 export class GoTermControls {
   constructor(host, onChange) {
@@ -49,8 +56,7 @@ export class GoTermControls {
   }
 
   update(dataset, state, model) {
-    this.host.hidden = !dataset.organism?.functionalAnnotations
-      || !['native', 'reference', 'axes', 'chromosome'].includes(state.panel);
+    this.host.hidden = !goTermControlsVisible(dataset.organism, state.panel);
     if (this.host.hidden) return;
     const terms = dataset.goTerms?.terms;
     if (terms !== this.terms) {

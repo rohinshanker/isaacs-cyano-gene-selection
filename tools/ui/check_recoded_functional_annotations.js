@@ -97,6 +97,20 @@ async (page) => {
       await settled();
       check(await page.locator('#functional-go-term').inputValue() === 'GO:0009088', `${tag}: GO term reload lost`);
       check(await page.locator('#functional-go-filter').inputValue() === 'positive', `${tag}: GO filter reload lost`);
+      for (const name of ['Recoding-risk space', 'Baseline risk UMAP', 'Perturbation space']) {
+        await page.getByRole('tab', { name, exact: true }).click();
+        check(await page.locator('.go-term-controls').isVisible(), `${tag}: GO controls hidden on ${name}`);
+        check(await page.locator('#functional-go-filter').inputValue() === 'positive', `${tag}: active GO filter lost on ${name}`);
+        check(await page.locator('#functional-go-term').inputValue() === 'GO:0009088', `${tag}: active GO term lost on ${name}`);
+        await page.locator('#functional-go-filter').selectOption('any');
+        await page.locator('#functional-go-filter').selectOption('positive');
+        await page.locator('.go-term-controls').scrollIntoViewIfNeeded();
+        await page.screenshot({ path: `${root}/${tag}-${name.replaceAll(' ', '-').toLowerCase()}-go-controls.png` });
+        results.push({ organism, state: `${name}-go-controls`, snapshot: await page.locator('.go-term-controls [role="status"]').last().ariaSnapshot() });
+      }
+      await page.getByRole('tab', { name: 'Citations & sources', exact: true }).click();
+      check(await page.locator('.go-term-controls').isHidden(), `${tag}: GO controls visible on citations`);
+      await page.getByRole('tab', { name: 'Native codon space', exact: true }).click();
       await page.locator('#functional-go-filter').selectOption('negative');
       check((await page.locator('#map-canvas').getAttribute('aria-label')).includes('0 of'), `${tag}: NOT filter treated positive rows as negative`);
       await page.locator('#functional-go-term').selectOption(tag === 'syn57' ? 'GO:0047693' : 'GO:0009228');

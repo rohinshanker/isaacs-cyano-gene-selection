@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { goTermEvidenceState, goTermEvidenceModel, passesGoTermFilter, filterGoTerms } from '../../site/js/core/go-term-evidence.js';
 import { defaultState, encodeState, decodeState, viewStateOf } from '../../site/js/core/url-state.js';
 import { organismById, ORGANISMS } from '../../site/js/core/organisms.js';
+import { goTermControlsVisible } from '../../site/js/ui/go-term-controls.js';
+import { panelsFor } from '../../site/js/ui/panels.js';
 
 const id = 'GO:0000001';
 const names = { [id]: { name: 'example', isObsolete: false } };
@@ -20,6 +22,18 @@ test('literal GO lookup narrows names/IDs and preserves the selected term outsid
   assert.equal(missing.entries[0][0], id);
   assert.equal(filterGoTerms(null, '', id).entries[0][1].name, 'unavailable term');
   assert.equal(filterGoTerms(terms, ' ').count, 2);
+});
+
+test('GO controls remain available on every gene-map tab and hide on other tabs', () => {
+  for (const organism of ORGANISMS) {
+    for (const panel of panelsFor(organism)) {
+      assert.equal(goTermControlsVisible(organism, panel.id), Boolean(organism.functionalAnnotations));
+    }
+    assert.equal(goTermControlsVisible(organism, 'chromosome'), Boolean(organism.functionalAnnotations));
+    for (const panel of ['lengths', 'regulatory', 'strain-fitness', 'citations', 'trna', 'invalid']) {
+      assert.equal(goTermControlsVisible(organism, panel), false);
+    }
+  }
 });
 
 test('GO term states distinguish positive, NOT, conflict, unknown and withheld evidence', () => {
