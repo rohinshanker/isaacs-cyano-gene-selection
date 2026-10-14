@@ -1,520 +1,142 @@
 # A_regulatory-methods-shortlist__20261008 — Active
 
-Scope: Assess computational candidates for RBS and other regulatory/cryptic-site predictions requested by the owner, using repository/open-ticket context and primary sources.
+Scope: Complete the selected regulatory-method assessment and reproducible native-UTEX pilots, with independent review and explicit transfer/evaluation limits.
 Status: active
 Opened: 2026-10-08
 Updated: 2026-10-14
 
 ## Current State
 
-Owner resumed implementation on 2026-10-12. `cyano-regulatory-sites` owns
-coordination, integration and closure. Work uses an isolated checkout; other
-Agent Deck sessions are neither contacted nor interrupted.
+`cyano-regulatory-sites` owns integration and closure. The owner requested this
+completion pass on 2026-10-14. Work remains in isolated worktrees; other Agent
+Deck sessions have not been contacted or interrupted. Canonical baseline was
+`40047f0`; the coordinator merged other-session main through `b4092f5` without
+changing its work. No browser regulatory layer is admitted by this ticket.
 
-The current implementation provides non-release native-UTEX pilots for standalone
-TransTermHP and Rfam/Infernal RF01116, pinned Promoter Calculator preparation, and
-ViennaRNA accessibility runtime/indexing checks. Source/tool/input identity,
-strand-aware coordinates, score meaning and controls remain explicit. No output
-is admitted to the browser by this work.
+Six selected methods now have executable, source-pinned non-release pilots:
+Promoter Calculator, standalone TransTermHP, STREME, Rfam/Infernal RF01116,
+ViennaRNA accessibility and IntaRNA. The owner permits very rough native-sequence
+predictions using models/evidence from other bacteria without UTEX calibration;
+that limits claims, rather than prohibiting exploratory calculations.
 
-The owner authorized transfer from other cyanobacteria, E. coli and other
-prokaryotes for very rough regulatory-site candidates where evaluated UTEX sites
-are missing. Lack of UTEX validation limits labels and evaluation; it does not
-by itself preclude exploratory candidates. This ticket owns Promoter Calculator,
-standalone TransTermHP, STREME, Rfam/Infernal, IntaRNA and new ViennaRNA regulatory
-uses. RBS's missing-code dependency and iDOG's execution hold remain in their
-linked tickets. No donor coordinates are relabelled as native UTEX coordinates.
+The [RBS Calculator ticket](O_rbs-calculator-gene-visualizer__20260930.md) stays
+open for the missing complete code. The [iDOG ticket](O_idog-promoter-prediction__20260930.md)
+stays open under the owner's execution/closure hold. FIMO and an SD-only substitute
+remain unselected. Neither a donor coordinate nor a protein orthologue establishes
+a native regulatory interval.
 
-## Completion pass, 2026-10-14
+Promoter/STREME and accessibility repairs have independent acceptance. IntaRNA's
+five review repairs and same-reviewer recheck remain before closure, followed by
+final Python gates and documentation cleanup.
 
-Owner: `cyano-regulatory-sites`, at the owner’s request to complete this ticket.
-Canonical baseline: `40047f02e0f64032f85cefe404b784bbed456a29`; coordinator
-worktree: `work/regulatory-completion-20261014`. Other Agent Deck sessions are
-not contacted, stopped or edited. Separate workers own disjoint tool/test/runbook
-files for STREME, ViennaRNA accessibility and IntaRNA; the coordinator owns
-Promoter evaluation, integration and ticket closure. No browser layer is admitted.
+## Current Evaluation Evidence
 
-Completion criteria: execute reproducible bounded pilots where inputs are
-available; resolve the S1 motif-recovery finding with explicit quantitative
-recovery rather than an exact-consensus claim; record independent evaluation
-limits and all source/runtime/coordinate identities; independently review new
-producers; run repository gates. Any genuine transcript-identity or biological
-validation dependency must have a concrete outcome and retained owner, not be
-silently presented as a successful regulatory-site call. The RBS missing-code
-and iDOG hold tickets remain separate and open.
+- **Promoter Calculator:** all 2,475 admitted Tan gTSS anchors considered;
+  1,597 windows selected before scoring, excluding 613 repeated loci, 264
+  overlapping windows and one duplicate sequence. With explicit numerical ties,
+  native any/all best starts within five bases are **900/890**, controls **398/383**;
+  median anchor ranks are **6/22**. These are cohort localization/ranking results,
+  not genome-wide specificity or calibrated UTEX strength. Corrected report
+  SHA-256 `f4021ed3941a66b656df9e40f4a6a406b4cf59c651ec00dd7c54865080ebbc5f`.
+  DEM-398 independently accepted `194397c` at integration snapshot `f8d4700`;
+  all raw score curves remain unchanged from the initial run.
+- **Standalone TransTermHP:** three-replicon native/shuffle pilot yields
+  **860/319** candidates. Native sequence and hairpin/tail scoring were independently
+  checked. Intrinsic-only scope, annotation-dependent null and uncovered
+  origin-spanning intervals remain explicit. DEM-372 accepted all repairs.
+- **STREME:** 400 discovery and 200 external windows, with 1,548 locus/overlap/
+  similarity blocks over 2,475 anchors. External/native and null-trained shuffle
+  AUCs are **0.624425/0.52345**, but three matched genomic samples give gTSS-vs-genomic
+  AUCs **0.4801375/0.46725/0.51885**. The motif therefore has **no demonstrated TSS
+  specificity** in these comparisons. Genomic-vs-shuffle AUCs are
+  **0.6107875/0.6504125/0.596825**. All 908 sampling decisions, exclusions and scores
+  were independently replayed. The original planted motif recovers a shifted
+  **7/8 bases**, not its exact consensus. DEM-398 accepted `82ac870` (worker `720cd21`).
+  Corrected result SHA-256 `c8b2647f5763513b11788c201e068730474ab214bc50c58d34eed24bc54a4600`.
+- **Rfam/Infernal:** RF01116 returns one native 63-nt plus-strand homology interval,
+  `NZ_CP006471.1:1364716–1364778`. Family homology does not establish full transcript
+  ends or regulatory function. DEM-375 accepted all coordinate/provenance/I/O repairs.
+- **ViennaRNA accessibility:** six native windows yield **2,313** exact segment
+  probabilities, including nine origin-crossing segments, independently checked
+  against native extraction and the actual engine. Window/temperature sensitivity
+  can reverse native-vs-shuffle ranking; accessibility alone does not identify a
+  regulatory site. DEM-397 accepted `6630492` (worker `bd4beb1`) after repeating all
+  three original findings; **93 focused tests pass**, and baseline/45°C TSVs remain
+  byte-identical to their original numerical outputs.
+- **IntaRNA:** the initial isolated v3.4.1 runtime passes upstream API/CLI checks
+  (3,859 assertions/30 API cases). The bounded three-query-window by three-target
+  pilot gives default interactions **5/9**, shuffled **8/9**, disrupted **4/5**,
+  whole-input-window folding **6/9**, and six-base seed **8/9**. All default ±50-nt
+  query-window interactions lie outside the RF01116 core. These are computational
+  window interactions, not recovered or validated native targets. Final repair
+  evidence and acceptance are pending below.
 
-### Open independent-review findings
+These final Promoter/STREME summaries supersede earlier counts/interpretations.
+Raw reports and receipts are under `/tmp/cyano-regulatory-completion-20261014/`;
+portable recipes, identities, source evidence and scientific limits are distilled
+in the linked validation contracts, not dependent on that temporary directory.
 
-DEM-397 reviewed accessibility worker `9184a88` (integrated `ab2c0a4`):
-**VA1 — resolved `6630492`:** cached legacy energy fingerprint can accept changed parameter
-sets under a Turner 2004 label. **VA2 — resolved `6630492`:** CLI suppresses cleanup-failure
-notes and surviving output paths. **VA3 — resolved `6630492`:** re-reading the window table
-for its digest after folding could record bytes that were not parsed. DEM-397
-accepted the exact repairs after repeating all three original reproductions.
+## Findings and Review Ownership
 
-DEM-398 reviewed Promoter/STREME at `366921a`: **ST1 — open**, the motif's
-shuffle enrichment also occurs in arbitrary genomic windows, so it does not
-establish TSS/promoter specificity; DEM-393 adds a blocked genomic-background
-arm. **ST2 — open**, interrupted STREME cleanup can lose cause/status and leave
-new parent directories; DEM-393 repairs it. **PR1 — open**, float-equality ties
-omit numerically tied promoter optima; **PR2 — open**, the LaFleur dataset label
-incorrectly includes the in-vitro dataset among E. coli cellular assays;
-**PR3 — open**, inert sigma constructor metadata looks like an effective model
-parameter. Coordinator owns PR1–PR3 repairs and the same reviewer recheck.
-
-DEM-399 reviewed IntaRNA at `f7fc41c`: **I-REV-1 — open**, the download-only
-recipe registers an environment despite its isolation claim; **I-REV-2 — open**,
-IntaRNA executable-name personality is unpinned; **I-REV-3 — open**, the
-whole-input-window sensitivity label overstates context coverage; **I-REV-4 —
-open**, SIGTERM cleanup is not implemented; **I-REV-5 — open**, build identities
-and necessary recipe inputs need durable, accurate records. DEM-395 owns all
-repairs, then DEM-399 rechecks. Coordinator removed only this task's registry
-line and the two empty `.mamba` directories; other environment entries are
-byte-preserved. Cleanup receipt is outside the repository in the task artifacts.
-
-VA1–VA3 are resolved by worker `bd4beb1`, integrated `6630492`; DEM-397
-independently accepted all three and their exact reproductions on 2026-10-14. Ninety-three focused tests pass and baseline/45°C TSVs remain
-byte-identical. PR1–PR3 are implemented in `194397c`, with 52 tests passing;
-corrected counts are 900/890 native and 398/383 controls (any/all tied optima
-within ±5 nt), medians unchanged at 6/22. The regenerated report is
-`f4021ed3941a66b656df9e40f4a6a406b4cf59c651ec00dd7c54865080ebbc5f`.
-DEM-398 rechecks the promoter repair together with the pending STREME repair.
-
-### Current completion evidence
-
-- Promoter evaluation `5dee5d1`: all 2,475 admitted gTSS anchors considered;
-  1,597 selected (823 plus/774 minus), excluding 613 repeated loci, 264
-  overlapping windows and one duplicate sequence. Native any/all tied best
-  starts within ±5 nt: 900/892; matched mononucleotide controls: 397/384.
-  Median anchor rank: 6 native, 22 control. These describe this cohort, not
-  biological accuracy or a genome-wide false-positive rate. Fifty tests pass,
-  including the actual pinned model/native-input check. Independent review pending.
-  Final metadata/producer identity at `17dc0c1`; repeat preserves all numerical results.
-  Report SHA-256 `ab6cbe25b432a61b29fd67b403e32b5dce709b9de0920aaff7c8f2e666209f51`.
-- STREME: `366921a` (worker `9d27c37`), DEM-393: 400 discovery/200 external
-  windows, 1,548 blocks over 2,475 anchors; native AUC 0.624425 versus null
-  0.52345. S1 quantified: 7/8 planted positions recovered (87.5%), not exact
-  consensus; 95/100 independent planted examples have consistent best-match
-  offset/strand. 126 focused/related tests pass with no skips. Durable synthetic
-  fixtures are tracked. DEM-398 reviews this and the Promoter patch.
-- ViennaRNA: `ab2c0a4` (worker `9184a88`), DEM-394: 83 focused tests pass;
-  six windows produce 2,313 rows, independently re-extracted against the genome
-  and compared with `pfl_fold_up`; byte-identical repeat. Window changes can
-  reverse native-versus-shuffle ranks, so no accessibility-based site call is
-  supported. DEM-397 reviews the exact patch.
-- IntaRNA: `a292532` (worker `0ca57c5`) implements the bounded native-window
-  pilot; `7055890`/`f7fc41c` preserve the exact dependency set and complete scratch
-  build recipe. Seventy-one focused tests pass, including two byte-identical
-  native repeats and independent coordinate/base-pair checks. Upstream API and
-  CLI tests pass (3,859 assertions/30 API cases). Default native interactions:
-  5/9, shuffled controls 8/9, disrupted queries 4/5, global-accessibility 6/9,
-  six-base seed 8/9. No confirmed native target claim is supported.
-  I-BUILD-1/I-BUILD-2/I-CLI-1/I-TEST-1 are resolved by the documented isolated
-  build/wrapper contract. I-SCI-1 remains **open** in
-  [the admission ticket](O_regulatory-layer-admission__20261014.md#open-scientific-dependencies)
-  for actual transcript/target evidence; that evidence is not asserted by the
-  completed computational-window producer. DEM-399 reviews the exact patch.
-
-Initial integrated gates at `f7fc41c`: JavaScript **1,584 passed**, Python
-**2,025 passed, 8 skipped, 51 subtests passed**, contract **130 passed, 0 failed,
-1 declared contiguity skip**. Actual Promoter, STREME, IntaRNA and Infernal inputs
-were supplied. Accessibility review repairs and final affected checks remain.
-
-## Implementation and evaluation, 2026-10-12
-
-Coordinator: `cyano-regulatory-sites`. DEM-361 implements standalone TransTermHP;
-DEM-362 implements the bounded RF01116/Infernal pilot. Each writer uses a separate
-Multica worktree. Other Agent Deck sessions are neither contacted nor interrupted.
-DEM-363's optional evidence-analyst run failed at its provider's biology filter;
-no replacement dispatch was made. The coordinator checked remaining inputs and
-primary documentation directly. No existing iDOG hold or RBS code dependency changed.
-
-### Promoter Calculator
-
-`04452cc` adds checksum-pinned preparation of all six public upstream files;
-`4c59426` addresses the independent DEM-371 review. Only four print statements and
-two encoder keyword arguments change. Coefficients, intercept, README and licence
-are preserved. Real-source preparation, 25 focused tests (including the opt-in
-actual-artifact test), and the native-window recipe pass under Python 3.12.4,
-NumPy 2.5.3, scikit-learn 1.9.1, SciPy 1.18.1 and Biopython 1.88.
-
-The chromosome's first 250 bases yield 91 finite model states on each strand;
-component slices and initiation bases round-trip to native sequence. This is
-runtime/coordinate verification, not a promoter benchmark or historical Python 2
-parity claim. Full scoring requires 67 bases upstream and 20 bases from the start
-through the initially transcribed region. Partial window coverage is explicit in
-[the reproducible contract](../../validation/regulatory-promoter.md).
-
-DEM-371 findings: P1 window-edge coverage, P2 real-pin/indented-source test,
-P3 execution/failure/base checks, P4 interruption/cleanup behavior, P5 reverse-key
-basis, and P6 documentation links/current state. P1–P5 resolved by `4c59426`;
-P6 resolved by `ab1a471`. DEM-371 independently accepted all P1–P6 fixes at `ab1a471`. No biological calibration was asserted.
-
-### Standalone TransTermHP
-
-Worker `1179e56`, integrated as `6a66fa2`; DEM-372 accepted the repaired
-implementation at `e6f13bb` after independently rebuilding and rerunning it.
-Official source 2.09 reports an unchanged internal 2.08 banner; both are retained.
-The scratch compiler adaptation changes three pointer-returning `false` values
-to `0`, without changing the scoring code. All three pinned native replicons are
-searched. Two origin-spanning plasmid genes are split into physical annotation
-segments for tool input; origin-spanning terminators remain outside coverage.
-
-| Run | Total | + | − | Chromosome | Plasmid CP006472 | Plasmid CP006473 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Native | 860 | 458 | 402 | 848 | 9 | 3 |
-| Mononucleotide-shuffled control | 319 | 140 | 179 | 313 | 4 | 2 |
-
-These are candidate/null counts, not measured termination or a false-positive
-rate. The `TERM` interval is a hairpin; the adjacent 15-nt scoring tail is recorded
-separately. Every reported interval was bounds-checked. All 2,769 genes and seven
-pseudogenes are supplied as annotation context; including the previously omitted
-pseudogenes changes the native count from 878 to 860. The 64 focused tests pass.
-The corrected run is in the coordinator worktree's ignored
-`.playwright-cli/regulatory-methods-20261012/transterm-final/`; upstream build
-artifacts are preserved at `/tmp/cyano-regulatory-pilots-20261012/transterm/`. The
-[runbook](../../validation/regulatory-transterm.md) pins inputs and build steps.
-
-| Corrected evaluation artifact | SHA-256 |
+| Finding identifiers | Resolution / remaining owner |
 | --- | --- |
-| Native raw output | `2f79a9ba0a4d57a691e3256433f82fac0074a617b58eb89bccd4f9790d2728e3` |
-| Shuffled raw output | `6f7ddfd526c4b4e92cb10763f478f6214e420095bfebf71a498854122de8755c` |
-| JSON | `e2376a0a7dc7acee767ffc91930c117ffb4065765b2bdfd69c24946015485cae` |
-| TSV | `951c7294768836440408e24abc50ba4143ffe21600ece1dba63caf08ecdaaa8a` |
+| P1, P2, P3, P4, P5 | `4c59426`; original Promoter context, pin, path, host-label and source fixes accepted by DEM-371. |
+| P6 | `ab1a471`; documentation/current-state fix accepted by DEM-371. |
+| TT1, TT2 | `ba6f70b`; FASTA/header and partial-write fixes accepted by DEM-372. |
+| TT3, TT4, TT5, TT6, TT7 | `e6f13bb`; annotation, boundary, digest, build and pin-contract fixes accepted by DEM-372. |
+| TT8, TT9, TT10, TT11, TT12 | `bb1038b`; schema, compatibility, parent errors, cleanup and one-base-minus handling accepted by DEM-372. |
+| RF1, RF3, RF4, RF5, RF6, RF7 | `7f460a7`; pins, provenance, source terms, circular/raw coordinates and shuffled labels accepted by DEM-375. |
+| RF2 | `7f460a7`, final partial-write repair `0fd5e35`; accepted by DEM-375 with real OS failure probes. |
+| V1 | `ab1a471`; segment-end indexing, padding and all-A oracle preserved in the accessibility contract. |
+| S1 | `366921a`, retained by `82ac870`; quantitative shifted 7/8 recovery replaces the exact-consensus claim; DEM-398 independently verified it. |
+| PR1, PR2, PR3 | `194397c`; tolerance/ranks, three in-vivo plus one in-vitro source wording, and inert sigma metadata fixed. DEM-398 accepted at `f8d4700`. |
+| ST1, ST2 | `82ac870`; blocked genomic comparisons/interpretation and interruption/cleanup semantics fixed. DEM-398 accepted at `f8d4700`. |
+| VA1, VA2, VA3 | `6630492`; parameter-cache identity, surfaced cleanup failures and snapshot input provenance fixed. DEM-397 independently accepted worker `bd4beb1`. |
+| I-BUILD-1, I-BUILD-2, I-CLI-1, I-TEST-1 | Initial runtime/wrapper fixes in `a292532` and recipe/manifests in `7055890`/`f7fc41c`; revised isolated recipe is under I-REV review below. |
+| I-REV-1 | **open**, DEM-395 repair / DEM-399 recheck: replace environment-registering download-only command with verified archive extraction. Coordinator removed only this task's registration and two empty cache directories; unrelated registry entries are byte-preserved. |
+| I-REV-2 | **open**, DEM-395/399: explicit IntaRNA3 personality independent of executable basename. |
+| I-REV-3 | **open**, DEM-395/399: precise finite whole-input-window folding and reused-shuffle labels. |
+| I-REV-4 | **open**, DEM-395/399: CLI SIGTERM cleanup, owned-child termination and restored programmatic handler. |
+| I-REV-5 | **open**, DEM-395/399: complete durable build identities, accurate architecture/linkage and extraction recipe. |
+| I-SCI-1 | **open**, retained in [regulatory-layer admission](O_regulatory-layer-admission__20261014.md#open-scientific-dependencies): full UTEX Yfr1 transcript ends and actual target interactions are unestablished. This gates those biological claims, not the explicitly approximate computational-window producer. |
 
-### Rfam / Infernal
+No unclaimed review finding may be discarded at closure. Independent acceptance
+is required for the remaining IntaRNA repairs; correct numbers alone do not waive
+label/provenance/I/O findings.
 
-The initial RF01116 (Yfr1) search, independently reproduced by DEM-375, yields:
+## Durable Knowledge and Remaining Work
 
-| Field | Result |
-| --- | --- |
-| Native replicon / interval | `NZ_CP006471.1:1364716–1364778`, one-based inclusive |
-| Strand / length | `+`, 63 nt |
-| Model interval / truncation | 1–59 of 59; `no` |
-| Bit score / family gathering cutoff | 62.1 / 38.0 |
-| E-value at the recorded search space | `6.7e-12` |
-| Other native hits | No reported plasmid or origin-junction hits |
-| Shuffled controls | Five assembly replicates (15 linear replicon sequences), zero hits |
+The [method contracts](../../validation/regulatory-methods.md) link all six
+producers and reproducible build/validation recipes. The
+[transfer contract](../../validation/regulatory-transfer.md) preserves model-transfer,
+alignment and donor-only distinctions, source receipts S1–S11, evidence labels,
+evaluation controls and same-model recoding comparisons. Method runbooks preserve
+all additional source/runtime/model pins and interpretation rules. Receipt links
+were redirected from this retiring ticket to those durable contracts.
 
-This is computed family homology, not measured regulation, a complete-transcript
-boundary or a calibrated UTEX probability. Zero hits do not establish absence.
-The single native interval is intergenic in the pinned GFF: `M744_RS07005` ends
-at 1364610 and `M744_RS07010` / `trxA` begins at 1364916, both on `+`.
-Annotation context does not establish transcription or target interaction.
-Native searches include an extra 170-nt origin junction per circular replicon;
-controls search linear shuffled sequences only, so their coverage differs.
-
-The source model pin is
-`4abf1d7ce88d4d81bd4e680358a9b1de65999126eab03577341be231ee38e8fc`,
-extracted with `cmfetch` from the official Rfam 15.1 model library. Infernal 1.1.5
-uses `--cut_ga --rfam --nohmmonly -Z 5.489252`. Worker `f2e7e24`, integrated as
-`7f460a7`, implements RF1–RF7. The final RF2 write-failure repair is `0fd5e35`;
-230 focused tests pass, including nine real Infernal checks and actual OS
-file-size-limit failures in isolated child processes. DEM-375 accepted RF1 and
-RF3–RF7 at `f2e7e24` and RF2 at `0fd5e35`; no material integration findings remain. No browser
-layer is added. The [runbook](../../validation/regulatory-rfam.md) records the
-reproducible contracts. Final bundle: `/tmp/cyano-regulatory-pilots-20261012/rfam/`.
-The saved worker bundle contains `f2e7e24`; the coordinator's `0fd5e35` repeat
-in ignored `.playwright-cli/regulatory-methods-20261012/rfam-final/` produces
-byte-identical JSON/TSV and preserves the final producer separately.
-
-| Final Rfam artifact | SHA-256 |
-| --- | --- |
-| JSON | `3ee3f8d2551f75926a6098ba907c922109a1bec3dd2288d6743121055e8f257d` |
-| TSV | `545e8cf99863842f014755b31cc6352ec68e2dd33aea7962dd0ee6fc2eca74a1` |
-| Bundle manifest | `16593310158a7a4f644ad22b2e9a002ab48720b7de94e9897c392e3a159e8c37` |
-
-### Integration findings
-
-- **RF1, fixed `7f460a7`:** enforce model and native-assembly input identities before writes;
-  recording arbitrary input hashes does not establish the advertised pinned pilot.
-- **RF2, fixed `7f460a7` and `0fd5e35`:** reject aliases/reuse, reserve fresh
-  scratch and register each report immediately after exclusive open. Partial
-  write/flush/close failures and interruption clean only this run's files;
-  cleanup-denial errors retain the original cause and name remaining files.
-- **RF3, fixed `7f460a7`:** record the executable digest and limit origin-coverage claims to the
-  searched model/window, without asserting biological absence from zero hits.
-- **RF4, fixed `7f460a7`:** keep dated outcomes in this ticket; permanent documentation keeps
-  reproducible contracts and quoted source terms, without a new licence decision.
-- **RF5, fixed `7f460a7`:** DEM-375 reproduced overlapping linear/truncated and origin-spanning
-  hits on a rotated chromosome; circular overlap accounting now includes junction rows.
-- **RF6, fixed `7f460a7`:** preserve the actual junction search target and emitted raw endpoints
-  separately from correctly remapped native intervals, in JSON and TSV.
-- **RF7, fixed `7f460a7`:** shuffled-control positions must identify the shuffled replicate,
-  rather than claim a contiguous native-assembly locus. Disclose that native
-  searches include junctions while control searches are linear-only.
-- **TT1, fixed `ba6f70b`:** reject empty FASTA headers with a typed error.
-- **TT2, fixed `ba6f70b`:** remove newly created partial files after a write failure.
-- **TT3, fixed `e6f13bb`:** include seven pseudogenes in annotation/scoring context.
-- **TT4, fixed `e6f13bb`:** flag hits near incomplete linearized boundaries;
-  origin-spanning terminators remain outside coverage.
-- **TT5, fixed `e6f13bb`:** distinguish portable TSV hashes from path-dependent
-  raw/JSON hashes.
-- **TT6, fixed `e6f13bb`:** record the reference compatibility-build recipe.
-- **TT7, fixed `e6f13bb`:** name the pilot as the checksum enforcer, not the fetch script.
-
-RF1–RF7 are implemented by DEM-362. DEM-375 independently
-reproduced the one-hit baseline and source/data-row digests, with 167 focused
-tests passing; rotated real-genome probes exposed RF5/RF6 and a nonempty control
-fixture exposed RF7. At `f2e7e24` it accepted RF1/RF3–RF7 and found RF2 still
-left partial files after a write failure. `0fd5e35` fixes that case; its final
-RF2 recheck is accepted (29 focused checks and both real OS failure probes).
-DEM-372 independently accepted TT1–TT7 at `e6f13bb`. Its rerun produced a
-byte-identical TSV and confirmed every tail score against native sequence.
-All current RF and TT integration findings are resolved. This ticket remains
-active for S1 and the method/input/evaluation work described below.
-
-TT8–TT12 are fixed in `bb1038b`: schema 2 distinguishes the revised fields;
-compatibility provenance is platform-neutral; output-parent errors are precise;
-failed cleanup preserves the initial error and tries every newly created file;
-unrepresentable one-base minus-strand annotations fail explicitly. Added corrupt
-compression, circular-wrap, timeout/execution, banner mismatch, model pin and
-successful report-batch tests. The shared-annotation shuffle limitation is
-explicit in the runbook. DEM-372 accepted `bb1038b` with no material issues. A real repeat
-still yields 860/319 with a byte-identical TSV.
-
-### Remaining selected methods and executable boundaries
-
-- **Rfam/Infernal:** the RF01116 pilot is implemented. Broader regulatory-family
-  selection, native-site validation and any published layer remain separate work.
-- **ViennaRNA:** local 2.7.2 structure/accessibility smoke passes on the same
-  250-base native window and a seed-2973 mononucleotide shuffle. With default
-  37 °C model settings, window 150, maximum span 100 and unpaired length 10,
-  each sequence has 241 valid segment probabilities. Native MFE is about −72.1
-  kcal/mol and shuffled MFE about −74.2 kcal/mol; those values do not identify a
-  regulatory site. V1 indexing finding is resolved by checking the C source and
-  an all-A oracle: the matrix row is a segment **end**, unlike the Python
-  docstring's start wording. The first nine rows for length 10 are padding.
-  [The contract](../../validation/regulatory-methods.md#local-accessibility-indexing)
-  records this for future consumers. A dedicated interval producer and biological
-  evaluation remain work, rather than a runtime-access blocker.
-- **STREME:** the admitted Tan gTSS table supplies 2,475 initiation anchors
-  (`d06524cf492aa8f009bf004c596a5d305ac54acbe7537ec98bbc7992ce164bff`),
-  not full promoter boundaries or validated negative loci. A source-only 5.5.9
-  build now passes locally in this worktree's ignored `streme/` scratch, without
-  modifying shared environments. The [recipe](../../validation/regulatory-methods.md#local-streme-build)
-  records its archive pin and required generated headers. Two executions of a
-  100-foreground/100-control random-DNA fixture yield the same finite normalized
-  PWM. The planted consensus `ACGTCGAT` was not recovered exactly: output
-  `CGTCGATC` retains a shifted seven-base fragment. S1, open: exact motif-recovery
-  and native-cohort accuracy are not established by this runtime check. Binary
-  SHA-256: `ae3939a2230f9a03654339b661656033eb6aad5a047700f332203cd3e67c2bd8`.
-  Next step is the explicit native-window cohort with matched controls and
-  independent locus/overlap blocks. Its default order-2 shuffle preserves trinucleotide counts.
-  Final motifs include its internal holdout, so a separate external evaluation
-  cohort is necessary. New-sequence scanning needs a separately selected scanner;
-  FIMO remains a candidate, not an implicitly selected additional method.
-- **IntaRNA:** no executable was found on PATH or in the checked project/tool
-  environments. The source supports accessibility/seed-aware interactions, but
-  existing Tan TSS records do not define complete sRNA transcript ends. A Yfr1
-  covariance-model interval also is not automatically a full transcript.
-  Next steps are a pinned runtime and explicit, source-backed query/target RNA
-  sequence/window identities; approximate windows can only be sensitivity inputs.
-  Retain seed-disrupting/shuffled controls and independent interaction evidence.
-
-### New direct source checks
-
-Retrieved 2026-10-12; short quotes mechanically matched after whitespace/HTML
-normalization where needed. Raw receipts are in the coordinator worktree's ignored
-`.playwright-cli/regulatory-methods-20261012/` directory.
-
-| Source | Located evidence | SHA-256 |
-| --- | --- | --- |
-| Pinned Promoter Calculator source / `util.py` | Four print statements / two `OneHotEncoder(sparse=False)` calls; hashes shown are upstream bytes, with prepared hashes checked separately | `67d2733b0be1968668c6710e56262b00d9b4725b98b4f94749519591b48d1cdb` / `abd561c6f1a4669dace3f783903f2779133cdc4ce5319919302303982eba23cc` |
-| [STREME manual](https://meme-suite.org/meme/doc/streme.html), `--hofract` | “including those in the hold-out set” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
-| [IntaRNA 3.4.1 README](https://raw.githubusercontent.com/BackofenLab/IntaRNA/v3.4.1/README.md), opening description | “incorporating accessibility and seeding” | `67ae5c17c94ccff9a68484d4b7fefb950587dc22b0f85d91afd8c3742c0c0fc8` |
-| [ViennaRNA 2.7.2 `pf_window.c`](https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/partfunc/pf_window.c#L1559), lines 1559–1561; storage callback lines 2092–2104 | “starting at i-x+1” | `79f07a777c3bba635f26894576b27206635db77e7b9ce522058a0e7f4f34e338` |
-| [MEME Suite 5.5.9 archive](https://meme-suite.org/meme/meme-software/5.5.9/meme-5.5.9.tar.gz), `COPYING` | “educational, research and non-profit purposes”; quote matched after whitespace normalization; unmodified source build | archive `0406fb7b1dc27f6aab3d6d3a29ecdf617bbdd946690cfa97ca2129bc210bfd12`; `COPYING` `ecf04a70ce5a5f5232d5e279af6f85ffca10d61b35d158ffb68b627c98bba373` |
-
-## Owner selection, 2026-10-08
-
-The original record-only instruction was superseded by the owner's implementation request. The selected scope remains:
-Include RBS Calculator, iDOG/TransTermHP, Promoter Calculator, ViennaRNA, STREME,
-Rfam + Infernal, and IntaRNA. The broader assessment table below is retained as
-research context; it does not add independently approved methods beyond this list.
-In particular, the earlier SD baseline and MEME/FIMO suggestions were not
-explicitly selected in this answer.
-
-For methods that "dont follow the recommendation that i requested", the owner
-requests slightly transparent annotation-tag coloring and lower visual precedence
-when multiple annotations overlap. Preserve the criterion as given; the affected
-method set and opacity value need clarification before implementation. Lower
-precedence must retain inspectable annotation identity, coordinates and evidence.
-Every such gene annotation, including initiation and termination sites on genes,
-gets an outline on hover in both gene viewers. The display requirements are also
-recorded in O_gene-sequence-structural-features__20261007.
-
-This is method-scope selection, not validated UTEX function, source admission,
-runtime/version/parameter selection or release of the existing iDOG owner hold.
-
-| Candidate | Proposed use | Relationship and limit |
-| --- | --- | --- |
-| RBS Calculator | Score translation initiation at annotated and alternative/internal starts; compare native/recoded sequence | Primary owner-requested candidate. Existing v1.0 ticket owns runtime/licence/method assessment. Host-specific applicability and parameters require verification. |
-| SD complementarity baseline | Locate upstream complementary intervals and spacing as a simple comparison | Already proposed in gene-feature/RBS tickets; annotated 16S terminus is not a validated anti-SD boundary. No function claim from a match alone. |
-| iDOG components | Compare internal-RBS/terminator screening and design components | Existing held iDOG ticket. Parts/design functionality is distinct from genomic promoter-location prediction; owner hold stays in force. |
-| Promoter Calculator | Sigma-70 promoter/TSS and cryptic promoter candidates, including sequences within constructs | A real predictor candidate distinct from iDOG's promoter parts library. UTEX applicability not established by its E. coli-oriented validation. T7 model only for relevant T7 systems. |
-| TransTermHP | Intrinsic/rho-independent terminators, including internal candidates | Already bundled by iDOG; not a general predictor for all termination mechanisms. Scores need domain evaluation. |
-| STREME/MEME + FIMO | Discover enriched motifs then scan relevant motif models for candidate sites | Can use admitted TSS-anchored sequences and suitable controls. Training/evaluation split, matched backgrounds and multiple-testing control are necessary. Motif hit is not demonstrated regulation. |
-| ViennaRNA RNAfold/RNAplfold/RNAup | Structure, local accessibility and RNA-interaction comparisons | Existing exact browser ViennaRNA 2.7.2 folding engine and folding ticket. Extend only after explicit model/input contracts; structure alone does not establish a regulatory element. |
-| Rfam + Infernal | Known structured RNA family homologues, including regulatory RNA families | Existing independent tRNA/Infernal context supplies tooling knowledge, not validation of new families. Novel unrelated RNAs may be missed. |
-| IntaRNA | Candidate sRNA/antisense target interactions with accessibility and seed constraints | Additional interaction-level candidate; requires relevant RNA sequences and organism evaluation. |
-
-Initial assessment priority: RBS Calculator and internal-start scoring, Promoter
-Calculator and TransTermHP, then motif discovery/scanning; RNA family/interaction
-methods complement them. Compare original and recoded sequences to identify
-created/strengthened or disrupted candidates. Keep scores and sequence edits
-separate from verified biological function and measured Tan evidence.
-
-Related tickets: O_rbs-calculator-gene-visualizer__20260930,
-O_idog-promoter-prediction__20260930, the completed gene-sequence-closeup.md contract,
-O_recoding-regulatory-site-change__20260930, O_folding-compute-backend__20260930,
-and BioCyc/cross-strain annotation assessments. BioCyc/EcoCyc records are annotation
-cross-checks, not interchangeable prediction methods or cross-strain coordinates.
-
-## Current accessible versions and dependencies, 2026-10-09
-
-The owner authorized evaluation of current accessible versions and local
-computation where supported. The source reads below establish availability and
-code contracts; no new regulatory prediction layer is admitted by this assessment.
-
-| Selected method | Verified current source/runtime | Remaining method-specific input or access |
-| --- | --- | --- |
-| RBS Calculator | Public SalisLabCode head `46da913`; its v2.1.1 test imports a private `DNAc` package. Original v1.0 remains Python 2/NUPACK dependent. | Owner has no existing code/API/runtime access and explicitly retains this dependency as open. No surrogate SD scan is substituted. |
-| iDOG / TransTermHP | Existing iDOG review/hold retained; standalone author download is TransTermHP 2.09 C++ source. | iDOG execution still waits on the owner's own review. The pinned standalone TransTermHP pilot and native/control evaluation are implemented; UTEX functional calibration remains separate. |
-| Promoter Calculator | Public v1.0 at SalisLabCode `46da913`, GPL v3 or later; implementation still contains Python 2 syntax. Organism names other than the explicit E. coli or in-vitro modes fall through to E. coli calibration constants. | Pinned Python 3 preparation and a native-window smoke check implemented 2026-10-12; whole-genome evaluation and explicit model/host labels remain before publication. A UTEX string does not supply UTEX calibration. |
-| ViennaRNA | Existing project Python/browser model is 2.7.2; Python-library smoke returned a finite MFE/structure. | Structure/accessibility is computational evidence, not a validated regulatory-site call; select windows/parameters for any new annotation method. |
-| STREME | Current author MEME Suite source download is 5.5.9. | Foreground/control cohort and evaluation split are required for motif discovery; a discovered motif alone is not an admitted site layer. |
-| Rfam + Infernal | Current official Rfam release is 15.1; existing user-owned `trna-validate` environment has Infernal 1.1.5. | The pinned RF01116 pilot is implemented, with native/control evaluation and circular-coordinate tests. Broader family selection and biological evaluation remain; fresh cmsearch matches are calculated outputs. |
-| IntaRNA | Current official release tag is v3.4.1. | Query/target RNAs, accessibility/seed parameters and an evaluated local runtime are required for an interaction layer. |
-
-The record-origin distinction is now resolved: newly calculated outputs receive
-translucent tags/lower overlap priority; annotations retrieved from a library are
-sourced records. Keep origin independent from measurement/prediction confidence.
-The generic rendering/hover contract is implemented by the gene-viewer stream;
-source-specific data producers remain separate from this shortlist.
-
-Located short quotations were mechanically matched against downloaded primary
-source bytes. Receipts, line locations, hashes and snapshots are in
-`.playwright-cli/ui-open-tickets-20261008/regulatory-assessment/` in the integration
-worktree; `located-quotations.json` records each match. Public source reads require
-no account/privacy escalation. No private RBS code or NUPACK was accessed, no
-new tool environment was installed, and no iDOG run was launched.
-
-## Cross-organism transfer assessment, 2026-10-09
-
-The routes below are proposals inferred from the cited capabilities and evidence,
-not completed UTEX benchmarks. Prefer close Synechococcus donors such as PCC 7942
-or PCC 6301 when the particular locus and surrounding sequence are conserved;
-use other cyanobacteria next and distant bacterial models as weaker priors.
-Relatedness alone does not establish conserved regulation. Eukaryotic or phage
-parts do not become ordinary cyanobacterial promoters by sequence similarity.
-
-| Method / owning ticket | Concrete rough-prediction route | Limits and smallest useful evaluation |
-| --- | --- | --- |
-| [RBS Calculator](O_rbs-calculator-gene-visualizer__20260930.md) | Once executable code is available, score native UTEX initiation contexts with pinned model/host parameters; use conserved donor start-region alignments as supporting evidence. | PCC 6803 experiments reported poor relative-expression prediction [S1]. Treat outputs as candidate initiation contexts, not measured binding boundaries or reliable rates. Compare rankings with independent translation/reporter evidence where available; RNA abundance alone is not an RBS benchmark. Code access remains open. |
-| [iDOG](O_idog-promoter-prediction__20260930.md) | Assess reusable RBS and terminator components under their own contracts; use bacterial/cyanobacterial parts as comparison inputs where appropriate. | Its yeast promoter library and fixed T7 promoter do not supply a native UTEX promoter locator. Preserve the owner hold and bytecode/source gaps. Standalone TransTermHP is the practical independent route; do not call another predictor's output iDOG promoter predictions. |
-| Promoter Calculator | Run the pinned E. coli sigma-70 model on native UTEX windows on both strands as an explicitly out-of-domain ranking. Conserved donor promoter regions supply additional candidates, checked against native sequence. | The paper's in-vivo tests use E. coli [S2], not UTEX calibration. Test localization/enrichment near held-out Tan TSSs, separating alternative starts and conditions from independent loci. A TSS is an initiation anchor, not a complete promoter boundary; do not convert raw counts into calibrated promoter strength. The 2026-10-12 preparation and native-window smoke establish runtime feasibility; independent localization/ranking evaluation remains. |
-| TransTermHP | Score native UTEX sequence for intrinsic terminator candidates, then compare with uniquely aligned PCC 7942 transcript-end contexts. Cascino 2026 / GSE309256 is a concrete donor-data candidate [S3]. Gale 2021's UTEX-tested terminator parts can support a separate sequence-level check [S4]. | This addresses intrinsic terminators only. PCC 7942 intrinsic features cover a minority of transcript units [S3]; a transcript end need not be a termination site. Report candidate recovery and shuffled-background hits separately from termination efficiency. Gale's reporter-part strengths transfer poorly between hosts [S4]; they are not native genomic coordinates. Tool scores are not calibrated UTEX probabilities. |
-| STREME | Discover motifs in TSS-anchored native UTEX sequences and, separately, admitted donor promoter/regulon cohorts; compare them and score motifs against native UTEX sequence. | Use length/composition-matched controls and an independent locus/ortholog-block test set. STREME's final motifs include its internal holdout [S5], so that holdout is not an external generalization test. Its sites output covers the discovery input; new-sequence scanning needs an explicitly chosen, evaluated scanner (FIMO is a candidate, not a newly selected method). A motif hit alone does not identify a regulator or establish function. |
-| Rfam + Infernal | Search native UTEX sequence with pinned covariance models and their family-specific gathering cutoffs [S6]; prioritize cyanobacterial regulatory families, with Yfr1/RF01116 as one concrete candidate [S7]. | This transfers sequence/structure family models, not donor coordinates. Report homology and family identity, not demonstrated regulatory action. Separate regulatory families from tRNA/rRNA/other RNA classes; retain overlaps/truncation and unmatched regions. Check conserved donor homologues and native transcript evidence, without treating missing expression or missing family hits as negatives. |
-| IntaRNA | Identify native UTEX homologues of candidate sRNAs, then predict interactions against native target transcripts. Yfr1 has an IntaRNA precedent in Prochlorococcus MED4 [S8]; Tan reports a UTEX PsrR1 homologue [S9]. Conserved donor seed/target regions are supporting evidence. | Confirm both RNA identities, transcript boundaries and the interacting sequences; gene orthology alone does not transfer a target interaction. Recompute accessibility and interaction energies [S10]; compare with shuffled queries, seed-disrupting controls and held-out interactions where available. The Yfr1 paper used a heterologous reporter assay, not UTEX validation. Energy or complementarity alone is not evidence of regulation. |
-| ViennaRNA | Recompute native UTEX local structure/accessibility in candidate intervals, using conserved donor RNA structures as supporting context. RNAplfold explicitly supplies unpaired-region probabilities [S11]. | This is transferable thermodynamic calculation, not a regulatory-site detector by itself. Retain exact sequence/window/temperature settings, examine sensitivity to them and matched backgrounds, and combine with independent family/TSS/terminator evidence. Existing browser folding is not validation of this new annotation use. |
-
-### Shared transfer and evaluation contract
-
-- GSE309256 and the papers' supplementary site/part tables are candidate inputs.
-  This pass read the papers, not those datasets; exact files, assembly identity,
-  source terms and sequence joins still need intake before use.
-- Distinguish **model transfer** (score native UTEX sequence), **homology-based
-  candidate placement** (derive a new UTEX interval from an explicit alignment),
-  and **donor-only evidence** (retain donor coordinates). Never relabel a donor
-  coordinate or an orthologous protein match as a native regulatory site.
-- A proposed placement needs pinned assemblies, strand-aware local alignment,
-  conserved flanking context and an unambiguous interval. Preserve source and
-  inferred coordinates separately; reject ambiguous/indel-disrupted placements
-  or leave them donor-only. This does not change existing coordinate-admission
-  rules or authorize a new layer before that contract is implemented.
-- Label future results `exploratory prediction`, recording model/training host,
-  donor strain/evidence, native sequence identity, mapping basis, parameters,
-  raw score/units and known limitations. Model confidence and E-values are not
-  calibrated probabilities of regulatory activity in UTEX. Newly computed tags
-  retain the existing translucent/lower-priority rendering contract.
-- Keep native measurements separate. Missing sites, absent RNA measurements and
-  unassayed conditions are unknowns. Shuffled/matched backgrounds estimate a
-  null hit rate, not biological false-positive rates against proven negatives.
-- Prevent homologues, overlapping regions and repeated condition measurements
-  leaking between training/tuning and evaluation. Report coverage, localization
-  and ranking checks separately; no invented accuracy threshold or claim of
-  comprehensive detection. Donor validation does not establish UTEX validation.
-- For future recoding comparisons, recompute the same method on both sequences.
-  A changed score or interval is a predicted change, not a demonstrated change in
-  regulatory function. Retain method/version and coverage in the denominator.
-
-### Primary-source evidence receipts
-
-Retrieved by `cyano-regulatory-sites` on 2026-10-09. Each short quote below was
-matched mechanically to normalized text from the retrieved bytes; SHA-256 hashes
-are of those bytes. S3 is the **published 2026 article**, superseding the initially
-found 2025 preprint for this assessment. Public Europe PMC XML, official docs/code
-and Rfam's JSON response were used; a PMC browser challenge and Rfam docs HTTP 403
-were not solved. Official Rfam documentation source was publicly readable.
-This is evidence intake for the proposals, not dataset admission or a licence
-decision.
-
-| ID / retrieved source | Located quote | Raw SHA-256 |
-| --- | --- | --- |
-| S1: [Sebesta & Peebles 2020](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6940699/fullTextXML) | Discussion: “The RBS Calculator poorly predicted the relative expression of bisabolene synthase in S. 6803.” | `eed6bc4d8c21b65d6d76e9b906b0fad38b0000ca98647ba60d8bd77d7a776416` |
-| S2: [LaFleur et al. 2022](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9440211/fullTextXML) | Results, three in-vivo test datasets (fourth dataset in vitro): “inside E. coli cells” | `b0418e683a6fd23906dc3e8329ef74dd166298aab39c64b54ec1f96428b2d625` |
-| S3: [Cascino et al. 2026](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13289151/fullTextXML) | Introduction; Results on intrinsic termination; data availability: “only 22% of all TUs” | `395f7369492c25359e86df0ae479d864ddb14edd35100dc7fefdfd10a356b279` |
-| S4: [Gale et al. 2021](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7843447/fullTextXML) | Results, UTEX terminator library / Fig. 4: “correlation of TE values between UTEX 2973 and E. coli was low” | `a392ca971b6ab1e75f754ef125a01edc82d72a0c5d5ee17487fdca15f3347350` |
-| S5: [STREME manual](https://meme-suite.org/meme/doc/streme.html) | --hofract: “including those in the hold-out set” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
-| S6: [Rfam genome annotation documentation source](https://raw.githubusercontent.com/Rfam/rfam-docs/master/docs/source/genome-annotation.rst) | Opening paragraph; --cut_ga: “The Rfam library of covariance models can be used to search sequences” | `96c1d7ea64650381292733cff2457c289abb7c8161faa98bada76f0d601e1ee2` |
-| S7: [Rfam RF01116, release 15.1](https://rfam.org/family/RF01116) | JSON rfam.description / cm.cutoffs: “Cyanobacterial functional RNA 1” | `b48fb2b880ea556a2ef0f9d420a071c48a7904781f15b024fdf3f0112b7cd4d0` |
-| S8: [Richter et al. 2010](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC2796815/fullTextXML) | Abstract Results; Methods reporter assay: “We show that Yfr1 inhibits the translation of two predicted targets.” | `8a2c5cc84eb9bc2f68aa991e4ffc10b3c3a6ae40009547cd7cd3c2b35a2d81c8` |
-| S9: [Tan et al. 2018](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6091082/fullTextXML) | Results, PsrR1 homology: “was identified as a homolog of the sRNA PsrR1” | `7063969b6577a330390269bec64df5f22c696203239257cb06fc21ef5148f7d8` |
-| S10: [IntaRNA v3.4.1 README](https://raw.githubusercontent.com/BackofenLab/IntaRNA/v3.4.1/README.md) | Opening capability description: “Efficient RNA-RNA interaction prediction incorporating accessibility and seeding of interaction sites” | `67ae5c17c94ccff9a68484d4b7fefb950587dc22b0f85d91afd8c3742c0c0fc8` |
-| S11: [RNAplfold manual](https://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/html/man/RNAplfold.html) | Description, unpaired regions: “probability that a stretch of x consequtive nucleotides is unpaired” | `b94acfbb25b2735761d3f5993cd233dd24b0ce3bc55c4d626749c093d876e140` |
+The separate [admission ticket](O_regulatory-layer-admission__20261014.md) owns
+browser-layer selection, native site-scanning/coverage choices and I-SCI-1.
+No published website annotations are implied by completing these pilots. RBS and
+iDOG retain their existing owners and holds. No cluster access is required for
+these completed local pilots.
 
 ## Verification
 
-`cyano-regulatory-sites`, 2026-10-12, final integration at code commit `0fd5e35`
-with main `90bcf91` merged: `npm test` **1,520 passed**; Python **1,690 passed,
-2 skipped, 51 subtests passed**; contract **127 passed, 0 failed, 1 declared skip**.
-The Python skips are existing missing local caches (Syn57 pinned GFF and GO OBO),
-not regulatory-method test skips. The contract skip is the declared spliced-CDS
-contiguity exception. Actual Promoter source and RF01116 model were supplied, so
-all 25 Promoter and 230 Rfam tests ran; 64 TransTermHP tests passed.
+Initial integration at `f7fc41c`: JavaScript **1,584 passed**; Python **2,025 passed,
+8 skipped, 51 subtests passed**; contract **130 passed, 0 failed, 1 declared skip**.
+Actual Promoter, STREME, IntaRNA and Infernal inputs were supplied.
 
-Independent acceptance: DEM-371 accepted Promoter P1–P6, DEM-372 accepted
-TransTermHP TT1–TT12, and DEM-375 accepted RF1–RF7 including both real OS
-write-failure probes after `0fd5e35`. No material integration findings remain.
-Method/evaluation limits, including S1 and the RBS/iDOG dependencies, remain open.
-The ticket is active and is not being closed in this pass.
-
-The new regulatory work changes only tools, tests and documentation. No computed
-regulatory layer was admitted or published. Existing other-session commits were
-merged without contacting or interrupting those sessions. `git diff --check`,
-ticket identity/status/queue membership and local documentation links pass.
-Source receipts below are retained for the selected-method assessment: the
-2026-10-08 Rfam public-page extraction has a processed-text checksum rather than
-being labelled raw HTML. New Rfam execution uses the official pinned model bytes.
-
-| Source | Retrieved | Located quotation | Checksum |
-| --- | --- | --- | --- |
-| [rbs](https://raw.githubusercontent.com/hsalis/salis-lab-protocol-book/master/design/rbs-calculator.md) | 2026-10-08 | receipts.json key `rbs`; exact text match | `fc731f1b4b472289734728d2b9506c38e7080bc3cebaa0cf59ee6b3bf6286396` |
-| [idog](https://raw.githubusercontent.com/jayman1466/iDOG/master/README.md) | 2026-10-08 | receipts.json key `idog`; exact text match | `f38ab3f7e4b9f75627adb9dae8464f2dc46a19ef3d66690639fe4380042ad554` |
-| [promoter](https://raw.githubusercontent.com/hsalis/SalisLabCode/master/README.md) | 2026-10-08 | receipts.json key `promoter`; exact text match | `b1711fdd648548d3e781ec230f8d2581e6a4fc83d0647ecbe35b16aed019bf43` |
-| [transterm](https://transterm.cbcb.umd.edu/) | 2026-10-08 | receipts.json key `transterm`; exact text match | `7fc019a884e82e183dc54fafe22c7058b9fa2f3c9c26d0a1a5670dd23737cb59` |
-| [fimo](https://meme-suite.org/meme/doc/fimo.html) | 2026-10-08 | receipts.json key `fimo`; exact text match | `b0a45f1705f9fac0198ffd89a40709cf527fd97b0462c43e7ba6869c95dd1415` |
-| [streme](https://meme-suite.org/meme/doc/streme.html) | 2026-10-08 | receipts.json key `streme`; exact text match | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
-| [rna-accessibility](https://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/html/man/RNAplfold.html) | 2026-10-08 | receipts.json key `rna-accessibility`; exact text match | `b94acfbb25b2735761d3f5993cd233dd24b0ce3bc55c4d626749c093d876e140` |
-| [rfam](https://docs.rfam.org/en/latest/genome-annotation.html) | 2026-10-08 | receipts.json key `rfam`; exact text match | `2fc8d475ed43843613bd1ce0de51e537ddae50ca483a94249dd57e5ce49049d2` |
-| [intarna](https://raw.githubusercontent.com/BackofenLab/IntaRNA/master/README.md) | 2026-10-08 | receipts.json key `intarna`; exact text match | `af1ef24850c0ce05df5b3c652bc136992aff6ef013f1262cd23abf4a2cfe7ceb` |
+After merging main through `b4092f5`, JavaScript again has **1,584 passed, 0 skipped**;
+contract **130 passed, 0 failed, 1 declared spliced-CDS contiguity skip**. DEM-398's
+repair recheck has **125 focused tests passed** with actual model/runtime and no
+skips. DEM-397 has **93 passed**, no skips. Final Python after IntaRNA integration
+is pending. Changed Markdown links and all 28 open/active ticket identities,
+statuses and queue entries pass. `git diff --check` passes.
 
 ## Cleanup
 
-Transfer accepted candidate scope and remaining method/input/evaluation decisions
-into their owning method tickets. Retain the existing iDOG hold. Distill only
-reusable verified contracts after methods are evaluated; do not turn this candidate
-list into a record of validated UTEX predictions. Resolve with named closer and
-all findings, then R-rename/distill/index/remove last.
+Before closing, record the closing session/date, every final finding resolution,
+independent acceptances and final gates. Then rename to R and set resolved, remove
+only this queue row, verify durable links, commit the resolution, and delete the
+resolved ticket last. Keep I-SCI-1, RBS and iDOG dependencies visibly owned in their
+remaining tickets. No one-off execution ledger is added to permanent documentation.
