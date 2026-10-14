@@ -81,10 +81,10 @@ linking an environment or registering one in the user's shared environment list:
 
 ```sh
 "$scratch/bin/micromamba" create --no-rc --no-env \
-  --root-prefix "$scratch/mamba" --prefix "$scratch/deps" \
+  --root-prefix "$scratch/mamba" --prefix "$scratch/download-only-prefix" \
   --override-channels -c conda-forge -c bioconda --platform osx-arm64 \
   --download-only -y boost-cpp=1.85 viennarna=2.7.0 llvm-openmp pkg-config
-# For the exact solved package set instead of the three package constraints,
+# For the exact solved package set instead of the package constraints,
 # supply --file docs/validation/regulatory-intarna-dependencies-osx-arm64.txt.
 ```
 
