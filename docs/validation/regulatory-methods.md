@@ -94,5 +94,6 @@ rather than the suite's default target. Record the archive, binary, compiler,
 input, flags and output hashes. Runtime success and deterministic motif output
 are not motif-boundary accuracy or UTEX validation. In particular, a motif may
 capture only part of a planted pattern; evaluate recovery independently before
-using such a check as an accuracy benchmark. A native TSS-window producer still
-needs explicit foreground/control cohorts and independent locus/overlap blocks.
+using such a check as an accuracy benchmark. The [native pilot](regulatory-streme.md) supplies explicit foreground/control
+cohorts and independent locus/overlap/similarity blocks. Its window ranking is
+separate from selecting and admitting a genomic motif-site scanner.

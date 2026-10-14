@@ -90,7 +90,7 @@ mechanically against the retrieved bytes after collapsing whitespace runs.
 `e2e636e9ce138dae506769aa74d067ce35466e94002818cfe125ea2a3cab8168`; decompressed
 `Rfam.cm` is SHA-256
 `1378dd5927b4991d32956920f7b7bb1906bd04428b44ec6b2d8ae7c4895fba6d`. R3 is the same
-bytes as receipt S6 of the regulatory-methods shortlist.
+bytes as receipt S6 of [the transfer contract](regulatory-transfer.md).
 
 **Terms.** R2 is the source's own statement of its terms, quoted. It is not a
 licence or permission decision for this project; that stays with the

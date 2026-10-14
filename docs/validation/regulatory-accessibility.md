@@ -284,7 +284,7 @@ stripping tags for HTML).
 | V9 | [`params.c` v2.7.2](https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/params/params.c#L157), line 157 (energy set; repeated at line 194 for the Boltzmann set) | "/* ignore window_size, max_bp_span, and min_loop_size here */" | `a6da5b5038e07c6b4b0b843429115db84b6bcb8b48e51074f3180d2842358e7a` |
 | V10 | same file, line 199 | "if (memcmp(md_p, &(pf_pre.model_details), sizeof(vrna_md_t)) == 0) {" | same as V9 |
 
-V1 is the same bytes as receipt S11 in the regulatory-methods shortlist. V3 is
+V1 is the same bytes as receipt S11 in [the transfer contract](regulatory-transfer.md). V3 is
 the same bytes as that ticket's `pf_window.c` receipt.
 
 ## Before any of this becomes a published layer

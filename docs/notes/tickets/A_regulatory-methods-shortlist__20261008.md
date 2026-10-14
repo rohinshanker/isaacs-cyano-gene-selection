@@ -46,11 +46,39 @@ and iDOG hold tickets remain separate and open.
 ### Open independent-review findings
 
 DEM-397 reviewed accessibility worker `9184a88` (integrated `ab2c0a4`):
-**VA1 — open:** cached legacy energy fingerprint can accept changed parameter
-sets under a Turner 2004 label. **VA2 — open:** CLI suppresses cleanup-failure
-notes and surviving output paths. **VA3 — open:** re-reading the window table
-for its digest after folding can record bytes that were not parsed. DEM-394 owns
-repairs; the same reviewer must accept the exact repair before closure.
+**VA1 — resolved `6630492`:** cached legacy energy fingerprint can accept changed parameter
+sets under a Turner 2004 label. **VA2 — resolved `6630492`:** CLI suppresses cleanup-failure
+notes and surviving output paths. **VA3 — resolved `6630492`:** re-reading the window table
+for its digest after folding could record bytes that were not parsed. DEM-397
+accepted the exact repairs after repeating all three original reproductions.
+
+DEM-398 reviewed Promoter/STREME at `366921a`: **ST1 — open**, the motif's
+shuffle enrichment also occurs in arbitrary genomic windows, so it does not
+establish TSS/promoter specificity; DEM-393 adds a blocked genomic-background
+arm. **ST2 — open**, interrupted STREME cleanup can lose cause/status and leave
+new parent directories; DEM-393 repairs it. **PR1 — open**, float-equality ties
+omit numerically tied promoter optima; **PR2 — open**, the LaFleur dataset label
+incorrectly includes the in-vitro dataset among E. coli cellular assays;
+**PR3 — open**, inert sigma constructor metadata looks like an effective model
+parameter. Coordinator owns PR1–PR3 repairs and the same reviewer recheck.
+
+DEM-399 reviewed IntaRNA at `f7fc41c`: **I-REV-1 — open**, the download-only
+recipe registers an environment despite its isolation claim; **I-REV-2 — open**,
+IntaRNA executable-name personality is unpinned; **I-REV-3 — open**, the
+whole-input-window sensitivity label overstates context coverage; **I-REV-4 —
+open**, SIGTERM cleanup is not implemented; **I-REV-5 — open**, build identities
+and necessary recipe inputs need durable, accurate records. DEM-395 owns all
+repairs, then DEM-399 rechecks. Coordinator removed only this task's registry
+line and the two empty `.mamba` directories; other environment entries are
+byte-preserved. Cleanup receipt is outside the repository in the task artifacts.
+
+VA1–VA3 are resolved by worker `bd4beb1`, integrated `6630492`; DEM-397
+independently accepted all three and their exact reproductions on 2026-10-14. Ninety-three focused tests pass and baseline/45°C TSVs remain
+byte-identical. PR1–PR3 are implemented in `194397c`, with 52 tests passing;
+corrected counts are 900/890 native and 398/383 controls (any/all tied optima
+within ±5 nt), medians unchanged at 6/22. The regenerated report is
+`f4021ed3941a66b656df9e40f4a6a406b4cf59c651ec00dd7c54865080ebbc5f`.
+DEM-398 rechecks the promoter repair together with the pending STREME repair.
 
 ### Current completion evidence
 
@@ -436,7 +464,7 @@ decision.
 | ID / retrieved source | Located quote | Raw SHA-256 |
 | --- | --- | --- |
 | S1: [Sebesta & Peebles 2020](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6940699/fullTextXML) | Discussion: “The RBS Calculator poorly predicted the relative expression of bisabolene synthase in S. 6803.” | `eed6bc4d8c21b65d6d76e9b906b0fad38b0000ca98647ba60d8bd77d7a776416` |
-| S2: [LaFleur et al. 2022](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9440211/fullTextXML) | Results, four test datasets: “inside E. coli cells” | `b0418e683a6fd23906dc3e8329ef74dd166298aab39c64b54ec1f96428b2d625` |
+| S2: [LaFleur et al. 2022](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC9440211/fullTextXML) | Results, three in-vivo test datasets (fourth dataset in vitro): “inside E. coli cells” | `b0418e683a6fd23906dc3e8329ef74dd166298aab39c64b54ec1f96428b2d625` |
 | S3: [Cascino et al. 2026](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC13289151/fullTextXML) | Introduction; Results on intrinsic termination; data availability: “only 22% of all TUs” | `395f7369492c25359e86df0ae479d864ddb14edd35100dc7fefdfd10a356b279` |
 | S4: [Gale et al. 2021](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC7843447/fullTextXML) | Results, UTEX terminator library / Fig. 4: “correlation of TE values between UTEX 2973 and E. coli was low” | `a392ca971b6ab1e75f754ef125a01edc82d72a0c5d5ee17487fdca15f3347350` |
 | S5: [STREME manual](https://meme-suite.org/meme/doc/streme.html) | --hofract: “including those in the hold-out set” | `0c6304ce737ff25d914443290e22bec860d08c5e5ed3848dedf7bc5cbf1415a7` |
