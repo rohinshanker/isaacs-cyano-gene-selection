@@ -74,14 +74,14 @@ Coordinator source/acceptance checks; implementation integrated at `253694e`:
 | RFA-02 | Native EC qualifiers and structured GO annotations embedded in Syn61 GenBank notes must be preserved and inventoried separately from transferred GO. | `253694e` |
 | RFA-03 | Syn57 `yddH`/`iroK` generated product placeholders must not be mistaken for a native product qualifier. | `253694e` |
 | RFA-04 | A UniProt entry without function text must not be counted or labelled as an actual curated function statement; use human field labels in the UI. | `253694e` |
-| RFA-05 | GO controls must remain available on every gene-map tab while their colour/filter state is active, including risk, UMAP and perturbation. | open |
+| RFA-05 | GO controls must remain available on every gene-map tab while their colour/filter state is active, including risk, UMAP and perturbation. | `07a3173` |
 
 No independent final-patch audit has run yet; closure awaits that audit and
 resolution of any findings it returns.
 
 ## Verification
 
-Implementation gates pass: 1,594 JS tests; 1,771 Python tests, 16 optional skips and 51 subtests; default/Syn61 contract checks; deterministic Syn57 and Syn61 rebuilds. Independent source checks preserve both native gene payloads byte for byte, all native EC qualifiers, and all 3,985 native Syn61 GO relationships across 1,649 plotted genes. Mobile/tablet/desktop renders pass; RFA-05 needs its targeted fix and recheck before final independent review.
+Implementation gates pass: 1,595 JS tests; 1,771 Python tests, 16 optional skips and 51 subtests; default/Syn61 contract checks; deterministic Syn57 and Syn61 rebuilds. Independent source checks preserve both native gene payloads byte for byte, all native EC qualifiers, and all 3,985 native Syn61 GO relationships across 1,649 plotted genes. Mobile/tablet/desktop renders pass in 43 recorded states, including each gene-map tab with an active GO filter. Healthy states have no runtime errors; the explicit missing-data case reports its expected HTTP failures. Independent final-patch review remains pending.
 
 ## Cleanup
 
