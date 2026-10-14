@@ -1,11 +1,13 @@
-# O_recoded-genome-functional-annotations__20261012 — Open
+# A_recoded-genome-functional-annotations__20261012 — Active
 
 Scope: Add missing functional annotations to recoded-scheme genomes from the corresponding nonrecoded genome.
-Status: open
+Status: active
 Opened: 2026-10-12
-Updated: 2026-10-12
+Updated: 2026-10-14
 
 ## Current State
+
+Claimed 2026-10-14 by cyano-lit-unreach (Agent Deck 80c81443-1791314087), which owns integration and closure. Work is isolated on work/recoded-functional-20261014, based on b4092f5; other sessions and the separately owned recoded multi-omics work remain untouched.
 
 Requested by the owner while reviewing viewer disclosures. No existing ticket owns
 this transfer; the recoded multi-omics ticket owns assay/clone and partial-genome
@@ -43,6 +45,6 @@ checks; required repository and release gates.
 
 ## Cleanup
 
-Remain open until an implementation owner claims it. Preserve reusable join,
+The owning session will close this ticket after independent review and all acceptance checks. Preserve reusable join,
 provenance and release checks in docs/validation before resolving; delete the
 resolved ticket last. Do not absorb another session's active recoded-data work.
