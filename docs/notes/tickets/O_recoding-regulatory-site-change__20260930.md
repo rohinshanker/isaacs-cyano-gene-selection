@@ -114,8 +114,8 @@ active scheme against original scheme.
 
 Transfer-planning update checked by `cyano-regulatory-sites`, 2026-10-09:
 open status, retained metric-definition decisions, local links and live queue
-verified; current passing repository gates are recorded in
-[the shared assessment](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
+verified; source evidence is preserved in
+[the transfer contract](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
 No metric implementation, dataset or UI changed.
 
 Future implementation: run `npm test`, `.venv/bin/python -m pytest -q`, and

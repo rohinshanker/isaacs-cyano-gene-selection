@@ -254,8 +254,8 @@ from measured sites; sister-strain coordinates never become UTEX coordinates.
 Transfer-planning update checked by `cyano-regulatory-sites`, 2026-10-09:
 open status, retained execution/closure hold, local links and source-receipt
 references verified. Corrected the stale single-condition description of Tan
-2018 against S9 (four conditions). Current passing repository gates are recorded
-in [the shared assessment](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
+2018 against S9 (four conditions). Source evidence is preserved
+in [the transfer contract](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
 No iDOG code, prediction layer or UI changed.
 
 Future work: reproducible pinned-code assessment and benchmark; then `npm test`,

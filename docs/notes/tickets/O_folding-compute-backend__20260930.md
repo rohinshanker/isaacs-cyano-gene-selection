@@ -6,19 +6,21 @@
   requirements before implementation.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-14
 
 ## Current State
 
 Owner direction, 2026-10-09: rough regulatory predictions may use models and
 evidence from other organisms. The [shared method assessment](../../validation/regulatory-transfer.md)
-owns new ViennaRNA local-structure/accessibility and IntaRNA interaction uses.
+records new ViennaRNA local-structure/accessibility and IntaRNA interaction uses.
 Recompute on native UTEX RNA and retain windows, temperature, parameters and
 sequence identity; donor structures/interactions are supporting hypotheses, not
-transferred UTEX activity. Existing browser folding works, but the new regulatory
-uses remain unevaluated. Start with bounded local feasibility before requesting
-cluster resources; this adds no Bouchet login, deployment or model run. S10/S11
-in the shared assessment record the primary-source capabilities and receipts.
+transferred UTEX activity. The [accessibility](../../validation/regulatory-accessibility.md)
+and [IntaRNA](../../validation/regulatory-intarna.md) runbooks now provide bounded
+local runtime/window pilots; no cluster is required for those workloads. They do
+not establish regulatory function or a remote-service architecture. Cluster
+benchmarks and deployment remain under this ticket's existing prerequisites.
+S10/S11 in the transfer contract preserve the primary-source capabilities and receipts.
 
 **Owner update, 2026-10-07:** "yale bouchet cluster is available to me, but i
 have not yet decided on whether to use a spinup or OOD, nor have i setup local
@@ -165,9 +167,10 @@ for backend feasibility, nor does this ticket authorize their scientific adoptio
 ## Verification
 
 The 2026-10-09 transfer-planning note, source links and open status were checked
-by `cyano-regulatory-sites`; current passing repository gates are recorded in
-[the shared assessment](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
-No infrastructure, model run or UI changed.
+by `cyano-regulatory-sites`; source evidence is preserved in
+[the transfer contract](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
+The 2026-10-14 link update records the separate local pilots; this ticket has not
+run a cluster benchmark or changed infrastructure or UI.
 
 Documentation update verified 2026-10-07: the 32-ticket filename/H1/status,
 main-queue membership and local-link checks passed; `git diff --check` was clean.

@@ -198,8 +198,8 @@ That metric still requires its own definition and evidence decisions.
 
 Cross-organism follow-up: owner confirmed the RBS ticket identity; the transfer
 proposal and PCC 6803 limitation link to mechanically verified S1 in the shared
-assessment. Ticket remains open. Current source/link checks and repository gates
-are recorded in [the shared assessment](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
+assessment. Ticket remains open. Source evidence is preserved in
+[the transfer contract](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
 
 Owner follow-up verified 2026-10-09 by `cyano-regulatory-sites`: open filename,
 H1/status, local links, live index entry, retained CS-1 row and repository-review
