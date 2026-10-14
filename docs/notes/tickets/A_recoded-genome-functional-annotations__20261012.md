@@ -60,6 +60,15 @@ plotted Syn57 and 1,411 plotted Syn61 genes (1,437/1,414 across all source CDSs)
 
 ## Findings
 
+Coordinator source/acceptance checks, pending final implementation:
+
+| Id | Finding | Status |
+| --- | --- | --- |
+| RFA-01 | Functional filtering/colouring must select real inherited GO terms; detail/search or annotation-coverage colours alone do not satisfy the ticket. Negative, conflicting, ND and missing evidence remain distinct. | open |
+| RFA-02 | Native EC qualifiers must be preserved and inventoried separately from transferred GO. | open |
+| RFA-03 | Syn57 `yddH`/`iroK` generated product placeholders must not be mistaken for a native product qualifier. | open |
+| RFA-04 | A UniProt entry without function text must not be counted as an actual curated function statement. | open |
+
 No independent final-patch audit has run yet; closure awaits that audit and
 resolution of any findings it returns.
 
