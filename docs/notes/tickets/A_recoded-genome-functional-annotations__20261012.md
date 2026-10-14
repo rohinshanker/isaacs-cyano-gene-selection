@@ -58,6 +58,12 @@ design CDS" products are builder fallbacks. Their absent fields must remain
 separate from genuine native annotations. Native EC qualifiers occur on 1,432
 plotted Syn57 and 1,411 plotted Syn61 genes (1,437/1,414 across all source CDSs).
 
+Syn61 also carries structured `GO_function`/`GO_process`/`GO_component` records
+inside CDS notes (1,698 source CDSs), despite having no GO db_xrefs or dedicated
+GO qualifiers. Preserve them as native computational annotation with source
+provenance; do not overwrite them with reference GO. Syn57 source notes contain
+no GO identifiers. Counts and admission are checked again on the final payload.
+
 ## Findings
 
 Coordinator source/acceptance checks, pending final implementation:
@@ -65,7 +71,7 @@ Coordinator source/acceptance checks, pending final implementation:
 | Id | Finding | Status |
 | --- | --- | --- |
 | RFA-01 | Functional filtering/colouring must select real inherited GO terms; detail/search or annotation-coverage colours alone do not satisfy the ticket. Negative, conflicting, ND and missing evidence remain distinct. | open |
-| RFA-02 | Native EC qualifiers must be preserved and inventoried separately from transferred GO. | open |
+| RFA-02 | Native EC qualifiers and structured GO annotations embedded in Syn61 GenBank notes must be preserved and inventoried separately from transferred GO. | open |
 | RFA-03 | Syn57 `yddH`/`iroK` generated product placeholders must not be mistaken for a native product qualifier. | open |
 | RFA-04 | A UniProt entry without function text must not be counted as an actual curated function statement. | open |
 
