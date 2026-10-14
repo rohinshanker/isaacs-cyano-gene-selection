@@ -6,6 +6,9 @@ import gzip
 import io
 import json
 import os
+import signal
+import shutil
+import time
 import subprocess
 import sys
 from collections import Counter
@@ -181,29 +184,99 @@ def test_native_bad_inputs(native_files, monkeypatch, kind):
         ri.prepare_native(fasta, gff)
 
 
-@pytest.mark.parametrize("failure", ["exit", "stderr", "timeout", "os"])
+class FakeProcess:
+    def __init__(self, failure=None):
+        self.failure = failure
+        self.returncode = None
+        self.stdout = io.StringIO()
+        self.stderr = io.StringIO()
+        self.pid = 12345
+        self.terminated = False
+        self.killed = False
+
+    def communicate(self, timeout):
+        if self.failure == "timeout":
+            raise subprocess.TimeoutExpired("test", timeout)
+        if self.failure == "sigterm":
+            raise SystemExit(143)
+        if self.failure == "sigint":
+            raise KeyboardInterrupt()
+        self.returncode = 1 if self.failure == "exit" else 0
+        return "ok", "test" if self.failure in ("stderr", "exit") else ""
+
+    def poll(self):
+        return self.returncode
+
+    def terminate(self):
+        self.terminated = True
+
+    def kill(self):
+        self.killed = True
+
+    def wait(self, timeout):
+        if self.failure == "stubborn" and not self.killed:
+            raise subprocess.TimeoutExpired("test", timeout)
+        self.returncode = -9 if self.killed else -15
+        return self.returncode
+
+
+@pytest.mark.parametrize("failure", ["exit", "stderr", "timeout", "os", "sigterm", "sigint"])
 def test_execution_failures(tmp_path, monkeypatch, failure):
-    def run(*args, **kwargs):
-        if failure == "timeout": raise subprocess.TimeoutExpired("test", 1)
+    child = FakeProcess(failure)
+    def spawn(*args, **kwargs):
         if failure == "os": raise OSError("test")
-        return subprocess.CompletedProcess(args[0], 1 if failure == "exit" else 0,
-                                           stdout="bad", stderr="test")
-    monkeypatch.setattr(ri.subprocess, "run", run)
-    with pytest.raises(ri.PilotError):
+        return child
+    monkeypatch.setattr(ri.subprocess, "Popen", spawn)
+    error_type = SystemExit if failure == "sigterm" else KeyboardInterrupt if failure == "sigint" else ri.PilotError
+    with pytest.raises(error_type) as error:
         ri.execute(Path("IntaRNA"), [], tmp_path, 1)
+    if failure == "sigterm": assert error.value.code == 143
+    if failure in ("timeout", "sigterm", "sigint"):
+        assert child.terminated and child.returncode == -15
+    if failure != "os":
+        assert child.stdout.closed and child.stderr.closed
 
 
 def test_execution_success_sets_bounds(tmp_path, monkeypatch):
-    def run(*args, **kwargs):
+    child = FakeProcess()
+    def spawn(*args, **kwargs):
         assert kwargs["env"]["OMP_NUM_THREADS"] == "1"
-        assert kwargs["timeout"] == 12
         assert kwargs["cwd"] == tmp_path
-        return subprocess.CompletedProcess(args[0], 0, stdout="ok", stderr="")
-    monkeypatch.setattr(ri.subprocess, "run", run)
+        assert kwargs["stdout"] == subprocess.PIPE
+        return child
+    monkeypatch.setattr(ri.subprocess, "Popen", spawn)
     assert ri.execute(Path("IntaRNA"), [], tmp_path, 12) == "ok"
+    assert child.stdout.closed and child.stderr.closed
 
 
-@pytest.mark.parametrize("variant", ["default", "global_accessibility", "seed6", "invalid"])
+def test_child_kill_fallback_and_cleanup_diagnostic(monkeypatch):
+    child = FakeProcess("stubborn")
+    ri.terminate_child(child, SystemExit(143))
+    assert child.terminated and child.killed and child.returncode == -9
+    error = SystemExit(143)
+    monkeypatch.setattr(child, "terminate", lambda: (_ for _ in ()).throw(OSError("denied")))
+    child.returncode = None
+    ri.terminate_child(child, error)
+    assert error.code == 143 and "12345" in error.__notes__[0]
+    monkeypatch.setattr(child, "terminate", lambda: None)
+    monkeypatch.setattr(child, "wait", lambda **kwargs: (_ for _ in ()).throw(subprocess.TimeoutExpired("test", 2)))
+    ri.terminate_child(child, error)
+    assert "not reaped" in error.__notes__[-1]
+
+
+def test_sigterm_exit_survives_pipe_close_failure(tmp_path, monkeypatch):
+    child = FakeProcess("sigterm")
+    class BadPipe:
+        def close(self):
+            raise OSError("pipe close failed")
+    child.stdout = BadPipe()
+    monkeypatch.setattr(ri.subprocess, "Popen", lambda *args, **kwargs: child)
+    with pytest.raises(SystemExit) as error:
+        ri.execute(Path("IntaRNA"), [], tmp_path, 60)
+    assert error.value.code == 143 and "pipe close failed" in error.value.__notes__[0]
+
+
+@pytest.mark.parametrize("variant", ["default", "whole_input_window_folding", "seed6", "invalid"])
 def test_command_variants(tmp_path, monkeypatch, variant):
     target, query = example_windows()
     monkeypatch.setattr(ri, "execute", lambda *args: report(target, query, 6 if variant == "seed6" else 7))
@@ -214,8 +287,9 @@ def test_command_variants(tmp_path, monkeypatch, variant):
     raw, records, command = ri.run_interaction(Path("IntaRNA"), target, query, tmp_path, 60, variant)
     assert records and raw
     assert command[0:2] == ["--target=target.fa", "--query=query.fa"]
+    assert "--personality=IntaRNA3" in command
     assert "--seedBP=6" in command if variant == "seed6" else "--seedBP=7" in command
-    assert "--accW=0" in command if variant == "global_accessibility" else "--accW=150" in command
+    assert "--accW=0" in command if variant == "whole_input_window_folding" else "--accW=150" in command
     assert (tmp_path / "query.fa").read_text() == f">query\n{query.sequence}\n"
 
 
@@ -229,7 +303,7 @@ def pilot_args(tmp_path, monkeypatch):
     monkeypatch.setattr(ri, "SOURCE_SHA256", ri.sha256_file(archive))
     target, query = example_windows()
     monkeypatch.setattr(ri, "prepare_native", lambda *args: ([query], [target]))
-    monkeypatch.setattr(ri, "execute", lambda binary, argv, *args: "IntaRNA 3.4.1\nViennaRNA 2.7.0\n" if argv == ["--version"] else "help")
+    monkeypatch.setattr(ri, "execute", lambda binary, argv, *args: "IntaRNA 3.4.1\nViennaRNA 2.7.0\n" if argv == ["--personality=IntaRNA3", "--version"] else "help")
 
     def interaction(binary, target, query, directory, timeout, variant="default"):
         raw = (report(target, query, 6 if variant == "seed6" else 7)
@@ -287,7 +361,7 @@ def test_no_native_interaction_skips_mutation(pilot_args, monkeypatch):
     assert len(payload["runs"]) == 7
 
 
-@pytest.mark.parametrize("failure", [OSError("write failed"), KeyboardInterrupt()])
+@pytest.mark.parametrize("failure", [OSError("write failed"), KeyboardInterrupt(), SystemExit(143)])
 def test_publish_failure_cleanup(tmp_path, monkeypatch, failure):
     original = Path.open
     def opened(self, *args, **kwargs):
@@ -329,6 +403,213 @@ def test_cli_success_and_error(pilot_args, monkeypatch, capsys):
         ri.main()
 
 
+def test_personality_pins_prediction_version_and_help(pilot_args, monkeypatch):
+    assert "--personality=IntaRNA3" in ri.BASE_FLAGS
+    calls = []
+    def execute(binary, argv, *args):
+        calls.append(argv)
+        return "IntaRNA 3.4.1\n" if "--version" in argv else "help"
+    monkeypatch.setattr(ri, "execute", execute)
+    payload = ri.run_pilot(pilot_args)
+    assert calls == [["--personality=IntaRNA3", "--version"], ["--personality=IntaRNA3", "--fullhelp"]]
+    assert payload["schemaVersion"] == 2
+    assert payload["provenance"]["versionCommand"] == calls[0]
+    assert "finite input windows" in payload["parameters"]["accessibilityContext"]
+
+
+@pytest.mark.parametrize("failure", [None, SystemExit(143), KeyboardInterrupt(), ri.PilotError("bad")])
+def test_main_restores_handlers(pilot_args, monkeypatch, failure):
+    prior_int = signal.getsignal(signal.SIGINT)
+    prior_term = signal.getsignal(signal.SIGTERM)
+    def custom_handler(signum, frame):
+        pass
+    signal.signal(signal.SIGTERM, custom_handler)
+    monkeypatch.setattr(argparse.ArgumentParser, "parse_args", lambda *args: pilot_args)
+    try:
+        if failure is not None:
+            monkeypatch.setattr(ri, "run_pilot", lambda *args: (_ for _ in ()).throw(failure))
+            with pytest.raises((SystemExit, KeyboardInterrupt)):
+                ri.main()
+        else:
+            ri.main()
+        assert signal.getsignal(signal.SIGTERM) is custom_handler
+        assert signal.getsignal(signal.SIGINT) is prior_int
+    finally:
+        signal.signal(signal.SIGTERM, prior_term)
+
+
+def test_deferred_sigterm_during_spawn_still_terminates_child(tmp_path, monkeypatch):
+    child = FakeProcess()
+    previous = signal.getsignal(signal.SIGTERM)
+    signal.signal(signal.SIGTERM, lambda *args: (_ for _ in ()).throw(SystemExit(143)))
+    def spawn(*args, **kwargs):
+        os.kill(os.getpid(), signal.SIGTERM)
+        return child
+    monkeypatch.setattr(ri.subprocess, "Popen", spawn)
+    try:
+        with pytest.raises(SystemExit) as error:
+            ri.execute(Path("IntaRNA"), [], tmp_path, 60)
+        assert error.value.code == 143 and child.terminated
+    finally:
+        signal.signal(signal.SIGTERM, previous)
+
+
+def test_deferred_sigterm_during_directory_acquisition_cleans_output(tmp_path, monkeypatch):
+    output = tmp_path / "output"
+    original = Path.mkdir
+    previous = signal.getsignal(signal.SIGTERM)
+    signal.signal(signal.SIGTERM, lambda *args: (_ for _ in ()).throw(SystemExit(143)))
+    def mkdir(self, *args, **kwargs):
+        original(self, *args, **kwargs)
+        if self == output:
+            os.kill(os.getpid(), signal.SIGTERM)
+    monkeypatch.setattr(Path, "mkdir", mkdir)
+    try:
+        with pytest.raises(SystemExit) as error:
+            ri.publish(output, {"data": "ok"})
+        assert error.value.code == 143 and not output.exists()
+    finally:
+        signal.signal(signal.SIGTERM, previous)
+
+
+def test_deferred_sigterm_during_temporary_directory_acquisition(pilot_args, tmp_path, monkeypatch):
+    parent = tmp_path / "temporary"
+    parent.mkdir()
+    original = ri.tempfile.TemporaryDirectory
+    previous = signal.getsignal(signal.SIGTERM)
+    signal.signal(signal.SIGTERM, lambda *args: (_ for _ in ()).throw(SystemExit(143)))
+    def temporary(*args, **kwargs):
+        resource = original(*args, dir=parent, **kwargs)
+        os.kill(os.getpid(), signal.SIGTERM)
+        return resource
+    monkeypatch.setattr(ri.tempfile, "TemporaryDirectory", temporary)
+    try:
+        with pytest.raises(SystemExit) as error:
+            ri.run_pilot(pilot_args)
+        assert error.value.code == 143
+        assert not list(parent.iterdir()) and not pilot_args.output_dir.exists()
+    finally:
+        signal.signal(signal.SIGTERM, previous)
+
+
+def test_defer_interrupts_in_worker_thread(monkeypatch):
+    monkeypatch.setattr(ri.threading, "current_thread", lambda: object())
+    with ri.defer_interrupts():
+        pass
+
+
+@pytest.mark.parametrize("corrupt", [None, "binary", "library", "duplicate", "schema"])
+def test_runtime_identity_receipt(pilot_args, tmp_path, corrupt):
+    library = tmp_path / "library.dylib"
+    library.write_bytes(b"library")
+    identity = {"schemaVersion": 1, "binarySha256": ri.sha256_file(pilot_args.intarna),
+                "dynamicLibraries": [{"path": str(library), "sha256": ri.sha256_file(library)}]}
+    if corrupt == "binary": identity["binarySha256"] = "bad"
+    elif corrupt == "library": identity["dynamicLibraries"][0]["sha256"] = "bad"
+    elif corrupt == "duplicate": identity["dynamicLibraries"] *= 2
+    elif corrupt == "schema": identity = {}
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(json.dumps(identity))
+    pilot_args.runtime_identity = receipt
+    if corrupt is None:
+        assert ri.run_pilot(pilot_args)["provenance"]["runtimeIdentity"] == identity
+    else:
+        with pytest.raises(ri.PilotError):
+            ri.run_pilot(pilot_args)
+        assert not pilot_args.output_dir.exists()
+
+
+@pytest.mark.parametrize("signum,stubborn,phase", [
+    (signal.SIGTERM, False, "child"), (signal.SIGTERM, True, "child"),
+    (signal.SIGINT, False, "child"), (signal.SIGTERM, False, "publish"),
+])
+def test_cli_signal_cleans_owned_child_temporary_and_output(tmp_path, signum, stubborn, phase):
+    marker = tmp_path / "ready.json"
+    temporary = tmp_path / "temporary"
+    temporary.mkdir()
+    output = tmp_path / "output"
+    archive = tmp_path / "archive"
+    archive.write_bytes(b"test archive")
+    binary = tmp_path / "IntaRNA"
+    binary.write_text(f"#!{sys.executable}\n" + '''
+import json, os, signal, sys, time
+from pathlib import Path
+if '--version' in sys.argv:
+    print('IntaRNA 3.4.1')
+elif '--fullhelp' in sys.argv:
+    print('help')
+else:
+    if os.environ['INTARNA_TEST_STUBBORN'] == '1':
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    Path(os.environ['INTARNA_TEST_MARKER']).write_text(json.dumps({
+        'child': os.getpid(), 'parent': os.getppid(), 'cwd': os.getcwd()}))
+    while True: time.sleep(1)
+''')
+    binary.chmod(0o755)
+    launcher = tmp_path / "launcher.py"
+    launcher.write_text('''
+import hashlib, json, os, sys, time
+from pathlib import Path
+sys.path.insert(0, sys.argv.pop(1))
+import regulatory_intarna as ri
+ri.SOURCE_SHA256 = hashlib.sha256(Path(sys.argv[sys.argv.index('--source-archive')+1]).read_bytes()).hexdigest()
+target=ri.Window('target',ri.EXAMPLE_TARGET,'synthetic')
+query=ri.Window('query',ri.EXAMPLE_QUERY,'synthetic')
+ri.prepare_native=lambda *args: ([query],[target])
+if os.environ['INTARNA_TEST_PHASE'] == 'publish':
+    ri.run_pilot=lambda args: ri.publish(args.output_dir,{'first':'owned','second':'owned'})
+    original=Path.open
+    def opened(self,*args,**kwargs):
+        if self.name=='second':
+            Path(os.environ['INTARNA_TEST_MARKER']).write_text(json.dumps({'parent':os.getpid()}))
+            while True: time.sleep(1)
+        return original(self,*args,**kwargs)
+    Path.open=opened
+ri.main()
+''')
+    tools = Path(ri.__file__).parent
+    env = {**os.environ, "TMPDIR": str(temporary), "INTARNA_TEST_MARKER": str(marker),
+           "INTARNA_TEST_STUBBORN": "1" if stubborn else "0", "INTARNA_TEST_PHASE": phase}
+    command = [sys.executable, str(launcher), str(tools), "--intarna", str(binary),
+               "--source-archive", str(archive), "--fasta", str(archive), "--gff", str(archive),
+               "--output-dir", str(output)]
+    unrelated = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    parent = subprocess.Popen(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    receipt = None
+    try:
+        deadline = time.monotonic() + 10
+        while not marker.exists() and parent.poll() is None and time.monotonic() < deadline:
+            time.sleep(0.02)
+        assert marker.exists(), parent.communicate(timeout=5)
+        receipt = json.loads(marker.read_text())
+        assert receipt["parent"] == parent.pid
+        if phase == "child":
+            assert Path(receipt["cwd"]).parent == temporary
+            assert (Path(receipt["cwd"]) / "target.fa").is_file()
+        else:
+            assert (output / "first").is_file()
+        parent.send_signal(signum)
+        stdout, stderr = parent.communicate(timeout=10)
+        assert parent.returncode == 143 if signum == signal.SIGTERM else parent.returncode in (-2, 130)
+        assert not output.exists()
+        assert not list(temporary.iterdir())
+        assert unrelated.poll() is None
+        if "child" in receipt:
+            with pytest.raises(ProcessLookupError):
+                os.kill(receipt["child"], 0)
+        if signum == signal.SIGTERM:
+            assert stdout == stderr == ""
+    finally:
+        if parent.poll() is None:
+            parent.kill()
+        parent.communicate(timeout=5)
+        if receipt and "child" in receipt:
+            try: os.kill(receipt["child"], signal.SIGKILL)
+            except ProcessLookupError: pass
+        unrelated.terminate()
+        unrelated.wait(timeout=5)
+
+
 def test_parser():
     args = ri.parser().parse_args(["--intarna", "binary", "--source-archive", "src",
                                   "--fasta", "fasta", "--gff", "gff", "--output-dir", "out"])
@@ -358,7 +639,8 @@ def test_actual_native_reproducibility(tmp_path):
         intarna=root / "runtime/bin/IntaRNA", source_archive=root / "source/intaRNA-3.4.1.tar.gz",
         fasta=native / "GCF_000817325.1_ASM81732v1_genomic.fna.gz",
         gff=native / "GCF_000817325.1_ASM81732v1_genomic.gff.gz",
-        output_dir=tmp_path / "run1", timeout_seconds=60, shuffle_seed=2973)
+        output_dir=tmp_path / "run1", timeout_seconds=60, shuffle_seed=2973,
+        runtime_identity=root / "runtime-identity.json" if (root / "runtime-identity.json").exists() else None)
     first = ri.run_pilot(args)
     args.output_dir = tmp_path / "run2"
     second = ri.run_pilot(args)
@@ -388,3 +670,17 @@ def test_actual_native_reproducibility(tmp_path):
     assert all(r["query"]["start"] is None for r in controls)
     assert all(r["nativeInputOverlapNt"] is None for r in controls)
     assert all(record["queryNativeInterval"] is None for r in controls for record in r["records"])
+    renamed = tmp_path / "IntaRNA1"
+    shutil.copy2(args.intarna, renamed)
+    assert ri.sha256_file(renamed) == first["provenance"]["binarySha256"]
+    args.intarna = renamed
+    args.output_dir = tmp_path / "renamed"
+    renamed_payload = ri.run_pilot(args)
+    assert renamed_payload["runs"] == first["runs"]
+    assert renamed_payload["provenance"]["binaryFileName"] == "IntaRNA1"
+    # The file name is genuine provenance; fullhelp may mention the invoked name.
+    renamed_payload["provenance"]["binaryFileName"] = first["provenance"]["binaryFileName"]
+    assert renamed_payload == first
+    for path in (tmp_path / "run1").iterdir():
+        if path.name not in ("pilot.json", "fullhelp.txt"):
+            assert path.read_bytes() == (tmp_path / "renamed" / path.name).read_bytes()

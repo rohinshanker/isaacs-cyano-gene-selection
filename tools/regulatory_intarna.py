@@ -16,8 +16,11 @@ import platform
 import random
 import re
 import shutil
+import signal
 import subprocess
 import tempfile
+import threading
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -38,6 +41,7 @@ FIELDS = (
     "seedStart1", "seedEnd1", "seedStart2", "seedEnd2", "seedE",
 )
 BASE_FLAGS = (
+    "--personality=IntaRNA3",
     "--model=X", "--mode=H", "--energy=V", "--temperature=37",
     "--seedBP=7", "--seedMaxUP=0", "--acc=C", "--accW=150", "--accL=100",
     "--outMode=C", "--outNumber=1", "--outBestSeedOnly", "--threads=1",
@@ -150,18 +154,81 @@ def prepare_native(fasta: Path, gff: Path) -> tuple[list[Window], list[Window]]:
     return queries, targets
 
 
-def execute(binary: Path, arguments: list[str], cwd: Path, timeout: float) -> str:
+@contextmanager
+def defer_interrupts():
+    """Defer callable signal handlers until a newly acquired resource is owned.
+
+    Do not mask signals: subprocesses must inherit their ordinary signal mask.
+    Worker threads cannot install handlers and leave process-wide state alone.
+    """
+    if threading.current_thread() is not threading.main_thread():
+        yield
+        return
+    previous = {}
+    pending = []
     try:
-        result = subprocess.run([str(binary), *arguments], cwd=cwd, text=True,
-                                capture_output=True, timeout=timeout, check=False,
-                                env={**os.environ, "OMP_NUM_THREADS": "1", "LC_ALL": "C"})
-    except (OSError, subprocess.TimeoutExpired) as error:
-        raise PilotError(f"IntaRNA execution failed: {error}") from error
-    if result.returncode:
-        raise PilotError(f"IntaRNA exit {result.returncode}: {result.stderr[-2000:]} {result.stdout[-2000:]}")
-    if result.stderr.strip():
-        raise PilotError(f"IntaRNA stderr requires inspection: {result.stderr[-2000:]}")
-    return result.stdout
+        for signum in (signal.SIGTERM, signal.SIGINT):
+            handler = signal.getsignal(signum)
+            if callable(handler):
+                previous[signum] = handler
+                signal.signal(signum, lambda number, frame: pending.append((number, frame)))
+        yield
+    finally:
+        for signum, handler in previous.items():
+            signal.signal(signum, handler)
+        for signum, frame in pending:
+            previous[signum](signum, frame)
+
+
+def terminate_child(process: subprocess.Popen, error: BaseException) -> None:
+    """Terminate/reap only the Popen child owned by this call, never a name/group."""
+    try:
+        with defer_interrupts():
+            if process.poll() is None:
+                process.terminate()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=2)
+    except OSError as cleanup_error:
+        error.add_note(f"could not terminate owned child PID {process.pid}: {cleanup_error}")
+    except subprocess.TimeoutExpired:
+        error.add_note(f"owned child PID {process.pid} was not reaped after kill")
+
+
+def execute(binary: Path, arguments: list[str], cwd: Path, timeout: float) -> str:
+    process = None
+    failure = None
+    try:
+        with defer_interrupts():
+            process = subprocess.Popen(
+                [str(binary), *arguments], cwd=cwd, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                env={**os.environ, "OMP_NUM_THREADS": "1", "LC_ALL": "C"})
+        stdout, stderr = process.communicate(timeout=timeout)
+    except BaseException as error:
+        failure = error
+        if process is not None:
+            terminate_child(process, error)
+        if isinstance(error, (OSError, subprocess.TimeoutExpired)):
+            raise PilotError(f"IntaRNA execution failed: {error}") from error
+        raise
+    finally:
+        if process is not None:
+            for pipe in (process.stdout, process.stderr):
+                if pipe is not None:
+                    try:
+                        pipe.close()
+                    except OSError as cleanup_error:
+                        if failure is None:
+                            raise
+                        failure.add_note(f"could not close owned child pipe: {cleanup_error}")
+    if process.returncode:
+        raise PilotError(f"IntaRNA exit {process.returncode}: {stderr[-2000:]} {stdout[-2000:]}")
+    if stderr.strip():
+        raise PilotError(f"IntaRNA stderr requires inspection: {stderr[-2000:]}")
+    return stdout
 
 
 def parse_report(raw: str, target: Window, query: Window, seed_bp: int = 7) -> list[dict]:
@@ -245,7 +312,7 @@ def run_interaction(binary: Path, target: Window, query: Window, directory: Path
     for name, window in (("target.fa", target), ("query.fa", query)):
         (directory / name).write_text(f">{window.id}\n{window.sequence}\n", encoding="utf-8")
     flags = list(BASE_FLAGS)
-    if variant == "global_accessibility":
+    if variant == "whole_input_window_folding":
         flags[flags.index("--accW=150")] = "--accW=0"
         flags[flags.index("--accL=100")] = "--accL=0"
     elif variant == "seed6":
@@ -259,16 +326,21 @@ def run_interaction(binary: Path, target: Window, query: Window, directory: Path
 
 def publish(output: Path, files: dict[str, str]) -> None:
     """Exclusive publication; remove only this run's directory on any failure."""
-    output.mkdir(parents=True, exist_ok=False)
+    owned = False
     try:
+        with defer_interrupts():
+            output.mkdir(parents=True, exist_ok=False)
+            owned = True
         for name, value in files.items():
             with (output / name).open("x", encoding="utf-8", newline="") as handle:
                 handle.write(value)
     except BaseException as error:
-        try:
-            shutil.rmtree(output)
-        except OSError as cleanup_error:
-            error.add_note(f"partial output cleanup failed: {output}: {cleanup_error}")
+        if owned:
+            try:
+                with defer_interrupts():
+                    shutil.rmtree(output)
+            except OSError as cleanup_error:
+                error.add_note(f"partial output cleanup failed: {output}: {cleanup_error}")
         raise
 
 
@@ -282,15 +354,34 @@ def run_pilot(arguments: argparse.Namespace) -> dict:
         raise PilotError("missing/nonexecutable IntaRNA binary")
     if sha256_file(arguments.source_archive) != SOURCE_SHA256:
         raise PilotError("official source archive SHA-256 mismatch")
+    runtime_identity = None
+    if getattr(arguments, "runtime_identity", None) is not None:
+        try:
+            runtime_identity = json.loads(arguments.runtime_identity.read_text())
+            if runtime_identity["schemaVersion"] != 1 or runtime_identity["binarySha256"] != sha256_file(binary):
+                raise PilotError("runtime identity does not match executable")
+            libraries = runtime_identity["dynamicLibraries"]
+            if not libraries or len({row["path"] for row in libraries}) != len(libraries):
+                raise PilotError("runtime identity requires distinct dynamic library files")
+            for row in libraries:
+                path = Path(row["path"])
+                if not path.is_absolute() or sha256_file(path) != row["sha256"]:
+                    raise PilotError("runtime dynamic library identity mismatch")
+        except (KeyError, TypeError, json.JSONDecodeError) as error:
+            raise PilotError(f"invalid runtime identity schema: {error}") from error
     queries, targets = prepare_native(arguments.fasta, arguments.gff)
     runs, files = [], {}
-    with tempfile.TemporaryDirectory(prefix="intarna-pilot-") as tmp:
+    with ExitStack() as resources:
+        with defer_interrupts():
+            tmp = resources.enter_context(tempfile.TemporaryDirectory(prefix="intarna-pilot-"))
         directory = Path(tmp)
-        version = execute(binary, ["--version"], directory, arguments.timeout_seconds)
+        version_command = ["--personality=IntaRNA3", "--version"]
+        help_command = ["--personality=IntaRNA3", "--fullhelp"]
+        version = execute(binary, version_command, directory, arguments.timeout_seconds)
         if not re.search(r"(?m)^IntaRNA 3\.4\.1(?:\s|$)", version):
             raise PilotError("expected IntaRNA 3.4.1 version banner")
         files["version.txt"] = version
-        files["fullhelp.txt"] = execute(binary, ["--fullhelp"], directory, arguments.timeout_seconds)
+        files["fullhelp.txt"] = execute(binary, help_command, directory, arguments.timeout_seconds)
 
         def add(name: str, target: Window, query: Window, kind: str,
                 variant: str = "default") -> list[dict]:
@@ -321,24 +412,29 @@ def run_pilot(arguments: argparse.Namespace) -> dict:
         add("official-shuffled", target, shuffled(query, arguments.shuffle_seed), "shuffle_control")
         add("official-disrupted", target, disrupted(query, target, example[0]), "seed_disruption_control")
         for query in queries:
+            shuffled_query = shuffled(query, arguments.shuffle_seed)
             for target in targets:
                 name = f"{query.id}-{target.id}"
                 records = add(name, target, query, "native_window_interaction")
-                add(name + "-shuffled", target, shuffled(query, arguments.shuffle_seed), "shuffle_control")
+                add(name + "-shuffled", target, shuffled_query, "shuffle_control")
                 if records:
                     add(name + "-disrupted", target, disrupted(query, target, records[0]), "seed_disruption_control")
-                add(name + "-global", target, query, "parameter_sensitivity", "global_accessibility")
+                add(name + "-whole-window", target, query, "parameter_sensitivity", "whole_input_window_folding")
                 add(name + "-seed6", target, query, "parameter_sensitivity", "seed6")
     payload = {
-        "schemaVersion": 1, "method": "IntaRNA", "recordOrigin": "computed",
+        "schemaVersion": 2, "method": "IntaRNA", "recordOrigin": "computed",
         "evidenceBasis": "proxy", "interpretation": LIMITATION,
         "assembly": "GCF_000817325.1_ASM81732v1", "scoreUnits": "kcal/mol",
         "scoreMeaning": "E = E_hybrid + ED1 + ED2; lower energy favors the modeled interaction",
-        "controlLimitations": "One shuffle per query; neither shuffled nor disrupted RNAs are biological negatives. Mutation may relocate the optimal site and changes folding as well as pairing.",
+        "controlLimitations": "One shuffle per query reused across all three targets; neither shuffled nor disrupted RNAs are biological negatives. Mutation may relocate the optimal site and changes folding as well as pairing.",
         "skippedDisruptions": [run["name"] for run in runs if run["kind"] == "native_window_interaction" and not run["records"]],
-        "parameters": {"baseFlags": list(BASE_FLAGS), "otherParameters": "IntaRNA 3.4.1 defaults; retained fullhelp.txt", "shuffleSeed": arguments.shuffle_seed,
+        "parameters": {"baseFlags": list(BASE_FLAGS), "otherParameters": "IntaRNA3 personality, IntaRNA 3.4.1 defaults; retained fullhelp.txt", "shuffleSeed": arguments.shuffle_seed,
+                       "accessibilityContext": "Folding restricted to the supplied finite input windows, not complete native transcripts; whole_input_window_folding uses accW=accL=0",
                        "shuffleAlgorithm": "Python Random.shuffle seeded by SHA256(seed:queryID), mononucleotide composition preserved"},
         "provenance": {"sourceUrl": SOURCE_URL, "sourceSha256": SOURCE_SHA256,
+                       "binaryFileName": binary.name,
+                       "runtimeIdentity": runtime_identity,
+                       "versionCommand": version_command, "fullhelpCommand": help_command,
                        "binarySha256": sha256_file(binary), "versionBanner": version,
                        "fastaSha256": sha256_file(arguments.fasta), "gffSha256": sha256_file(arguments.gff),
                        "platform": platform.platform(), "python": platform.python_version(),
@@ -356,16 +452,25 @@ def parser() -> argparse.ArgumentParser:
         result.add_argument("--" + flag, type=Path, required=True)
     result.add_argument("--timeout-seconds", type=float, default=60)
     result.add_argument("--shuffle-seed", type=int, default=2973)
+    result.add_argument("--runtime-identity", type=Path,
+                        help="optional build receipt; validate binary and resolved dynamic library hashes")
     return result
 
 
 def main() -> None:
+    def handle_sigterm(signum, frame):
+        raise SystemExit(128 + signum)
+
+    previous = signal.signal(signal.SIGTERM, handle_sigterm)
     try:
-        payload = run_pilot(parser().parse_args())
-    except (PilotError, OSError, UnicodeError, EOFError) as error:
-        raise SystemExit(f"error: {error}") from error
-    print(json.dumps({"status": "ok", "runs": len(payload["runs"]),
-                      "interactions": sum(bool(run["records"]) for run in payload["runs"])}))
+        try:
+            payload = run_pilot(parser().parse_args())
+        except (PilotError, OSError, UnicodeError, EOFError) as error:
+            raise SystemExit(f"error: {error}") from error
+        print(json.dumps({"status": "ok", "runs": len(payload["runs"]),
+                          "interactions": sum(bool(run["records"]) for run in payload["runs"])}))
+    finally:
+        signal.signal(signal.SIGTERM, previous)
 
 
 if __name__ == "__main__":

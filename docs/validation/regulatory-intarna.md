@@ -62,44 +62,99 @@ SHA-256 `4fd338a9a7a62f4398a27f41783120abaad9bccdecd39387c436adb0601f0ed8`.
 Verify before extraction. The wrapper pins that archive and the executable's
 `IntaRNA 3.4.1` banner; it records the complete banner and executable hash.
 An archive hash alone is not binary-build attestation. Retain compiler,
-dependencies, configuration, build logs and the library linkage inspection.
+dependencies, configuration, build logs and actual library linkage.
 
-The demonstrated macOS arm64 build uses Apple Clang 21.0.0, Boost 1.85.0,
-ViennaRNA 2.7.0 and scratch-local LLVM OpenMP. Its executable SHA-256 is
-`4ef77a1e6b5fe655af6a79c328667d53530f6ffcf983d9304f74bbe23b4f5b58`.
-Other builds may differ; the banner records linked ViennaRNA and Boost versions.
-The checked-in [package identities](regulatory-intarna-dependencies-osx-arm64.json)
-retain all 35 package URLs, versions, build IDs, SHA-256 and MD5. Use the
-[explicit package manifest](regulatory-intarna-dependencies-osx-arm64.txt) to
-reproduce this solved set. Verify every downloaded archive against those hashes
-before extraction/assembly. These dependency files are build inputs, not
-biological data admission.
+The macOS arm64 recipe uses Apple Clang 21.0.0, Boost 1.85.0, ViennaRNA 2.7.0,
+LLVM OpenMP 23.1.3 and conda-forge **libcxx 23.1.3**. libRNA, including its energy
+parameters, is statically linked. Boost, OpenMP and libc++ are dynamically loaded
+through an **absolute scratch `LC_RPATH`**. Keep those libraries in place or
+rebuild for another prefix; moving only the binary is not a relocatable install.
+The reference executable hash is
+`4ef77a1e6b5fe655af6a79c328667d53530f6ffcf983d9304f74bbe23b4f5b58`;
+builds at another prefix can differ. Record the actual new binary hash.
 
-For isolated dependencies, use a scratch-local micromamba 2.3.2 with a scratch
-root prefix and `--download-only --no-rc --no-env`. This downloads/extracts without
-linking an environment or registering one in the user's shared environment list:
+The checked-in [JSON package identities](regulatory-intarna-dependencies-osx-arm64.json)
+retain all 35 exact URLs, versions, build IDs, SHA-256 and MD5. The matching
+[explicit manifest](regulatory-intarna-dependencies-osx-arm64.txt) retains the
+solved set for inspection. Dependency manifests are build inputs, not biological
+data admission. The steps below provide the complete reusable recipe; no
+essential input or recipe is available only in temporary evidence.
+
+### Bootstrap and verified extraction
+
+Set `scratch` to a fresh absolute task-owned directory, `python` to an existing
+Python interpreter, and `sdk` to `xcrun --show-sdk-path`. Do not change HOME,
+shared configuration or user caches. Bootstrap micromamba **2.3.2** from the
+[exact conda-forge osx-arm64 archive](https://conda.anaconda.org/conda-forge/osx-arm64/micromamba-2.3.2-0.tar.bz2),
+SHA-256 `ae0b50b441fef93abd20711f18b074359a7f8f1f523a8046a4d6ab44aa68ff1b`:
 
 ```sh
-"$scratch/bin/micromamba" create --no-rc --no-env \
-  --root-prefix "$scratch/mamba" --prefix "$scratch/download-only-prefix" \
-  --override-channels -c conda-forge -c bioconda --platform osx-arm64 \
-  --download-only -y boost-cpp=1.85 viennarna=2.7.0 llvm-openmp pkg-config
-# For the exact solved package set instead of the package constraints,
-# supply --file docs/validation/regulatory-intarna-dependencies-osx-arm64.txt.
+mkdir -p "$scratch/source"
+curl -fsSL https://conda.anaconda.org/conda-forge/osx-arm64/micromamba-2.3.2-0.tar.bz2 \
+  -o "$scratch/source/micromamba-2.3.2-0.tar.bz2"
+INTARNA_SCRATCH="$scratch" "$python" - <<'PY'
+import hashlib, os
+from pathlib import Path
+p = Path(os.environ["INTARNA_SCRATCH"]) / "source/micromamba-2.3.2-0.tar.bz2"
+if hashlib.sha256(p.read_bytes()).hexdigest() != "ae0b50b441fef93abd20711f18b074359a7f8f1f523a8046a4d6ab44aa68ff1b":
+    raise ValueError("micromamba archive SHA-256 mismatch")
+PY
+tar -xjf "$scratch/source/micromamba-2.3.2-0.tar.bz2" -C "$scratch" bin/micromamba
 ```
 
-Assemble the downloaded package files in scratch using an existing interpreter
-with conda's `update_prefix` API (on this Mac, `/opt/miniconda3/bin/python`). The
-following is the complete assembly recipe; it does not install/register an
-environment or alter shared packages. Use a fresh `deps` directory. Set
-`INTARNA_SCRATCH` to the same absolute scratch root used above, and keep
-`PYTHONDONTWRITEBYTECODE=1` when invoking the interpreter.
+**Do not use `micromamba create --download-only`.** It still creates prefix
+metadata, registers an environment and may create a shared user cache. `--no-env`
+disables reading environment variables, not environment registration.
+Download each exact JSON-manifest URL, verify SHA-256 **before** extraction,
+then invoke only `micromamba package extract`. Save/run this Python block from
+the repository root with `INTARNA_SCRATCH="$scratch" "$python"`:
+
+```python
+import hashlib
+import json
+import os
+import subprocess
+import urllib.request
+from pathlib import Path
+
+root = Path(os.environ["INTARNA_SCRATCH"])
+packages = json.loads(Path("docs/validation/regulatory-intarna-dependencies-osx-arm64.json").read_text())
+archives = root / "archives"
+archives.mkdir()  # Refuse existing download output.
+receipts = []
+for package in packages:
+    archive = archives / package["url"].rsplit("/", 1)[-1]
+    with urllib.request.urlopen(package["url"], timeout=60) as response, archive.open("xb") as output:
+        while chunk := response.read(1024 * 1024):
+            output.write(chunk)
+    if hashlib.sha256(archive.read_bytes()).hexdigest() != package["sha256"]:
+        raise ValueError(f"archive SHA-256 mismatch: {archive.name}")
+    destination = root / "mamba/pkgs" / f"{package['name']}-{package['version']}-{package['build']}"
+    subprocess.run([str(root / "bin/micromamba"), "--no-rc", "--no-env", "package", "extract",
+                    str(archive), str(destination)], check=True)
+    if not (destination / "info/paths.json").is_file():
+        raise ValueError(f"missing paths manifest: {archive.name}")
+    receipts.append({**package, "sha256VerifiedBeforeExtraction": True})
+(root / "download-extraction-receipts.json").write_text(json.dumps(receipts, indent=2) + "\n")
+```
+
+No solve/create/link command is invoked. Archive and extraction paths are
+task-owned scratch, and a failed hash stops before that archive is extracted.
+Do not clean shared user directories.
+
+### Assemble and adapt scratch metadata
+
+Run the following block with an existing interpreter providing conda's
+`update_prefix` API (`/opt/miniconda3/bin/python` on this Mac), setting
+`INTARNA_SCRATCH="$scratch" PYTHONDONTWRITEBYTECODE=1`. It copies packages and
+relocates prefixes only in a fresh scratch `deps` directory; it does not invoke
+environment installation or registration:
 
 ```python
 import json
 import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 from conda.core.portability import update_prefix
 from conda.models.enums import FileMode
 
@@ -125,52 +180,146 @@ for package in sorted((root / "mamba/pkgs").iterdir()):
                           FileMode(row["file_mode"]), subdir="osx-arm64")
 ```
 
-The scratch package cache must contain only this verified manifest's packages.
-If assembly fails, retain diagnostics and remove only that new scratch `deps`
-directory before a retry. Source archives, compiler and package tooling stay
-outside the tracked repository. No shared environment, brew installation or
-shell profile is changed.
+The scratch extraction cache must contain only this manifest's verified packages.
+After a failed assembly, retain diagnostics and remove only that new scratch
+`deps` directory before retrying. No shared packages, brew installation or shell
+profile are edited.
 
-On this Mac, explicitly include the SDK C++ headers because the compiler's
-default C++ header directory lacks `ctime`. The conda RNAlib `RNAlib2.pc` passes
-`-Wl,-fno-lto`, which Apple's linker rejects. Remove that one token from the
-scratch copy only, retaining the original file and both hashes. IntaRNA's source
-and RNA model parameters remain unchanged. Inside the extracted distribution:
+The compiler's default C++ header directory on this Mac lacks `ctime`; include
+the SDK's C++ headers explicitly. The conda RNAlib `RNAlib2.pc` passes
+`-Wl,-fno-lto`, which Apple's linker rejects. Remove exactly that token from the
+scratch metadata and record its before/after hashes. At reference prefix
+`/tmp/cyano-regulatory-completion-20261014/intarna/deps`, the hashes are:
+
+| RNAlib metadata | SHA-256 |
+| --- | --- |
+| Before edit | `0b42e34aa74391390d96cb35fdf58fda9104efe4f27eae21a8b6c80ee05d0c69` |
+| After edit | `a42245ea51fcf70b50e80f5bf52d147d54b23a74cf81b11e1a654a7042c8e74c` |
+
+Metadata includes the relocated prefix, so another prefix changes these hashes.
+Use this block to record the actual hashes:
+
+```python
+import hashlib, json, os
+from pathlib import Path
+root = Path(os.environ["INTARNA_SCRATCH"])
+p = root / "deps/lib/pkgconfig/RNAlib2.pc"
+before = p.read_bytes()
+if before.count(b"-Wl,-fno-lto ") != 1:
+    raise ValueError("unexpected RNAlib metadata")
+p.with_suffix(".pc.original").write_bytes(before)
+p.write_bytes(before.replace(b"-Wl,-fno-lto ", b""))
+(root / "rnalib-metadata-hashes.json").write_text(json.dumps({
+    "prefix": str(root / "deps"), "before": hashlib.sha256(before).hexdigest(),
+    "after": hashlib.sha256(p.read_bytes()).hexdigest(),
+    "edit": "remove one -Wl,-fno-lto token only"}, indent=2) + "\n")
+```
+
+### Compile, inspect architecture and attest loaded libraries
+
+Download, verify and extract the official source, retaining its tag-addressed
+LICENSE alongside the archive:
+
+```sh
+curl -fsSL https://github.com/BackofenLab/IntaRNA/releases/download/v3.4.1/intaRNA-3.4.1.tar.gz \
+  -o "$scratch/source/intaRNA-3.4.1.tar.gz"
+INTARNA_SCRATCH="$scratch" "$python" - <<'PY'
+import hashlib, os
+from pathlib import Path
+p = Path(os.environ["INTARNA_SCRATCH"]) / "source/intaRNA-3.4.1.tar.gz"
+if hashlib.sha256(p.read_bytes()).hexdigest() != "4fd338a9a7a62f4398a27f41783120abaad9bccdecd39387c436adb0601f0ed8":
+    raise ValueError("IntaRNA source SHA-256 mismatch")
+PY
+tar -xzf "$scratch/source/intaRNA-3.4.1.tar.gz" -C "$scratch/source"
+curl -fsSL https://raw.githubusercontent.com/BackofenLab/IntaRNA/v3.4.1/LICENSE \
+  -o "$scratch/source/LICENSE"
+```
+
+Inside `source/intaRNA-3.4.1`, use explicit system compiler paths and `-arch arm64`:
 
 ```sh
 ./configure --prefix="$scratch/runtime" \
   --with-boost="$scratch/deps" --with-boost-libdir="$scratch/deps/lib" \
-  --with-vrna="$scratch/deps" CC=clang CXX=clang++ \
-  CPPFLAGS="-I$scratch/deps/include" \
-  CXXFLAGS="-O2 -Xpreprocessor -fopenmp -I$scratch/deps/include -isystem $sdk/usr/include/c++/v1" \
+  --with-vrna="$scratch/deps" CC=/usr/bin/clang CXX=/usr/bin/clang++ \
+  CPPFLAGS="-I$scratch/deps/include" CFLAGS="-arch arm64" \
+  CXXFLAGS="-arch arm64 -O2 -Xpreprocessor -fopenmp -I$scratch/deps/include -isystem $sdk/usr/include/c++/v1" \
   LDFLAGS="-L$scratch/deps/lib -Wl,-rpath,$scratch/deps/lib -lomp" \
   PKG_CONFIG="$scratch/deps/bin/pkg-config" \
   PKG_CONFIG_PATH="$scratch/deps/lib/pkgconfig"
 make -j2
 make install
-"$scratch/runtime/bin/IntaRNA" --version
-otool -L "$scratch/runtime/bin/IntaRNA"
+"$scratch/runtime/bin/IntaRNA" --personality=IntaRNA3 --version
+/usr/bin/arch -arm64 /usr/bin/clang++ --version > "$scratch/compiler-arm64.txt"
+/usr/bin/file "$scratch/runtime/bin/IntaRNA" > "$scratch/binary-file.txt"
+/usr/bin/lipo -archs "$scratch/runtime/bin/IntaRNA" > "$scratch/binary-architecture.txt"
+/usr/bin/otool -L "$scratch/runtime/bin/IntaRNA" > "$scratch/linkage.txt"
+/usr/bin/otool -l "$scratch/runtime/bin/IntaRNA" > "$scratch/load-commands.txt"
 ```
 
-Set `scratch` to an absolute, task-owned directory and `sdk` to
-`xcrun --show-sdk-path`. Runtime libraries remain in scratch. The bundled old
-Catch test harness declares a signed random-generator result type, which modern
-libc++ rejects in C++14-and-later `std::shuffle`. Compile upstream tests in the
-release's documented C++11 mode, without editing source:
+A compiler banner from another process architecture does not establish this
+binary's target. Keep the arm64 compiler/file/lipo checks and explicit configure
+flags together. Direct linkage includes five Boost libraries (`regex`,
+`program_options`, `filesystem`, `system`, `iostreams`), OpenMP, libc++ and OS
+libraries. Record **actual resolved loader paths** and task-local file hashes
+with this block, run from the repository root:
+
+```python
+import hashlib, json, os, platform, re, subprocess
+from pathlib import Path
+root = Path(os.environ["INTARNA_SCRATCH"])
+binary = root / "runtime/bin/IntaRNA"
+trace = subprocess.run([str(binary), "--personality=IntaRNA3", "--version"],
+    env={**os.environ, "DYLD_PRINT_LIBRARIES": "1"}, text=True, capture_output=True, check=True)
+(root / "dyld-loaded-libraries.txt").write_text(trace.stderr)
+libraries = set()
+for line in trace.stderr.splitlines():
+    match = re.match(r"dyld\[\d+\]: <[^>]+> (/.+)$", line)
+    if match:
+        path = Path(match[1]).resolve()
+        if path.is_relative_to((root / "deps").resolve()) and path.is_file():
+            libraries.add(path)
+if not any(path.name.startswith("libc++.") for path in libraries):
+    raise ValueError("loader did not identify task-local libc++")
+identity = {
+    "schemaVersion": 1, "binarySha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
+    "architecture": subprocess.check_output(["/usr/bin/lipo", "-archs", str(binary)], text=True).strip(),
+    "platform": platform.platform(),
+    "packageManifestSha256": hashlib.sha256(Path("docs/validation/regulatory-intarna-dependencies-osx-arm64.json").read_bytes()).hexdigest(),
+    "libcxxPackageVersion": "23.1.3",
+    "rnAlibMetadata": json.loads((root / "rnalib-metadata-hashes.json").read_text()),
+    "dynamicLibraries": [{"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+                         for path in sorted(libraries)],
+    "scope": "task-local libraries loaded by the version call; OS shared-cache libraries retained in loader/linkage logs, not file-hashed"}
+(root / "runtime-identity.json").write_text(json.dumps(identity, indent=2) + "\n")
+```
+
+Pass this receipt as `--runtime-identity` to retain it in `pilot.json`; the wrapper
+verifies the executable and every listed dynamic library's file hash before
+execution. Omission is explicit (`runtimeIdentity: null`), not library attestation.
+The receipt records an observed build identity, not independent source-derivation
+proof. Python's [Popen contract](https://docs.python.org/3.12/library/subprocess.html)
+and [signal handler contract](https://docs.python.org/3.12/library/signal.html)
+govern owned-child termination and CLI cleanup.
+
+The bundled old Catch harness uses a signed random-generator result type which
+modern libc++ rejects in C++14-and-later `std::shuffle`. Compile upstream tests
+in the release's documented C++11 mode, without changing source:
 
 ```sh
 make -C tests clean
 make -C tests check -j2 \
-  CXXFLAGS="-O2 -std=c++11 -Xpreprocessor -fopenmp -I$scratch/deps/include -isystem $sdk/usr/include/c++/v1"
+  CXXFLAGS="-arch arm64 -O2 -std=c++11 -Xpreprocessor -fopenmp -I$scratch/deps/include -isystem $sdk/usr/include/c++/v1"
 ```
 
-The API suite passes 3,859 assertions in 30 cases; its CLI suite also passes.
-The initial compiler/linker/test diagnostics and corrective flags are retained in
-the evidence bundle. These compatibility repairs do not establish historical
-version parity or biological calibration.
+The regression oracle is 3,859 API assertions in 30 cases plus the CLI suite.
+Compatibility flags preserve runtime/model source; passing tests does not
+establish historical version parity or biological calibration.
+
 
 ## Parameters, controls and output checks
 
+Prediction, version and fullhelp calls pin `--personality=IntaRNA3`, so a
+renamed regular copy cannot silently select legacy parameters from its file name.
 The base prediction uses `--model=X --mode=H --energy=V --temperature=37`,
 `--seedBP=7 --seedMaxUP=0`, computed accessibilities
 `--acc=C --accW=150 --accL=100`, one reported optimum and one thread. Remaining
@@ -195,8 +344,10 @@ The official README's synthetic positive example uses target
 seed-disruption controls are also run. It is a runtime control, not a donor or
 UTEX benchmark.
 
-Each native pair has a deterministic composition-preserving query shuffle
-(seed 2973; Python `Random.shuffle` initialized from SHA-256 of seed and query ID).
+Each native query has one deterministic composition-preserving shuffle
+(seed 2973; Python `Random.shuffle` initialized from SHA-256 of seed and query ID),
+reused unchanged across all three targets. These are three query shuffles,
+not nine independent null replicates.
 For each default interaction, every query base in the reported best seed is
 replaced by the same base as its target partner, removing that seed's original
 complementarity. Exact mutated sequence and original seed positions are retained.
@@ -204,12 +355,18 @@ Pairs without a reported interaction have an explicit skipped-disruption entry.
 Mutation can alter folding and move the optimal interaction; persistence of a
 different interaction is retained. Neither control is a proven biological negative.
 
-Two independent parameter sensitivities retain the native sequences: global
-accessibility (`accW=accL=0`) and a six-base seed. Together the experiment contains
+Two parameter sensitivities retain the native sequences: whole-input-window
+folding (`accW=accL=0`, variant `whole_input_window_folding`) and a six-base seed.
+ED always depends on the supplied finite input window. Setting both limits to
+zero folds that input window as a whole; it does not recover missing transcript
+context. At lengths 63 and 103, the default 150-nt accessibility window already
+covers the full query. For 150-nt targets, this sensitivity primarily removes the
+100-nt base-pair-span limit. The 163-nt query also changes sliding-window context.
+Together the experiment contains
 39..48 runs, depending on how many default native pairs support a disruption.
 
 The observed pinned-library pilot has 44 runs: default native 5/9 interactions,
-shuffled-native 8/9, disrupted-native 4/5, global-accessibility 6/9 and six-base-seed
+shuffled-native 8/9, disrupted-native 4/5, whole-input-window-folding 6/9 and six-base-seed
 8/9. Both official-example controls report no interaction. All three default
 ±50-nt-window interactions occur entirely in the added upstream flank outside
 RF01116. These are sensitivity/null observations, **not target recovery, accuracy,
@@ -223,6 +380,7 @@ Use the canonical assembly files read-only, with a new output directory:
 ```sh
 "$python" tools/regulatory_intarna.py \
   --intarna "$scratch/runtime/bin/IntaRNA" \
+  --runtime-identity "$scratch/runtime-identity.json" \
   --source-archive "$scratch/source/intaRNA-3.4.1.tar.gz" \
   --fasta "$native/GCF_000817325.1_ASM81732v1_genomic.fna.gz" \
   --gff "$native/GCF_000817325.1_ASM81732v1_genomic.gff.gz" \
@@ -231,16 +389,27 @@ INTARNA_PILOT_RUNTIME="$scratch" INTARNA_PILOT_NATIVE_DIR="$native" \
   "$python" -m pytest -q tests/test_regulatory_intarna.py
 ```
 
-`pilot.json` is schema version 1, with exact input sequences/hashes, coordinates,
+`pilot.json` is schema version 2, with exact input sequences/hashes, coordinates,
 annotation context, commands, raw hashes, parsed interactions and limitations.
 Per-run CSV and FASTA files, `version.txt` and `fullhelp.txt` are preserved.
-The integration test compares two complete runs byte for byte and independently
-round-trips every native window and base-pair position against the genome.
+The integration test compares two complete runs byte for byte, compares actual
+renamed-copy numerical outputs, and independently round-trips every native window and base-pair position against the genome.
 The producer uses disposable execution scratch, refuses existing output paths,
-and removes its own partially published directory on failure or interruption.
+and removes its own partially published directory on Python exceptions, SIGINT
+and handled SIGTERM. The CLI SIGTERM handler unwinds cleanup with exit **143**;
+SIGINT keeps its existing behavior. An in-flight child is terminated and reaped
+through its exact Popen handle, escalating to kill only that child if it ignores
+termination. No process-name or process-group kills are used. Signal handlers
+are restored for programmatic callers. Acquisition defers callable handlers
+until the child, temporary directory or output directory is owned; child signal
+masks are not changed.
+There is **no SIGKILL cleanup guarantee** for the wrapper. Cleanup can fail if
+the OS refuses deletion or child termination; such failures retain diagnostics.
 Cleanup failures are reported without masking the original exception. Preexisting
-outputs remain untouched. Nothing enters the source tree except the tool, tests
-and this runbook.
+outputs remain untouched. A renamed binary records its real `binaryFileName`;
+only that provenance field may differ in `pilot.json` for the same build. Fullhelp
+may also include the invoked file name; CSV/FASTA numerical outputs must agree.
+The source tree contains the tool, tests, runbook and exact dependency manifests.
 
 ## Primary-source receipts and scientific limit
 
