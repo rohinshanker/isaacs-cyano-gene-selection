@@ -79,5 +79,24 @@
       "sha256": "ba7e3514e8651a8a56be846df51c1395dc45cb66b707d88d36a0dcfb9958fe90",
       "verified": "2026-10-14"
     }
+  ],
+  "interpretationSources": [
+    {
+      "url": "https://geneontology.org/docs/go-annotations/",
+      "retrieved": "2026-10-14",
+      "bytes": 32137,
+      "sha256": "1bbc4686f753f2f81665a7243b2039a30363ec13ef8032240089c1fbd9161c14",
+      "quotedAnchors": [
+        {
+          "location": "Standard GO annotation principles",
+          "quote": "Missing annotations do not imply the gene product lacks any given molecular function"
+        },
+        {
+          "location": "The NOT modifier",
+          "quote": "Both positive and NOT statements can be used between a single gene product and a GO term"
+        }
+      ],
+      "application": "A term match is evidence presence in the annotation reference. Distinguish explicit NOT, conflicting positive/NOT, ND, obsolete terms and missing annotation. These are transferred reference statements, not recoded-strain measurements."
+    }
   ]
 }

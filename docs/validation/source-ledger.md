@@ -106,6 +106,10 @@ of the exact admitted UniProtKB/GOA inputs and derived release. Terms were read
 
 No broad reviewed functional categories exist in this MG1655 release. Missing
 categories remain unknown; GO terms do not become lab-reviewed category labels.
+For term-level filtering, a missing annotation is unknown, not a negative
+functional result. Retain explicit NOT, conflicting statements and ND/no-data
+evidence without converting them to positive assignments. The source checks
+link the GO annotation principles and NOT-modifier definitions.
 The sequence crosswalk, ambiguity rules and rebuild checks belong to the
 [recoded annotation contract](recoded-functional-annotations.md).
 

@@ -43,14 +43,20 @@ nonrecoded parental/reference release for each target before transferring values
 - Existing admitted MG1655 UniProtKB/GOA release is the annotation reference;
   exact parent-stock equivalence is not asserted. Source pins and fresh terms
   receipts are recorded in the handoff JSON linked from the source ledger.
-- Baseline inventory: Syn57 has 3,588 included genes, no empty native names or
-  products; Syn61 has 3,549, 46 empty names and no empty products. Neither has
+- Baseline inventory: Syn57 has 3,588 included genes, no empty published names or
+  products; Syn61 has 3,549, 46 empty published names and no empty published products. Neither has
   a rich annotation layer. MG1655 has curated function and evidence-coded GO,
   but no admitted broad reviewed categories. Those categories stay unknown.
 - Independent packed-sequence check normalizes only bacterial initiation to M:
   reciprocal unique MG1655 protein matches cover 3,542 Syn57 and 3,234 Syn61
   genes. Eight/two target genes respectively have ambiguous exact matches;
   38/313 have no exact match. These are baseline checks, not released counts.
+
+Native source refinement: Syn57 `yddH` and `iroK` have only `standard_name`,
+without `gene` or `product` qualifiers; the published names and "uncharacterized
+design CDS" products are builder fallbacks. Their absent fields must remain
+separate from genuine native annotations. Native EC qualifiers occur on 1,432
+plotted Syn57 and 1,411 plotted Syn61 genes (1,437/1,414 across all source CDSs).
 
 ## Findings
 
