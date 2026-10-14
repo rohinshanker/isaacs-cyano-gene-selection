@@ -162,6 +162,7 @@ def fake_inputs(monkeypatch,tmp_path):
     monkeypatch.setattr(s,'require_pin',lambda *a:None)
     monkeypatch.setattr(s,'native_cohort',lambda *a:independent_rows())
     monkeypatch.setattr(s,'load_fasta',lambda *a:dict(a='ACGT'*25))
+    monkeypatch.setattr(s,'genomic_background',lambda genomes,rows,evaluation,*a:dict(runs=[dict(replicate=i, rows=deepcopy(evaluation), controls=deepcopy(evaluation)) for i in range(1,4)]))
     monkeypatch.setattr(s,'execute',lambda *a:argparse.Namespace(stdout='5.5.9'))
     monkeypatch.setattr(s,'streme_run',lambda *a,**k:dict(argv=['fake'],motifs=[dict(id='m',pwm=pwm('CGTCGATC'))]))
     return args
@@ -216,7 +217,8 @@ def test_transaction_publication_failure_and_cleanup_denial(monkeypatch,tmp_path
     with pytest.raises(OSError,match='publish'):s.run_pilot(args)
     assert not args.output.exists() and not list(tmp_path.glob('.streme-*'))
     monkeypatch.setattr(s.shutil,'rmtree',lambda *a: (_ for _ in ()).throw(OSError('denied')))
-    with pytest.raises(s.PilotError,match='publish error; cleanup failed'):s.run_pilot(args)
+    with pytest.raises(OSError,match='publish error') as caught:s.run_pilot(args)
+    assert any('cleanup failed; remaining paths:' in note and 'denied' in note for note in caught.value.__notes__)
 
 
 @pytest.mark.parametrize('field,value',[('width',20),('timeout',0),('seed',-1)])
@@ -245,6 +247,15 @@ def test_real_native_execution(tmp_path):
     assert result['benchmarkRecovery'][0]['consensusRecovery']==7/8
     assert not result['benchmarkRecovery'][0]['exactFullConsensus']
     assert result['benchmarkExternal'][0]['alignmentOffsetAndStrandConsistent']>=90
+    assert len(result['genomicEvaluation'])==3
+    cohort=json.loads((args.output/'cohort.json').read_text())['rows']
+    genomic=json.loads((args.output/'genomic-cohort.json').read_text())
+    selected=[r for r in cohort if r['selected'] and r['partition']=='evaluation']
+    from collections import Counter
+    for run in genomic['runs']:
+        assert Counter((r['replicon'],r['strand']) for r in run['rows'])==Counter((r['replicon'],r['strand']) for r in selected)
+        assert all(not s.spans_overlap(r['physicalSegments'],genomic['excludedSegments'][r['replicon']]) for r in run['rows'])
+    assert result['coreFrequency']['nativeGenome']['byReplicon']['NZ_CP006471.1']['occurrences']==7385
 
 
 def test_native_cohort_pin_count_structure_and_window_validation(monkeypatch,tmp_path):
@@ -347,3 +358,134 @@ def test_durable_historical_fixture_pins_and_planted_offsets():
         sequences=s.load_fasta(root/name)
         assert len(sequences)==100 and all(len(value)==100 for value in sequences.values())
     assert all(s.PLANT in sequence for sequence in s.load_fasta(root/'foreground.fasta').values())
+
+
+def test_expanded_exclusion_circular_origin_and_full_replicon():
+    rows=[row('a','A'*4,1),row('b','A'*4,18)]
+    excluded=s.expanded_exclusions(rows,{'chr':24,'empty':30},2)
+    assert excluded==dict(chr=[[1,6],[16,24]],empty=[])
+    assert s.spans_overlap([[24,24]],excluded['chr'])
+    assert not s.spans_overlap([[7,15]],excluded['chr'])
+    assert s.expanded_exclusions(rows,{'chr':24},20)==dict(chr=[[1,24]])
+    with pytest.raises(s.PilotError,match='margin'):s.expanded_exclusions(rows,{'chr':24},-1)
+
+
+def test_genomic_samples_match_quotas_determinism_and_all_exclusions():
+    from collections import Counter
+    genome='ACGTTGCA'*1250
+    admitted=[row('selected','A'*100,500),row('unselected','A'*100,3000)]
+    # The unselected admitted row must still exclude its neighbourhood.
+    templates=[dict(id='plus',replicon='chr',strand='+'),dict(id='minus',replicon='chr',strand='-')]
+    result=s.genomic_background({'chr':genome},admitted,templates,100,2973)
+    assert result==s.genomic_background({'chr':genome},list(reversed(admitted)),list(reversed(templates)),100,2973)
+    occupied=[]
+    for run in result['runs']:
+        assert Counter(r['strand'] for r in run['rows'])=={'+':1,'-':1}
+        for r,c in zip(run['rows'],run['controls']):
+            assert not s.spans_overlap(r['physicalSegments'],result['excludedSegments']['chr'])
+            assert not s.spans_overlap(r['physicalSegments'],s.merged_intervals(occupied))
+            occupied+=r['physicalSegments']
+            assert r['sequence']==s.upstream_window(genome,r['syntheticWindowAnchor'],r['strand'],100)['sequence']
+            assert all(s.word_counts(r['sequence'],k)==s.word_counts(c['sequence'],k) for k in [1,2,3])
+            candidate=run['candidates'][r['candidateIndex']]
+            assert candidate['disposition']=='selected' and candidate['physicalSegments']==r['physicalSegments']
+    assert len(occupied)>=6
+
+
+def test_genomic_selection_rejection_reasons_exhaustion_and_bounds(monkeypatch):
+    draws=iter([100,500,500,800])
+    class Rng:
+        def __init__(self,*a):pass
+        def randrange(self,*a):return next(draws)
+    original=s.random.Random
+    monkeypatch.setattr(s.random,'Random',Rng)
+    # Shuffle needs its own normal RNG; only replace it for this sampler probe.
+    monkeypatch.setattr(s,'shuffle_order2',lambda sequence,seed:sequence)
+    rows=[row('admitted','A'*30,101)]
+    templates=[dict(id='a',replicon='chr',strand='+'),dict(id='b',replicon='chr',strand='-')]
+    result=s.genomic_background({'chr':'ACGT'*300},rows,templates,30,7,margin=10,replicates=1)
+    assert result['runs'][0]['dispositionCounts']=={'admitted-window-margin':1,'selected':2,'background-overlap':1}
+    monkeypatch.setattr(s.random,'Random',original)
+    with pytest.raises(s.PilotError,match='exhausted'):
+        s.genomic_background({'chr':'A'*200},[row('all','A'*200,1)],templates,30,7,max_attempts=2)
+    for evaluation,reps,attempts in [([],1,2),(templates,0,2),(templates,4,2),(templates,1,0)]:
+        with pytest.raises(s.PilotError,match='bounds'):
+            s.genomic_background({'chr':'A'*200},[],evaluation,30,7,replicates=reps,max_attempts=attempts)
+
+
+def test_exact_core_frequency_circular_palindrome_counted_once():
+    assert s.exact_core_frequency([row('a','GCGATCGC'),row('b','A'*10)])['containingFraction']==.5
+    assert s.exact_core_frequency([])['containingFraction'] is None
+    # Only the origin-spanning word exists, and its reverse complement is identical.
+    result=s.genome_core_frequency({'chr':'ATCGCAAAAGCG'})
+    assert result['byReplicon']['chr']['occurrences']==1
+
+
+def test_missing_parent_is_rejected_without_creating_ancestors(monkeypatch,tmp_path):
+    args=fake_inputs(monkeypatch,tmp_path)
+    args.output=tmp_path/'absent'/'nested'/'output'
+    with pytest.raises(s.PilotError,match='parent must already exist'):s.run_pilot(args)
+    assert not (tmp_path/'absent').exists()
+
+
+@pytest.mark.parametrize('failure',[KeyboardInterrupt(),PermissionError('initial denial'),s.PilotError('bad report')])
+def test_cleanup_notes_preserve_original_exception_identity(monkeypatch,tmp_path,failure):
+    args=fake_inputs(monkeypatch,tmp_path)
+    def fail(*a,**kw):raise failure
+    monkeypatch.setattr(s,'streme_run',fail)
+    monkeypatch.setattr(s.shutil,'rmtree',lambda *a: (_ for _ in ()).throw(PermissionError('cleanup denied')))
+    with pytest.raises(type(failure)) as caught:s.run_pilot(args)
+    assert caught.value is failure
+    assert 'cleanup denied' in caught.value.__notes__[0]
+    message=s.error_message(caught.value)
+    assert type(failure).__name__ in message and 'remaining paths:' in message and '.streme-' in message
+
+
+def child_probe(tmp_path,body):
+    """Real process boundary; mocks only input/tool identity, not exception handling."""
+    child=tmp_path/'probe.py'
+    child.write_text('''import importlib.util, pathlib, sys, pytest, os, signal, resource
+spec=importlib.util.spec_from_file_location('fixtures',sys.argv[1])
+t=importlib.util.module_from_spec(spec);spec.loader.exec_module(t)
+args=t.fake_inputs(pytest.MonkeyPatch(),pathlib.Path(sys.argv[2]))
+t.s.argparse.ArgumentParser.parse_args=lambda self:args
+'''+body+'\nt.s.main()\n')
+    work=tmp_path/'work';work.mkdir()
+    result=subprocess.run([sys.executable,str(child),str(Path(__file__)),str(work)],capture_output=True,text=True,
+                          env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'},timeout=10)
+    return result,work
+
+
+def test_real_subprocess_sigint_with_denied_cleanup_preserves_signal_and_notes(tmp_path):
+    result,work=child_probe(tmp_path,'''
+def interrupt(*a,**kw):os.kill(os.getpid(),signal.SIGINT)
+def denied(*a,**kw):raise PermissionError('cleanup denied')
+t.s.streme_run=interrupt
+t.s.shutil.rmtree=denied
+''')
+    assert result.returncode==-2
+    assert 'KeyboardInterrupt' in result.stderr and 'cleanup denied' in result.stderr
+    assert 'cleanup failed; remaining paths:' in result.stderr and '.streme-' in result.stderr
+    assert len(list(work.glob('.streme-*')))==1 and not (work/'output').exists()
+
+
+def test_real_os_file_size_failure_removes_owned_staging(tmp_path):
+    result,work=child_probe(tmp_path,'''
+signal.signal(signal.SIGXFSZ,signal.SIG_IGN)
+resource.setrlimit(resource.RLIMIT_FSIZE,(64,64))
+''')
+    assert result.returncode==1
+    assert 'OSError' in result.stderr and 'File too large' in result.stderr
+    assert not list(work.glob('.streme-*')) and not (work/'output').exists()
+    assert (work/'fasta').read_text()=='fixture'
+
+
+def test_cli_normal_failure_exposes_cleanup_notes(tmp_path):
+    result,work=child_probe(tmp_path,'''
+def fail(*a,**kw):raise OSError('initial failure')
+def denied(*a,**kw):raise PermissionError('cleanup denied')
+t.s.streme_run=fail
+t.s.shutil.rmtree=denied
+''')
+    assert result.returncode==1 and 'OSError: initial failure' in result.stderr
+    assert 'cleanup failed; remaining paths:' in result.stderr and 'cleanup denied' in result.stderr

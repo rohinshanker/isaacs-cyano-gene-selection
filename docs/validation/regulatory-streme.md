@@ -94,7 +94,59 @@ ordered, with half credit for ties. Both scores and AUC are exploratory window
 rankings. This independent-column scorer differs from STREME's order-2 Markov
 scorer. Multiple windows in a block are correlated; no confidence interval,
 calibrated p-value, specificity, sensitivity, or biological false-positive rate
-is inferred from this AUC.
+is inferred from this AUC. In particular, a gTSS-vs-shuffle AUC can reflect a
+genome-wide repeat rather than a TSS-associated motif; it cannot establish
+promoter or TSS specificity.
+
+
+## Blocked genomic background arm
+
+Schema 2 adds three bounded native genomic samples, each with the same number,
+width and exact replicon/strand quotas as the selected external gTSS cohort.
+All 2,475 admitted windows, including unselected discovery/evaluation rows, are
+expanded by a declared 150-nt margin on both sides of each physical segment.
+Circular expansions wrap and merge; retained exclusion segments and excluded
+base totals make the sampling mask reproducible. A candidate touching this mask
+is rejected. The margin means at least 150 intervening native bases separate a
+selected background window from an admitted gTSS window.
+
+For each replicate, a deterministic seed is SHA-256 of `genomic:seed:replicate`.
+Iterate evaluation IDs in sorted order and draw a uniform circular physical start
+on that row's replicon. Match its strand and width. Select without looking at a
+PWM score or exact word count. Reject any overlap with an earlier selected
+background window, within or across replicates. Each slot allows at most 1,000
+attempts; inability to fill a quota fails explicitly instead of silently changing
+the denominator. Thus the samples are disjoint sequential draws, not independent
+replicates or biological replicates. No genomic input is passed to STREME or used
+to estimate the scoring background, tune a threshold, or select a motif.
+
+`genomic-cohort.json` records every candidate's slot, matched evaluation ID,
+attempt, replicon, orientation, physical start, segments and selection/rejection
+reason. Selected rows retain candidate indices, sequence, native coordinates and
+an explicitly **synthetic window anchor**, not a claimed TSS. All three native
+background FASTAs and their per-window order-2 shuffled controls are retained.
+Shuffle seeds use the separate `genomic-shuffle:seed:window-id` namespace.
+
+`genomicEvaluation` reports two comparisons separately for each replicate:
+`gtssVsGenomic` uses the held-out gTSS windows as positives and native genomic
+samples as the comparison population; `genomicVsShuffle` compares those genomic
+samples with their own length/composition-matched shuffles. Both retain every
+score and the same descriptive AUC/mean-score conventions as the original arm.
+The latter is a diagnostic for genome-wide sequence structure, not evidence of
+TSS specificity. The former compares these particular sampled populations;
+unmatched composition, undetected transcription starts, unassayed conditions,
+and correlated gTSS windows prevent biological specificity claims. Genomic windows
+outside admitted gTSS neighbourhoods are not validated biological negatives.
+
+`coreFrequency` records exact `GCGATCGC` occurrence counts on each entire native
+circular replicon, per million bases, and the fraction/count of windows containing
+it in all gTSS, discovery, evaluation, shuffle and genomic cohorts. Counts include
+both orientations but count palindromes once. Window counts use linear starts;
+genome counts include origin-spanning starts and overlapping matches.
+Counting every start differs from non-overlapping string-count conventions;
+record that convention before comparing counts. This word is part of the recovered
+native motif; its occurrence is an exact sequence statistic and implies no
+function. Pair it with genomic comparisons when interpreting the shuffled AUC.
 
 ## Planted benchmark and S1
 
@@ -152,13 +204,15 @@ STREME_REAL_ROOT="$STREME_ROOT" STREME_NATIVE_ROOT="$NATIVE" \
 ```
 
 The opt-in real test runs all pins, a 100-discovery/50-evaluation native pilot,
-repeat, null run and the historical planted benchmark. Unit tests cover both
+repeat, null run, three matched genomic samples and the historical planted benchmark. Unit tests cover both
 strands, origin windows, union/split integrity, 80% similarity without exact
 30-mers, shuffle invariants, parser rejection, hand-computed scores, shifted
 and reverse motif recovery, execution failures, partial writes, interruption,
-publication races and cleanup denial. Full repository gates remain with the
+publication races, absent parents, original exception identity, cleanup denial,
+real subprocess SIGINT status and OS file-size-limit write failure. Full repository gates remain with the
 coordinator integrating this bounded slice.
 
+The output parent must already exist; the producer never creates ancestors.
 Inputs and the producer are hash-recorded in `result.json`; `manifest.json`
 records every cohort, report and result digest. Executed argv retains the actual
 staging paths for provenance; use the recipe and retained cohort FASTAs to replay.
@@ -167,8 +221,11 @@ identical PWM content, not identical whole-report bytes. Output must be fresh;
 existing paths, including dangling symlinks, are rejected. Work occurs in a private
 staging directory, then an exclusive output-directory reservation. Any failure
 or interruption removes only this invocation's staging and reserved output,
-including partially written files. Cleanup denial names retained paths and
-preserves the original cause. Input artifacts and another invocation's output
+including partially written files. Cleanup denial adds a note naming retained paths and
+re-raises the original exception object, preserving its type and interruption
+status. CLI errors include the exception class and every cleanup note; an
+interrupt remains `KeyboardInterrupt` and retains SIGINT termination status
+(shell status 130). Input artifacts and another invocation's output
 are never removed.
 
 Source receipts should retain retrieval date, short quote, location, mechanical

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from bisect import bisect_right
 from collections import Counter, defaultdict
 import csv
 import hashlib
@@ -14,6 +15,7 @@ import random
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 
 try:
@@ -301,6 +303,127 @@ def ranking_evaluation(rows, controls, motifs, background):
     return results
 
 
+def merged_intervals(intervals):
+    """Merge one-based inclusive intervals, including directly adjacent spans."""
+    merged = []
+    for start, end in sorted(intervals):
+        if merged and start <= merged[-1][1] + 1:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return merged
+
+
+def expanded_exclusions(rows, lengths, margin):
+    """Expand all admitted windows on circular genomes; not just selected rows."""
+    if margin < 0:
+        raise PilotError('genomic exclusion margin must be nonnegative')
+    intervals = {replicon: [] for replicon in lengths}
+    for row in rows:
+        length = lengths[row['replicon']]
+        for start, end in row['physicalSegments']:
+            expanded_start, expanded_end = start - margin, end + margin
+            if expanded_end - expanded_start + 1 >= length:
+                intervals[row['replicon']].append([1, length])
+                continue
+            first = (expanded_start - 1) % length + 1
+            last = (expanded_end - 1) % length + 1
+            if first <= last:
+                intervals[row['replicon']].append([first, last])
+            else:
+                intervals[row['replicon']].extend([[first, length], [1, last]])
+    return {replicon: merged_intervals(spans) for replicon, spans in intervals.items()}
+
+
+def spans_overlap(segments, intervals):
+    """Test overlaps against sorted, merged one-based inclusive intervals."""
+    starts = [span[0] for span in intervals]
+    for start, end in segments:
+        index = bisect_right(starts, end) - 1
+        if index >= 0 and intervals[index][1] >= start:
+            return True
+    return False
+
+
+def genomic_background(sequences, all_rows, evaluation, width, seed,
+                       margin=150, replicates=3, max_attempts=1000):
+    """Matched native backgrounds with auditable, score-blind rejection sampling."""
+    if not evaluation or not 1 <= replicates <= 3 or max_attempts < 1:
+        raise PilotError('invalid genomic replicate/evaluation/attempt bounds')
+    lengths = {replicon: len(sequence) for replicon, sequence in sequences.items()}
+    excluded = expanded_exclusions(all_rows, lengths, margin)
+    occupied = {replicon: [] for replicon in sequences}
+    runs = []
+    # All replicates share the occupied pool: no repeated/overlapping physical
+    # window across replicates. They are disjoint samples, not independent trials.
+    for replicate in range(1, replicates + 1):
+        replicate_seed = int(digest(f'genomic:{seed}:{replicate}'), 16)
+        rng = random.Random(replicate_seed)
+        selected, candidates = [], []
+        for slot, template in enumerate(sorted(evaluation, key=lambda row: row['id'])):
+            replicon, strand = template['replicon'], template['strand']
+            genome = sequences[replicon]
+            for attempt in range(1, max_attempts + 1):
+                start0 = rng.randrange(len(genome))
+                # A synthetic anchor is only a convenient window coordinate;
+                # it is explicitly not an observed or inferred TSS.
+                anchor = ((start0 + width) % len(genome) + 1 if strand == '+'
+                          else (start0 - 1) % len(genome) + 1)
+                window = upstream_window(genome, anchor, strand, width)
+                reason = ('admitted-window-margin' if spans_overlap(window['physicalSegments'], excluded[replicon])
+                          else 'background-overlap' if spans_overlap(window['physicalSegments'], occupied[replicon])
+                          else 'selected')
+                candidate = dict(slot=slot, matchedEvaluationId=template['id'], attempt=attempt,
+                                 replicon=replicon, strand=strand, genomicStart0=start0,
+                                 physicalSegments=window['physicalSegments'], disposition=reason)
+                candidates.append(candidate)
+                if reason != 'selected':
+                    continue
+                identifier = f'genomic-{replicate}-{slot}'
+                selected.append(dict(id=identifier, replicon=replicon, strand=strand,
+                                     syntheticWindowAnchor=anchor, matchedEvaluationId=template['id'],
+                                     candidateIndex=len(candidates)-1, **window))
+                occupied[replicon] = merged_intervals(occupied[replicon] + window['physicalSegments'])
+                break
+            else:
+                raise PilotError(f'genomic background exhausted {max_attempts} attempts: replicate {replicate}, slot {slot}, {replicon}/{strand}')
+        controls = [dict(id=row['id'], sequence=shuffle_order2(row['sequence'], int(digest(f"genomic-shuffle:{seed}:{row['id']}"), 16))) for row in selected]
+        runs.append(dict(replicate=replicate, seed=replicate_seed, rows=selected, controls=controls,
+                         candidates=candidates, dispositionCounts=dict(Counter(row['disposition'] for row in candidates))))
+    return dict(marginNt=margin, replicates=replicates, maxAttemptsPerSlot=max_attempts,
+                sampling='uniform circular physical start; exact evaluation replicon/strand quotas; score-blind rejection; no overlap within/across replicates',
+                excludedSegments=excluded, excludedBasesByReplicon={key: sum(end-start+1 for start,end in value) for key,value in excluded.items()},
+                runs=runs)
+
+
+def exact_core_frequency(rows, core='GCGATCGC'):
+    """Exact word statistic on either orientation, counting palindromes once."""
+    words = {core, rc(core)}
+    counts = [sum(row['sequence'][i:i+len(core)] in words
+                  for i in range(len(row['sequence']) - len(core) + 1)) for row in rows]
+    return dict(word=core, windows=len(rows), containingWindows=sum(count > 0 for count in counts),
+                containingFraction=sum(count > 0 for count in counts)/len(rows) if rows else None,
+                occurrences=sum(counts), convention='linear window positions; either orientation, palindrome counted once')
+
+
+def genome_core_frequency(sequences, core='GCGATCGC'):
+    """Circular native genome exact-word frequency; no functional inference."""
+    words = {core, rc(core)}
+    result = {}
+    for replicon, sequence in sequences.items():
+        extended = sequence + sequence[:len(core)-1]
+        count = sum(extended[i:i+len(core)] in words for i in range(len(sequence)))
+        result[replicon] = dict(length=len(sequence), occurrences=count,
+                               occurrencesPerMillionBases=count*1e6/len(sequence))
+    return dict(word=core, byReplicon=result, convention='every circular start on native sequence; either orientation, palindrome counted once')
+
+
+def error_message(error):
+    """Render exception identity and cleanup notes, including blank interrupts."""
+    lines = [f'{type(error).__name__}: {error}', *getattr(error, '__notes__', [])]
+    return 'STREME pilot: ' + '\n'.join(lines) + '\n'
+
+
 def motif_recovery(pwm, planted=PLANT):
     """Best orientation/offset with missing plant columns scored as zero recovery."""
     candidates = []
@@ -342,7 +465,8 @@ def run_pilot(args):
     if output.exists() or output.is_symlink():
         raise PilotError(f'refusing to overwrite output {output}')
     # A staging directory is owned by this invocation; publication never replaces a destination.
-    output.parent.mkdir(parents=True, exist_ok=True)
+    if not output.parent.is_dir():
+        raise PilotError(f'output parent must already exist: {output.parent}')
     staging = Path(tempfile.mkdtemp(prefix='.streme-', dir=output.parent))
     published = False
     try:
@@ -364,6 +488,18 @@ def run_pilot(args):
         benchmark = streme_run(args.binary, args.benchmark_foreground, staging/'benchmark', args.seed, args.timeout,
                                args.benchmark_control, fixed_width=8)
         background = background_frequencies(discovery)
+        genomic = genomic_background(load_fasta(args.fasta), rows, evaluation, args.width, args.seed)
+        genomic_scores = []
+        for run in genomic['runs']:
+            label = f"genomic-{run['replicate']}"
+            (staging / f'{label}.fasta').write_bytes(fasta_bytes(run['rows']))
+            (staging / f'{label}-control.fasta').write_bytes(fasta_bytes(run['controls']))
+            genomic_scores.append(dict(replicate=run['replicate'],
+                gtssVsGenomic=ranking_evaluation(evaluation, run['rows'], native['motifs'], background),
+                genomicVsShuffle=ranking_evaluation(run['rows'], run['controls'], native['motifs'], background),
+                coreFrequency=exact_core_frequency(run['rows']),
+                shuffledCoreFrequency=exact_core_frequency(run['controls'])))
+        (staging/'genomic-cohort.json').write_text(json.dumps(genomic, indent=2)+'\n')
         external_plant, external_null = benchmark_external(args.seed + 1)
         for name, records in [('benchmark-evaluation', external_plant), ('benchmark-evaluation-control', external_null)]:
             (staging / f'{name}.fasta').write_bytes(fasta_bytes(records))
@@ -378,24 +514,31 @@ def run_pilot(args):
                 hit['strand'] == ('+' if row['plantedStrand'] == similarity['strand'] else '-') and
                 hit['offset0'] == (45 + similarity['offset0'] if row['plantedStrand'] == '+' else 53 - similarity['offset0'] - width)
                 for row, hit in zip(external_plant, scores['positive']))
-        result = dict(schemaVersion=1, method='STREME', release=False,
+        result = dict(schemaVersion=2, method='STREME', release=False,
                       interpretation='exploratory motif/window rankings; not p-values, site calls or biological accuracy',
                       coordinateContract='native one-based inclusive circular physical segments; oriented [-width,-1] excludes TSS',
                       partition=partition, parameters=dict(width=args.width, seed=args.seed, homologyWord=30, alignedIdentityThreshold=0.8,
-                      internalHoldout=0.2, externalHoldout='evaluation FASTA never passed to STREME'),
+                      internalHoldout=0.2, genomicMarginNt=150, genomicReplicates=3, externalHoldout='evaluation and genomic FASTAs never passed to STREME'),
                       controlContract='external/null Euler shuffle preserves per-window length, linear 1/2/3-mer counts and first/last 2 nt; native STREME --order 2 automatic shuffle',
                       scoreContract='both-strand maximum independent-column PWM log2 odds; pseudocount 1e-6 per base, discovery-only +1 mononucleotide background; AUC tie weight 0.5; descriptive, uncalibrated',
                       background=background, native=native, repeatPwmIdentical=True, null=null_run, benchmark=benchmark,
                       external=ranking_evaluation(evaluation, controls, native['motifs'], background),
                       nullExternal=ranking_evaluation(evaluation, controls, null_run['motifs'], background),
                       benchmarkRecovery=recovery, benchmarkExternal=synthetic_scores,
+                      genomicEvaluation=genomic_scores,
+                      coreFrequency=dict(allGtss=exact_core_frequency(rows), discovery=exact_core_frequency(discovery),
+                                         evaluation=exact_core_frequency(evaluation), shuffledEvaluation=exact_core_frequency(controls),
+                                         nativeGenome=genome_core_frequency(load_fasta(args.fasta))),
                       coverage=dict(anchors=len(rows), byStrand=dict(Counter(row['strand'] for row in rows)),
                                     byReplicon=dict(Counter(row['replicon'] for row in rows)), originCrossing=sum(row['wrapsOrigin'] for row in rows)),
                       controlsChanged=dict(evaluation=sum(a['sequence'] != b['sequence'] for a,b in zip(evaluation, controls)),
                                            nullDiscovery=sum(a['sequence'] != b['sequence'] for a,b in zip(discovery, null))),
                       provenance=dict(producerSha256=sha256_file(Path(__file__)), inputs={str(p): sha256_file(p) for p in inputs}, version=version,
                                       python=platform.python_version(), platform=platform.platform()),
-                      limitations=['shared exact 30-mers or >=80% full-window ungapped identity on either strand block detectable similarity; divergent/gapped/shifted homology without a shared 30-mer can remain',
+                      limitations=['gTSS-vs-shuffle AUC can reflect a genome-wide repeat; it cannot establish promoter/TSS specificity',
+                                   'genomic backgrounds lack annotated gTSS proximity, not biological transcription; unmatched composition and unknown TSSs remain',
+                                   'three genomic samples are disjoint within/across replicates and share the fixed evaluation cohort; not independent biological trials',
+                                   'shared exact 30-mers or >=80% full-window ungapped identity on either strand block detectable similarity; divergent/gapped/shifted homology without a shared 30-mer can remain',
                                    'gTSS anchors lack experimentally delineated promoter boundaries or validated negative loci',
                                    'overlapping/locus/homology components are transitive; capped cohorts can omit large components',
                                    'one seed and one null training run; window-level AUC is not a biological false-positive rate',
@@ -421,7 +564,7 @@ def run_pilot(args):
             except OSError as cleanup:
                 failures.append(f'{owned}: {cleanup}')
         if failures:
-            raise PilotError(f'{error}; cleanup failed: {"; ".join(failures)}') from error
+            error.add_note(f'cleanup failed; remaining paths: {"; ".join(failures)}')
         raise
 
 
@@ -437,8 +580,11 @@ def main():
     args = parser.parse_args()
     try:
         result = run_pilot(args)
+    except KeyboardInterrupt as error:
+        sys.stderr.write(error_message(error))
+        raise
     except (PilotError, OSError, ValueError, KeyError) as error:
-        parser.exit(1, f'STREME pilot: {error}\n')
+        parser.exit(1, error_message(error))
     print(json.dumps(dict(coverage=result['coverage'], partition=result['partition'],
                          recovery=result['benchmarkRecovery'], output=str(args.output))))
 
