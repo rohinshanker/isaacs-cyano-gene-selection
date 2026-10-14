@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "addendum": "cyano_package_BC_addendum_20261006.tsv",
+  "addendum_sha256": "aada503cbd79909ec66c2a32344942661ca4a59326313bfccfe8211b1b6f1d3f",
+  "source_root": "ISAACS-LAB/private-literature/ (outside repository)",
+  "verified": "2026-10-14",
+  "sources": [
+    {
+      "document": "puszynska2017_main",
+      "private_path": "puszynska and o'shea cell rep 2017/ppGpp Controls Global Gene Expression in Light and in Darkness in S.&nbsp;elongatus.pdf",
+      "member": null,
+      "container_sha256": "47f9ddf9849451be6821d418a98d3639b13811c21c0645b341ecde7e6cec0797",
+      "source_sha256": "47f9ddf9849451be6821d418a98d3639b13811c21c0645b341ecde7e6cec0797",
+      "text_sha256": "7a9fa97b6bd7133c4ebe03e438630680f687963e6b89d309f7c796132fce52d9",
+      "extraction": "pdftotext reading order (no -layout)"
+    },
+    {
+      "document": "puszynska2017_tableS6",
+      "private_path": "puszynska and o'shea cell rep 2017/1-s2.0-S2211124717317199-mmc7.xlsx",
+      "member": null,
+      "container_sha256": "564a70549d82faa6f27fd964d926ab0823254276ed7e758127b59c377647def8",
+      "source_sha256": "564a70549d82faa6f27fd964d926ab0823254276ed7e758127b59c377647def8",
+      "text_sha256": "87de42421623e686e9e8dae4713f51cb796318b9413a1e75a29e9bb91d8be15a",
+      "extraction": "openpyxl read-only data_only; sheet names, nonempty cells pipe-joined per row"
+    },
+    {
+      "document": "markson2013_main",
+      "private_path": "markson cell 2013/Circadian Control of Global Gene Expression by the Cyanobacterial Master Regulator RpaA.pdf",
+      "member": null,
+      "container_sha256": "25dda722215c4f612ce3e2bbef8d3b913e930b5cfa9a5d087b8c052c243afac7",
+      "source_sha256": "25dda722215c4f612ce3e2bbef8d3b913e930b5cfa9a5d087b8c052c243afac7",
+      "text_sha256": "b62f1821324b651fb0040dd4ec80b9a11a23d6a6acea36b0f7c2594ade32c55e",
+      "extraction": "pdftotext reading order (no -layout)"
+    },
+    {
+      "document": "markson2013_supp",
+      "private_path": "markson cell 2013/ScienceDirect_files_05Oct2026_15-24-20.553.zip",
+      "member": "1-s2.0-S0092867413014189-mmc8.pdf",
+      "container_sha256": "72fb5117c300086ea7e636c37d8c275f82b1a39ae7535f90a9df7f033c7ce481",
+      "source_sha256": "8bf89aa7d8142e9ff332195b1b4af45429828335909943da96f80df1eafdbe54",
+      "text_sha256": "68dc91e2583b93beb576cb1761f0a2a5b5d1d92a938c15aec409625d63b11a44",
+      "extraction": "pdftotext reading order (no -layout)"
+    },
+    {
+      "document": "markson2013_tableS7",
+      "private_path": "markson cell 2013/ScienceDirect_files_05Oct2026_15-24-20.553.zip",
+      "member": "1-s2.0-S0092867413014189-mmc7.xlsx",
+      "container_sha256": "72fb5117c300086ea7e636c37d8c275f82b1a39ae7535f90a9df7f033c7ce481",
+      "source_sha256": "b4d1f142b95764bd4afd9edc556a71d55398a25de2fd438cd26a86b48e6c76c1",
+      "text_sha256": "6f43deac1661a2fa3e0098ee85a67447868b8b682c92545d27bd7fa914f998ac",
+      "extraction": "openpyxl read-only data_only; sheet names, nonempty cells pipe-joined per row"
+    },
+    {
+      "document": "vijayan2009_si",
+      "private_path": "vijayan pnas 2009/0912673106si.pdf",
+      "member": null,
+      "container_sha256": "6e5f14f433934e94b0e943084c00933cac0e081bf5ada9cb2a8b9e501d9bc066",
+      "source_sha256": "6e5f14f433934e94b0e943084c00933cac0e081bf5ada9cb2a8b9e501d9bc066",
+      "text_sha256": "4d0d1ceac9ec6f4c5c31c6837ba6c7a9baae6c7660a2a35ab42103bc8554dd5b",
+      "extraction": "pdftotext reading order (no -layout)"
+    },
+    {
+      "document": "santosmerino2024_main",
+      "private_path": "santos-merino metab eng 2024/1-s2.0-S1096717623001490-main.pdf",
+      "member": null,
+      "container_sha256": "376ad183e1fb089bbf33613e45a0f7ef6e13a8b453cf11709a93a907738c22e0",
+      "source_sha256": "376ad183e1fb089bbf33613e45a0f7ef6e13a8b453cf11709a93a907738c22e0",
+      "text_sha256": "4f7758105076be4e94aa0b965845bb9f1564554da49bee1ce4ef7360b285234a",
+      "extraction": "pdftotext reading order (no -layout)"
+    },
+    {
+      "document": "santosmerino2024_supp",
+      "private_path": "santos-merino metab eng 2024/ScienceDirect_files_05Oct2026_15-28-50.812.zip",
+      "member": "1-s2.0-S1096717623001490-mmc7.docx",
+      "container_sha256": "18bf22ce00e13fc8fcca1fc59206f80fb11955b353a09a5d268c52378a8a88a0",
+      "source_sha256": "37ac6ae40be4da21a1b14de840195af6ef43c20caf6ce8b924fac85534be7475",
+      "text_sha256": "34feae29253939e288590efbd74bca9e83306ead5574d40e5a0e5ef5c26ab214",
+      "extraction": "word/document.xml paragraph itertext, paragraphs newline-joined"
+    },
+    {
+      "document": "vicente2019_main",
+      "private_path": "vicente environ sci pollut res 2019/s11356-019-05057-6.pdf",
+      "member": null,
+      "container_sha256": "430d62b575ac85d20881607cec83baa920497260ee0fe93c0ac6629fdf9827b9",
+      "source_sha256": "430d62b575ac85d20881607cec83baa920497260ee0fe93c0ac6629fdf9827b9",
+      "text_sha256": "026e2da57c983b8a6079aeb48d71b30f1d450e5b907a30df65c3a362c92cd7b3",
+      "extraction": "pdftotext reading order (no -layout)"
+    },
+    {
+      "document": "vijayan2009_pmc",
+      "private_path": "verified-20261014/PMC2799730.html",
+      "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2799730/",
+      "retrieved": "2026-10-14",
+      "source_sha256": "8a61bf28330eb43953bcad6b7595ebedfc32422296c2c9874a884b78b7b5af91",
+      "text_sha256": "79a0a5bbbaa16ffaad1aa4f09625256a1d95e18696cff64e50ec9b21a36ae127",
+      "extraction": "HTMLParser convert_charrefs=True; all handle_data strings space-joined, script/style excluded"
+    }
+  ],
+  "quotation_checker": "tools/check_addendum_quotes.py",
+  "expected_quotations": 70,
+  "boundaries": [
+    "Source files remain private; hashes and extraction recipes do not grant redistribution rights.",
+    "A matching quote verifies wording, not absence of other information or a scientific interpretation.",
+    "The historic package D re-score is not the current calibrated or lab-reviewed pair decision."
+  ]
+}

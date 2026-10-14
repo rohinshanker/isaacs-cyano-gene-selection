@@ -2,7 +2,7 @@
 
 In-repository extraction from the papers Claude Science could not read, under
 the owner's decision of 2026-10-05 that an in-repository read with a mechanical
-quote match is sufficient ([ticket](../tickets/O_unreadable-literature-workarounds__20261005.md)).
+quote match is sufficient ([recovery contract](../../validation/literature-recovery.md)).
 
 - Table: `cyano_package_BC_addendum_20261006.tsv`, SHA-256 `aada503cbd79909ec66c2a32344942661ca4a59326313bfccfe8211b1b6f1d3f`, 15 data rows in
   the package B columns. Each row names the package B data row it amends in
@@ -26,7 +26,8 @@ quote match is sufficient ([ticket](../tickets/O_unreadable-literature-workaroun
   docs/notes/handoff/cyano_package_BC_addendum_20261006.tsv --texts <dir>` with the
   ten `<doc>.txt` files regenerated from the drop folder. Result on 2026-10-06:
   70 of 70 quotations matched.
-- Intake and the ledger decisions it changed are recorded in the ticket.
+- Intake, pinned source files, reproduction commands and decision boundaries are
+  preserved in [literature-recovery.md](../../validation/literature-recovery.md).
 - Re-score: `cyano_package_D_rescore_20261006.tsv`, SHA-256 `b9b56c092cb2da938e93a61dc716283a8d1910603e0f5c509458af01c4bc8720`, the 19
   PXD036717 pairs of package D scored again with the addendum's values under the
   contract thresholds and D.7's rules; two extra columns name the package D row

@@ -1003,7 +1003,7 @@
     ],
     "plan": {
       "path": "config/expression_agreement.json",
-      "sha256": "1d9a0acba507a8d73ab7c26ec928b3f534af484e62561dc1203bf17502077cf5"
+      "sha256": "3ecd35a0d355bf32cb7b41a19008de2053f4c23f3a8ce15ab6696130f92b971c"
     },
     "specs": [
       {
@@ -1083,7 +1083,7 @@
       },
       {
         "path": "data/expression/ingest/GSE51112.json",
-        "sha256": "a77a0cf791e2c130a1f1a338c94cd57a2182f46bb2b2834a4970d1ba0b652e22",
+        "sha256": "e525b837271d90829b3904e744a2fce576389b4018d612cea6f9067a103dd8ed",
         "studyId": "GSE51112"
       },
       {
@@ -6818,7 +6818,8 @@
       "replicateType": "none",
       "replicates": {
         "count": null,
-        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited"
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "Markson et al. 2013, Table S7C (owner-supplied workbook); verified package B/C addendum for condition row 53."
       },
       "strain": "PCC 7942",
       "strata": [
@@ -6944,7 +6945,8 @@
       "replicateType": "none",
       "replicates": {
         "count": null,
-        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited"
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "Markson et al. 2013, Table S7C (owner-supplied workbook); verified package B/C addendum for condition row 53."
       },
       "strain": "PCC 7942 OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346)",
       "strata": [
@@ -7070,7 +7072,8 @@
       "replicateType": "none",
       "replicates": {
         "count": null,
-        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited"
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "Markson et al. 2013, Table S7C (owner-supplied workbook); verified package B/C addendum for condition row 53."
       },
       "strain": "PCC 7942 OX-D53E (ΔrpaA ΔkaiBC, Ptrc::rpaA D53E; EOC346)",
       "strata": [
@@ -7175,7 +7178,8 @@
       "replicateType": "none",
       "replicates": {
         "count": null,
-        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited"
+        "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+        "where": "Markson et al. 2013, Table S7C (owner-supplied workbook); verified package B/C addendum for condition row 53."
       },
       "strain": "PCC 7942 OX-Empty (ΔrpaA ΔkaiBC, empty Ptrc; EOC339)",
       "strata": [

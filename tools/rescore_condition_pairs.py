@@ -95,6 +95,7 @@ EVIDENCE_SHA256 = {
     "paper": "da29ffb70a90dcf128b027a598c0d3e40611436f7d02d3cd2472bbc0d8aecc6a",
     "fitness": "5df3d9ee018ec44bdedfbcabfb40bfebb727b6ecf165ca390a128886c6553f83",
     "pxd027430": "bb8311f4b36a2c0bb81377e2d28a3ff219e714e7baff746da1378f605b7e8810",
+    "pxd000510": "ffaf538f186d90fd1ad4379a143863a0929ff83fdd33f86102c71a8d72cd65ad",
 }
 RECORD_AUDIT_PINS = {
     2: {"acc": "GSE102914", "phase": "OD stated", "od": [0.27, 0.27], "od_nm": 730},
@@ -171,8 +172,41 @@ RECORD_OVERRIDES: dict[int, dict[str, Any]] = {
     },
     58: {
         "expected_accession": "PXD000510",
-        "expected_source": {"cont": "diel", "phot": None, "spec": None},
-        "values": {"phot": "12:12"},
+        "expected_source": {
+            "cont": "diel",
+            "phot": None,
+            "spec": None,
+            "T": None,
+            "T_text": "not retrieved",
+            "I": None,
+            "I_text": "not retrieved",
+            "co2": None,
+            "co2_text": "not retrieved",
+            "medium": None,
+            "fmt": None,
+            "phase": None,
+            "od": None
+        },
+        "values": {
+            "T": None,
+            "T_text": "Routine growth at 30°C; temperature during synchronized LD sampling is not explicitly restated.",
+            "I": None,
+            "I_text": "Routine growth at 80 (source unit typography: μm photons/m² s); sampling photon flux not explicitly restated.",
+            "co2": None,
+            "co2_text": "Routine growth uses flowing air; no numeric sampling gas CO2 fraction is stated.",
+            "cont": "diel",
+            "phot": "12:12",
+            "spec": "white (class not stated)",
+            "medium": "BG-11",
+            "conditioned": None,
+            "n_altered": None,
+            "medium_text": "BG11 for routine growth and pellet resuspension; sampling medium composition/conditioning not independently itemised.",
+            "fmt": "planktonic liquid",
+            "phase": None,
+            "od": None,
+            "od_nm": None,
+            "replicates": "20 time points over 48 h; four TMT mixtures with pooled reference channels. Independent biological replicate count per time point is not established; two labeling experiments and SWATH technical triplicates are not culture replicates."
+        }
     },
     61: {
         "expected_accession": "PXD005851",
@@ -361,10 +395,40 @@ OVERRIDE_AUDIT = {
         "source": "cyano_package_B_archive_addendum_20261007.json corrections row 39",
         "uncertainty": "Continuous cultivation is not evidence of continuous illumination.",
     },
+    "58.temperature": {
+        "status": "partial",
+        "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.temperature",
+        "uncertainty": "Routine 30°C is reported; sampling transfer is not asserted."
+    },
+    "58.light_intensity": {
+        "status": "partial",
+        "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.light_intensity",
+        "uncertainty": "Routine photon flux is reported with ambiguous source unit typography; no numeric sampling value assigned."
+    },
     "58.light_regime": {
         "status": "partial",
-        "source": "cyano_package_D_pairs_20261004.tsv condition row 58, inherited from accepted Package B PXD000510 evidence",
-        "uncertainty": "The sampling design uses a 12:12 diel cycle; spectrum class is unreported.",
+        "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.light_regime",
+        "uncertainty": "Sampling 12:12 LD is explicit; white light has no reviewed lamp/spectrum class."
+    },
+    "58.co2": {
+        "status": "partial",
+        "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.co2",
+        "uncertainty": "Routine aeration uses air; no numeric sampling gas CO2 fraction is assigned."
+    },
+    "58.medium": {
+        "status": "partial",
+        "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.medium",
+        "uncertainty": "BG11 is named; sampling conditioning and nitrogen-source equivalence remain unknown."
+    },
+    "58.culture_format": {
+        "status": "present",
+        "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.culture_format",
+        "uncertainty": "Liquid aliquots are harvested by centrifugation; vessel and total working volume are not established."
+    },
+    "58.growth_phase": {
+        "status": "partial",
+        "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.growth_phase",
+        "uncertainty": "Log-phase maintenance and dilution to OD750 about 0.4 one day before sampling do not establish sampling phase or OD."
     },
     "61.medium": {
         "status": "partial",
@@ -1077,26 +1141,24 @@ def _validate_evidence(inputs: dict[str, Path]) -> None:
     paper = json.loads(inputs["paper"].read_text(encoding="utf-8"))
     if paper.get("dataset") != "GSE227397" or paper.get("reported_values", {}).get("photon_flux") != 50 or paper.get("reported_values", {}).get("photoperiod") != "12:12":
         raise ValueError("GSE227397 paper overlay evidence changed")
-    pxd027430 = json.loads(inputs["pxd027430"].read_text(encoding="utf-8"))
-    pxd027430_audit = {}
-    for field in GAP_FIELDS:
-        entry = OVERRIDE_AUDIT.get(f"71.{field}")
-        if entry is None or any(key not in entry for key in ("status", "uncertainty")):
-            raise ValueError(f"PXD027430 condition overlay audit missing {field}")
-        pxd027430_audit[field] = {
-            key: entry[key] for key in ("status", "uncertainty")
+    for accession, row in (("PXD027430", 71), ("PXD000510", 58)):
+        addendum = json.loads(inputs[accession.lower()].read_text(encoding="utf-8"))
+        field_audit = {}
+        for field in GAP_FIELDS:
+            entry = OVERRIDE_AUDIT.get(f"{row}.{field}")
+            if entry is None or any(key not in entry for key in ("status", "uncertainty")):
+                raise ValueError(f"{accession} condition overlay audit missing {field}")
+            field_audit[field] = {
+                key: entry[key] for key in ("status", "uncertainty")
+            }
+        expected = {
+            "dataset": accession,
+            "condition_row": row,
+            "typed_updates": RECORD_OVERRIDES[row]["values"],
+            "field_audit": field_audit,
         }
-    expected_pxd027430 = {
-        "dataset": "PXD027430",
-        "condition_row": 71,
-        "typed_updates": RECORD_OVERRIDES[71]["values"],
-        "field_audit": pxd027430_audit,
-    }
-    actual_pxd027430 = {
-        key: pxd027430.get(key) for key in expected_pxd027430
-    }
-    if actual_pxd027430 != expected_pxd027430:
-        raise ValueError("PXD027430 condition overlay evidence changed")
+        if {key: addendum.get(key) for key in expected} != expected:
+            raise ValueError(f"{accession} condition overlay evidence changed")
     archive = json.loads(inputs["archive"].read_text(encoding="utf-8"))
     corrections = {int(item["condition_row"]): item for item in archive["corrections"]}
     if corrections.get(35, {}).get("after", {}).get("phot", "missing") is not None:
@@ -1167,6 +1229,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--sampling-scope-audit", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_condition_sampling_scope_review_20261007.json")
     parser.add_argument("--fitness-sampling-audit", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_gse205443_audit_20261007.md")
     parser.add_argument("--pxd027430-addendum", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_pxd027430_condition_addendum_20261007.json")
+    parser.add_argument("--pxd000510-addendum", type=Path, default=Path(__file__).resolve().parents[1] / "docs/notes/handoff/cyano_pxd000510_condition_addendum_20261014.json")
     args = parser.parse_args(argv)
     inputs = {
         "bc": args.bc_addendum,
@@ -1179,6 +1242,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "sampling": args.sampling_scope_audit,
         "fitness": args.fitness_sampling_audit,
         "pxd027430": args.pxd027430_addendum,
+        "pxd000510": args.pxd000510_addendum,
     }
     _validate_evidence(inputs)
     original = read_table(args.pairs)
@@ -1198,7 +1262,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args.owner_judgements, args.bc_addendum, args.archive_addendum,
         args.archive_intake, args.manual_supplement, args.paper_addendum,
         args.pride_check, args.sampling_scope_audit, args.fitness_sampling_audit,
-        args.pxd027430_addendum,
+        args.pxd027430_addendum, args.pxd000510_addendum,
     ]
     inventory = build_gap_inventory(
         records,

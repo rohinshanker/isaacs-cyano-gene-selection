@@ -88,7 +88,8 @@ not modify Package D or apply an owner judgement to `default_verdict`.
   --manual-supplement docs/notes/handoff/cyano_archive_condition_manual_supplement_20261007.json \
   --paper-addendum docs/notes/handoff/cyano_condition_paper_addendum_20261007.json \
   --pride-check docs/notes/handoff/cyano_pride_condition_check_20261007.json \
-  --pxd027430-addendum docs/notes/handoff/cyano_pxd027430_condition_addendum_20261007.json
+  --pxd027430-addendum docs/notes/handoff/cyano_pxd027430_condition_addendum_20261007.json \
+  --pxd000510-addendum docs/notes/handoff/cyano_pxd000510_condition_addendum_20261014.json
 ```
 
 The replay uses exact IDs and typed numeric intervals. Flux ranges are compared
@@ -145,6 +146,15 @@ longitudinal pairing. Supplemental Table S1 lists selected differential proteins
 and cannot supply a whole-proteome abundance population. The addendum is
 calibration evidence; it does not admit a dataset or change a lab pair
 judgement.
+
+The [PXD000510 paper intake](../notes/handoff/cyano_pxd000510_condition_addendum_20261014.json)
+uses the [pinned primary read](literature-recovery.md#remaining-primary-source-checks).
+Its six former access gaps become partial sampling-scope evidence, except culture
+format, which is present. Routine growth conditions and dilution OD are not copied
+into sampling values. The four identification-only layers retain unknown
+biological replication and a pooled-reference caveat. The immutable original
+Package B/D tables remain historical; the accepted addendum and replay carry the
+updated evidence.
 
 Verified source absences and conflicts are accepted unknown outcomes. They do
 not keep the recovery implementation open. Track optional depositor follow-up in

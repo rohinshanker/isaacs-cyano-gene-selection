@@ -1,0 +1,65 @@
+{
+  "dataset": "PXD000510",
+  "condition_row": 58,
+  "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4125736/",
+  "retrieval_date": "2026-10-14",
+  "snapshot_sha256": "ed2965399bda51ea995fa7c009aecba220c2132653438cb066e5587aa50ab1cf",
+  "source_verification": "cyano_literature_source_checks_20261014.json: guerreiro2014",
+  "locators": [
+    "sec1: Cyanobacteria Cell Culture",
+    "F1: Fig. 1A",
+    "sec1: Peptide Labeling and Liquid Chromatography–Tandem Mass Spectrometry"
+  ],
+  "scope": "Read the primary methods, figure and labeling design. Preserve routine-growth versus sampling scope; do not treat repeated time points or technical injections as biological replication. No optional supplement is used.",
+  "typed_updates": {
+    "T": null,
+    "T_text": "Routine growth at 30°C; temperature during synchronized LD sampling is not explicitly restated.",
+    "I": null,
+    "I_text": "Routine growth at 80 (source unit typography: μm photons/m² s); sampling photon flux not explicitly restated.",
+    "co2": null,
+    "co2_text": "Routine growth uses flowing air; no numeric sampling gas CO2 fraction is stated.",
+    "cont": "diel",
+    "phot": "12:12",
+    "spec": "white (class not stated)",
+    "medium": "BG-11",
+    "conditioned": null,
+    "n_altered": null,
+    "medium_text": "BG11 for routine growth and pellet resuspension; sampling medium composition/conditioning not independently itemised.",
+    "fmt": "planktonic liquid",
+    "phase": null,
+    "od": null,
+    "od_nm": null,
+    "replicates": "20 time points over 48 h; four TMT mixtures with pooled reference channels. Independent biological replicate count per time point is not established; two labeling experiments and SWATH technical triplicates are not culture replicates."
+  },
+  "field_audit": {
+    "temperature": {
+      "status": "partial",
+      "uncertainty": "Routine 30°C is reported; sampling transfer is not asserted."
+    },
+    "light_intensity": {
+      "status": "partial",
+      "uncertainty": "Routine photon flux is reported with ambiguous source unit typography; no numeric sampling value assigned."
+    },
+    "light_regime": {
+      "status": "partial",
+      "uncertainty": "Sampling 12:12 LD is explicit; white light has no reviewed lamp/spectrum class."
+    },
+    "co2": {
+      "status": "partial",
+      "uncertainty": "Routine aeration uses air; no numeric sampling gas CO2 fraction is assigned."
+    },
+    "medium": {
+      "status": "partial",
+      "uncertainty": "BG11 is named; sampling conditioning and nitrogen-source equivalence remain unknown."
+    },
+    "culture_format": {
+      "status": "present",
+      "uncertainty": "Liquid aliquots are harvested by centrifugation; vessel and total working volume are not established."
+    },
+    "growth_phase": {
+      "status": "partial",
+      "uncertainty": "Log-phase maintenance and dilution to OD750 about 0.4 one day before sampling do not establish sampling phase or OD."
+    }
+  },
+  "limits": "This intake replaces access gaps with bounded source evidence. It does not admit a dataset, infer unreported conditions, or change an owner pair judgement."
+}

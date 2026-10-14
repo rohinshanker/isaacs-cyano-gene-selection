@@ -30,7 +30,8 @@
   "conditionTableRow": 53,
   "replicates": {
     "count": null,
-    "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited"
+    "text": "one RNA-seq sample per time point and condition (Table S7C); no replicates deposited",
+    "where": "Markson et al. 2013, Table S7C (owner-supplied workbook); verified package B/C addendum for condition row 53."
   },
   "conditions": {
     "temperature": {

@@ -20,6 +20,11 @@ hard boundary on admission, joins, predictions and lab decisions binds the agent
 here equally. Where a later section calls an in-repository search "pre-grounding,
 not verification", read it under this decision.
 
+For recovered papers and supplements, use the [literature recovery contract](literature-recovery.md)
+to reproduce the private source pins and accepted quotation checks. It also
+retains the boundary between source recovery, historical re-scores and current
+lab/admission decisions.
+
 ## What Claude Science is, for this repository
 
 Claude Science is an interactive agent session, not an API. Confirmed 2026-09-28 by

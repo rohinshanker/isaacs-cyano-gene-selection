@@ -2,6 +2,29 @@
 
 Compiled 2026-10-05 by a read-only Claude Science session. Evidence and recommendation only: nothing here admits data, grants a licence, performs a locus join, settles a lab decision, or recommends closing or retiring any ticket. A blocked item is evidence plus an owner-facing question. Every location is `file:line` in the repository at commit `70bc590` plus the working tree as mounted; machine-readable form is `cyano_blocked_task_register_20261005.tsv` (one row per item, same ids).
 
+## Literature intake dispositions
+
+Updated 2026-10-14. The original rows and counts below remain the 2026-10-05
+observations. The TSV's `intake_status`, `intake_date` and `intake_resolution`
+columns record subsequent intake without erasing those observations. Blank
+intake fields make no assertion about another scope's current status. See the
+[reproducible recovery contract](../../validation/literature-recovery.md) for
+source pins, scoped evidence and remaining limitations.
+
+| Item | Current intake disposition | Evidence |
+| --- | --- | --- |
+| LIT-01 | resolved | cyano_package_BC_addendum_20261006.tsv; GSE103606 historical rows 5/6 caveat in literature-recovery.md |
+| LIT-02 | resolved | cyano_package_BC_addendum_20261006.tsv; unreported flask temperature and lamp remain unknown |
+| LIT-03 | resolved | cyano_package_BC_addendum_20261006.tsv; source manifest verified 2026-10-14 |
+| LIT-04 | resolved | cyano_package_B_addendum_20261014.tsv; cyano_pxd000510_condition_addendum_20261014.json; current replay and four published records |
+| LIT-05 | resolved | cyano_pxd027430_condition_addendum_20261007.json; supplement included, sampling-scope limits retained |
+| LIT-06 | resolved | cyano_package_BC_addendum_20261006.tsv; historical cyano_package_D_rescore_20261006.tsv |
+| LIT-07 | resolved | cyano_package_BC_addendum_20261006.tsv; array ingestion remains separate |
+| LIT-08 | resolved with limitation | cyano_literature_source_checks_20261014.json: Wang article read, only generic PMC copyright notice located; no article-specific reuse grant or pending ledger decision |
+| LIT-09 | resolved | literature-recovery.md per-paper reading routes; no PDF challenge solved |
+| AUD-03 | resolved | cyano_literature_source_checks_20261014.json: bounded Rubin/Adomako primary read and workbook identity; no original-S3 parity or UTEX equivalence claimed |
+| MET-05 | source silent; owner judgement separate | Supplied Markson/Vijayan methods do not name the lamp; J1 is an owner judgement, not a recovered value |
+
 ## Sources read
 
 Every file in `docs/notes/handoff/` (four RET files, the SEND file, package A/B/C/D tables, the audit .md/.tsv, the crosswalk second-check .md/.tsv; the 2,716-line ortholog table only for its header and intake notes); `docs/notes/tickets/INDEX.md`; the offload, scan and audit tickets; `O_data-use-audit-fixes__20261004.md`; the six `O_biocyc-*` tickets; the tRNA, RBS, folding, recoding and topology tickets where a queue row points to them; `docs/validation/claude-science-handoff.md`; `docs/validation/source-ledger.md`. Package B `not retrieved` cells and package D undecidable-axis counts were computed from the TSVs on 2026-10-05. The three DOIs with no deposit (LIT-01, LIT-06, LIT-07) were re-probed on 2026-10-05; all three remain unreadable for the same reasons.

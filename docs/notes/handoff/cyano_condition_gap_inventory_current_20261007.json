@@ -57,6 +57,10 @@
     {
       "name": "cyano_pxd027430_condition_addendum_20261007.json",
       "sha256": "bb8311f4b36a2c0bb81377e2d28a3ff219e714e7baff746da1378f605b7e8810"
+    },
+    {
+      "name": "cyano_pxd000510_condition_addendum_20261014.json",
+      "sha256": "ffaf538f186d90fd1ad4379a143863a0929ff83fdd33f86102c71a8d72cd65ad"
     }
   ],
   "classification_contract": {
@@ -269,13 +273,60 @@
     {
       "condition_row": 58,
       "fields": {
-        "phot": "12:12"
+        "T": null,
+        "T_text": "Routine growth at 30°C; temperature during synchronized LD sampling is not explicitly restated.",
+        "I": null,
+        "I_text": "Routine growth at 80 (source unit typography: μm photons/m² s); sampling photon flux not explicitly restated.",
+        "co2": null,
+        "co2_text": "Routine growth uses flowing air; no numeric sampling gas CO2 fraction is stated.",
+        "cont": "diel",
+        "phot": "12:12",
+        "spec": "white (class not stated)",
+        "medium": "BG-11",
+        "conditioned": null,
+        "n_altered": null,
+        "medium_text": "BG11 for routine growth and pellet resuspension; sampling medium composition/conditioning not independently itemised.",
+        "fmt": "planktonic liquid",
+        "phase": null,
+        "od": null,
+        "od_nm": null,
+        "replicates": "20 time points over 48 h; four TMT mixtures with pooled reference channels. Independent biological replicate count per time point is not established; two labeling experiments and SWATH technical triplicates are not culture replicates."
       },
       "audit": {
+        "temperature": {
+          "status": "partial",
+          "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.temperature",
+          "uncertainty": "Routine 30°C is reported; sampling transfer is not asserted."
+        },
+        "light_intensity": {
+          "status": "partial",
+          "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.light_intensity",
+          "uncertainty": "Routine photon flux is reported with ambiguous source unit typography; no numeric sampling value assigned."
+        },
         "light_regime": {
           "status": "partial",
-          "source": "cyano_package_D_pairs_20261004.tsv condition row 58, inherited from accepted Package B PXD000510 evidence",
-          "uncertainty": "The sampling design uses a 12:12 diel cycle; spectrum class is unreported."
+          "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.light_regime",
+          "uncertainty": "Sampling 12:12 LD is explicit; white light has no reviewed lamp/spectrum class."
+        },
+        "co2": {
+          "status": "partial",
+          "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.co2",
+          "uncertainty": "Routine aeration uses air; no numeric sampling gas CO2 fraction is assigned."
+        },
+        "medium": {
+          "status": "partial",
+          "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.medium",
+          "uncertainty": "BG11 is named; sampling conditioning and nitrogen-source equivalence remain unknown."
+        },
+        "culture_format": {
+          "status": "present",
+          "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.culture_format",
+          "uncertainty": "Liquid aliquots are harvested by centrifugation; vessel and total working volume are not established."
+        },
+        "growth_phase": {
+          "status": "partial",
+          "source": "cyano_pxd000510_condition_addendum_20261014.json field_audit.growth_phase",
+          "uncertainty": "Log-phase maintenance and dilution to OD750 about 0.4 one day before sampling do not establish sampling phase or OD."
         }
       }
     },
@@ -1473,10 +1524,10 @@
       "artifact": "PXD000510",
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "temperature",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling temperature has no reviewed numeric interval.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_pxd000510_condition_addendum_20261014.json field_audit.temperature",
+      "uncertainty": "Routine 30°C is reported; sampling transfer is not asserted.",
       "historical_value": "not retrieved"
     },
     {
@@ -1484,10 +1535,10 @@
       "artifact": "PXD000510",
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "light_intensity",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling photon flux has no reviewed complete numeric profile.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_pxd000510_condition_addendum_20261014.json field_audit.light_intensity",
+      "uncertainty": "Routine photon flux is reported with ambiguous source unit typography; no numeric sampling value assigned.",
       "historical_value": "not retrieved"
     },
     {
@@ -1496,9 +1547,9 @@
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "light_regime",
       "status": "partial",
-      "value": "schedule=diel; photoperiod=12:12; spectrum=None",
-      "source_provenance": "cyano_package_D_pairs_20261004.tsv condition row 58, inherited from accepted Package B PXD000510 evidence",
-      "uncertainty": "The sampling design uses a 12:12 diel cycle; spectrum class is unreported.",
+      "value": "schedule=diel; photoperiod=12:12; spectrum=white (class not stated)",
+      "source_provenance": "cyano_pxd000510_condition_addendum_20261014.json field_audit.light_regime",
+      "uncertainty": "Sampling 12:12 LD is explicit; white light has no reviewed lamp/spectrum class.",
       "historical_value": "spectrum: not reported; cycle: diel (light and dark cycles); photoperiod: 12:12-hours"
     },
     {
@@ -1506,10 +1557,10 @@
       "artifact": "PXD000510",
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "co2",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling gas CO2 percentage is unknown.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_pxd000510_condition_addendum_20261014.json field_audit.co2",
+      "uncertainty": "Routine aeration uses air; no numeric sampling gas CO2 fraction is assigned.",
       "historical_value": "not retrieved"
     },
     {
@@ -1517,21 +1568,10 @@
       "artifact": "PXD000510",
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "medium",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling medium is unknown.",
-      "historical_value": "not retrieved"
-    },
-    {
-      "condition_row": 58,
-      "artifact": "PXD000510",
-      "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
-      "field": "culture_format",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling culture format is unknown.",
+      "status": "partial",
+      "value": "BG11 for routine growth and pellet resuspension; sampling medium composition/conditioning not independently itemised.",
+      "source_provenance": "cyano_pxd000510_condition_addendum_20261014.json field_audit.medium",
+      "uncertainty": "BG11 is named; sampling conditioning and nitrogen-source equivalence remain unknown.",
       "historical_value": "not retrieved"
     },
     {
@@ -1539,10 +1579,10 @@
       "artifact": "PXD000510",
       "condition_set": "PXD000510 - S. elongatus PCC7942 circadian proteomics time course",
       "field": "growth_phase",
-      "status": "not retrieved",
-      "value": "not retrieved",
-      "source_provenance": "cyano_dataset_condition_records_20261007.json row 58; reviewed status from cyano_condition_gap_inventory_20261007.json",
-      "uncertainty": "Sampling phase is unknown.",
+      "status": "partial",
+      "value": "partial",
+      "source_provenance": "cyano_pxd000510_condition_addendum_20261014.json field_audit.growth_phase",
+      "uncertainty": "Log-phase maintenance and dilution to OD750 about 0.4 one day before sampling do not establish sampling phase or OD.",
       "historical_value": "not retrieved"
     },
     {
