@@ -66,14 +66,14 @@ no GO identifiers. Counts and admission are checked again on the final payload.
 
 ## Findings
 
-Coordinator source/acceptance checks, pending final implementation:
+Coordinator source/acceptance checks; implementation integrated at `253694e`:
 
 | Id | Finding | Status |
 | --- | --- | --- |
-| RFA-01 | Functional filtering/colouring must select real inherited GO terms; detail/search or annotation-coverage colours alone do not satisfy the ticket. Negative, conflicting, ND and missing evidence remain distinct. | open |
-| RFA-02 | Native EC qualifiers and structured GO annotations embedded in Syn61 GenBank notes must be preserved and inventoried separately from transferred GO. | open |
-| RFA-03 | Syn57 `yddH`/`iroK` generated product placeholders must not be mistaken for a native product qualifier. | open |
-| RFA-04 | A UniProt entry without function text must not be counted or labelled as an actual curated function statement; use human field labels in the UI. | open |
+| RFA-01 | Functional filtering/colouring must select real inherited GO terms; detail/search or annotation-coverage colours alone do not satisfy the ticket. Negative, conflicting, ND and missing evidence remain distinct. | `253694e` |
+| RFA-02 | Native EC qualifiers and structured GO annotations embedded in Syn61 GenBank notes must be preserved and inventoried separately from transferred GO. | `253694e` |
+| RFA-03 | Syn57 `yddH`/`iroK` generated product placeholders must not be mistaken for a native product qualifier. | `253694e` |
+| RFA-04 | A UniProt entry without function text must not be counted or labelled as an actual curated function statement; use human field labels in the UI. | `253694e` |
 | RFA-05 | GO controls must remain available on every gene-map tab while their colour/filter state is active, including risk, UMAP and perturbation. | open |
 
 No independent final-patch audit has run yet; closure awaits that audit and
@@ -81,10 +81,7 @@ resolution of any findings it returns.
 
 ## Verification
 
-Pending implementation: independent crosswalk checks; exact/preserved-protein,
-ambiguous, absent and altered-gene fixtures; regression tests for existing target
-annotations and all affected organisms; rendered search/filter/colour/detail
-checks; required repository and release gates.
+Implementation gates pass: 1,594 JS tests; 1,771 Python tests, 16 optional skips and 51 subtests; default/Syn61 contract checks; deterministic Syn57 and Syn61 rebuilds. Independent source checks preserve both native gene payloads byte for byte, all native EC qualifiers, and all 3,985 native Syn61 GO relationships across 1,649 plotted genes. Mobile/tablet/desktop renders pass; RFA-05 needs its targeted fix and recheck before final independent review.
 
 ## Cleanup
 

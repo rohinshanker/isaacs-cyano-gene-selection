@@ -15,7 +15,7 @@ annotations here. The admitted MG1655 UniProtKB/GOA release is
 `GCF_000005845.2-UniProtGOA_2026-07-28`; RefSeq, EcoCyc, Blattner 1997,
 UniProtKB and GOA attribution is carried into each target's citations.
 Coordinator source receipts are retained in
-`docs/notes/handoff/recoded_functional_source_checks__20261014.json`.
+[dated source checks](../notes/handoff/recoded_functional_source_checks__20261014.json).
 
 Every accepted hop requires a full-length identical amino-acid sequence unique
 among eligible CDSs on both sides. The cardinality check includes CDSs excluded
