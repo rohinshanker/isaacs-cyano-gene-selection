@@ -36,6 +36,27 @@ nonrecoded parental/reference release for each target before transferring values
 - Verify source access, attribution/licence and release integrity under the
   existing annotation admission contract before publishing any new layer.
 
+## Source and implementation decisions
+
+- Implementation: Multica DEM-401 in the separate
+  `work/recoded-functional-impl-20261014` worktree; coordinator owns this ticket.
+- Existing admitted MG1655 UniProtKB/GOA release is the annotation reference;
+  exact parent-stock equivalence is not asserted. Source pins and fresh terms
+  receipts are recorded in the handoff JSON linked from the source ledger.
+- Baseline inventory: Syn57 has 3,588 included genes, no empty native names or
+  products; Syn61 has 3,549, 46 empty names and no empty products. Neither has
+  a rich annotation layer. MG1655 has curated function and evidence-coded GO,
+  but no admitted broad reviewed categories. Those categories stay unknown.
+- Independent packed-sequence check normalizes only bacterial initiation to M:
+  reciprocal unique MG1655 protein matches cover 3,542 Syn57 and 3,234 Syn61
+  genes. Eight/two target genes respectively have ambiguous exact matches;
+  38/313 have no exact match. These are baseline checks, not released counts.
+
+## Findings
+
+No independent final-patch audit has run yet; closure awaits that audit and
+resolution of any findings it returns.
+
 ## Verification
 
 Pending implementation: independent crosswalk checks; exact/preserved-protein,

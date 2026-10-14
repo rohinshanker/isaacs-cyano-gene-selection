@@ -85,6 +85,30 @@ sequence or returned model becomes project provenance automatically. Keep the
 external server terms and privacy setting separate from the standalone Apache-2.0
 code and the separate PyRosetta licence.
 
+## Recoded functional-annotation sources
+
+Syn57 and Syn61 may reuse the admitted MG1655 annotation release
+`GCF_000005845.2-UniProtGOA_2026-07-28` through the owner's requested
+sequence-supported transfer. MG1655 is the **annotation reference**, not a claim
+that its assembly is the exact parental stock. Preserve target coordinates and
+native annotation; do not transfer reference neighbourhoods, phenotype or
+laboratory-review status. Keep the reference GO evidence codes and references,
+and label the additional target transfer separately.
+
+Cite NCBI RefSeq, EcoCyc/BioCyc and Blattner et al. 1997 for reference annotation,
+The UniProt Consortium for curated function, and the Gene Ontology Consortium
+for GO relationships. Retain the original release date, CC BY 4.0 notices,
+disclaimer and the description of the source-to-target changes. The
+[source checks](../notes/handoff/recoded_functional_source_checks__20261014.json)
+record mechanically checked terms-page quotations and hashes, plus verification
+of the exact admitted UniProtKB/GOA inputs and derived release. Terms were read
+2026-10-14; NCBI's usage policy does not grant rights held by submitters.
+
+No broad reviewed functional categories exist in this MG1655 release. Missing
+categories remain unknown; GO terms do not become lab-reviewed category labels.
+The sequence crosswalk, ambiguity rules and rebuild checks belong to the
+[recoded annotation contract](recoded-functional-annotations.md).
+
 ## Fitness-screen sources
 
 | Artifact | Attribution and admission basis |
