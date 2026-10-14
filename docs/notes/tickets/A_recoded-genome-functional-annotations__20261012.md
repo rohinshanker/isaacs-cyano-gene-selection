@@ -59,7 +59,7 @@ separate from genuine native annotations. Native EC qualifiers occur on 1,432
 plotted Syn57 and 1,411 plotted Syn61 genes (1,437/1,414 across all source CDSs).
 
 Syn61 also carries structured `GO_function`/`GO_process`/`GO_component` records
-inside CDS notes (1,698 source CDSs), despite having no GO db_xrefs or dedicated
+inside CDS notes (1,698 source CDSs; 1,649 plotted genes and 3,985 plotted GO relationships), despite having no GO db_xrefs or dedicated
 GO qualifiers. Preserve them as native computational annotation with source
 provenance; do not overwrite them with reference GO. Syn57 source notes contain
 no GO identifiers. Counts and admission are checked again on the final payload.
