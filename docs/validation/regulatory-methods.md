@@ -23,16 +23,17 @@ regulation or calibrated biological probability.
 | --- | --- | --- |
 | RBS Calculator | [Public Salis-lab model harness](https://github.com/hsalis/SalisLabCode/blob/46da9132740bce30bccd107f02808adf2215e2f0/ModelTestSystem/examples/RBS/test_RBS_Calculator_v2_1_1.py), translation-initiation modeling | The public v2.1.1 harness imports private `DNAc` code. Original v1.0 needs Python 2 and NUPACK. Code/API/backend access is an open dependency; do not substitute an SD scan under this name. |
 | iDOG / TransTermHP | [iDOG](https://github.com/jayman1466/iDOG) design/screening components; [TransTermHP 2.09](https://transterm.cbcb.umd.edu/) intrinsic terminators | iDOG's promoter-parts library is distinct from genomic promoter-location prediction. Its owner-review hold remains. The [standalone pilot](regulatory-transterm.md) pins native inputs, annotation context and score semantics separately. |
-| Promoter Calculator | [v1.0 source](https://github.com/hsalis/SalisLabCode/blob/46da9132740bce30bccd107f02808adf2215e2f0/Promoter_Calculator/Promoter_Calculator_v1_0.py), sigma-70 promoter/TSS model | The [pinned preparation tool](regulatory-promoter.md) adapts the public Python 2 source for a local Python 3 smoke check while preserving coefficients and GPL v3-or-later terms. Apart from the explicit in-vitro mode, other organism names use E. coli calibration constants. A UTEX string is not a UTEX calibration. |
-| ViennaRNA | Existing [2.7.2 folding contract](rna-folding.md), folding/accessibility comparisons | Preserve model, window and parameter identity. A structure or accessibility value alone is not a regulatory-site call. |
-| STREME | [MEME Suite 5.5.9](https://meme-suite.org/meme-software/index.html), enriched motif discovery | A [local build recipe](#local-streme-build) is available. Pin foreground, controls and evaluation split; motif discovery and genomic site scanning are distinct steps. |
+| Promoter Calculator | [v1.0 source](https://github.com/hsalis/SalisLabCode/blob/46da9132740bce30bccd107f02808adf2215e2f0/Promoter_Calculator/Promoter_Calculator_v1_0.py), sigma-70 promoter/TSS model | The [pinned preparation and gTSS pilot](regulatory-promoter.md) adapt the public Python 2 source and evaluate native localization/control scores while preserving coefficients and GPL v3-or-later terms. Apart from the explicit in-vitro mode, other organism names use E. coli calibration constants. A UTEX string is not a UTEX calibration. |
+| ViennaRNA | Existing [2.7.2 folding contract](rna-folding.md), folding/accessibility comparisons | The [native accessibility producer](regulatory-accessibility.md) preserves model, window, temperature, segment and strand/circular-coordinate identity. A structure or accessibility value alone is not a regulatory-site call. |
+| STREME | [MEME Suite 5.5.9](https://meme-suite.org/meme-software/index.html), enriched motif discovery | The [native gTSS pilot](regulatory-streme.md) pins blocked discovery/evaluation cohorts, composition-preserving controls and explicit PWM ranking. Motif discovery and genomic site scanning are distinct steps. |
 | Rfam + Infernal | [Rfam release 15.1](https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/README) family models; [Infernal 1.1.5](http://eddylab.org/infernal/) searches | The [RF01116 pilot](regulatory-rfam.md) pins family bytes, gathering cutoffs and native coordinates with Infernal 1.1.5. A new family search remains computed evidence; the pilot does not admit a browser layer. |
-| IntaRNA | [v3.4.1](https://github.com/BackofenLab/IntaRNA/releases/tag/v3.4.1), candidate RNA interactions | Query/target RNAs, seed/accessibility parameters and coordinate provenance are required. |
+| IntaRNA | [v3.4.1](https://github.com/BackofenLab/IntaRNA/releases/tag/v3.4.1), candidate RNA interactions | The [bounded window pilot](regulatory-intarna.md) pins runtime/query/target identities, seed/accessibility parameters and native coordinates. Approximate RNA boundaries and control interactions prevent established-target claims. |
 
-These are candidate/runtime boundaries verified against primary sources on
-2026-10-09. They are not a record of seven deployed predictors or validated UTEX
+These are source-pinned candidate and executable-pilot boundaries. They are not a record of seven deployed predictors or validated UTEX
 regulatory annotations. The existing ViennaRNA and tRNA pipelines keep their
-own validated contracts; source-specific additions require evaluated producers.
+own validated contracts. The [transfer contract](regulatory-transfer.md) retains
+source evidence and limits; [browser-layer admission](../notes/tickets/O_regulatory-layer-admission__20261014.md)
+remains separate from these non-release producers.
 
 ## Local accessibility indexing
 

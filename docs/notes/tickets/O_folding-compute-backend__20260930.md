@@ -11,7 +11,7 @@
 ## Current State
 
 Owner direction, 2026-10-09: rough regulatory predictions may use models and
-evidence from other organisms. The [shared method assessment](A_regulatory-methods-shortlist__20261008.md#cross-organism-transfer-assessment-2026-10-09)
+evidence from other organisms. The [shared method assessment](../../validation/regulatory-transfer.md)
 owns new ViennaRNA local-structure/accessibility and IntaRNA interaction uses.
 Recompute on native UTEX RNA and retain windows, temperature, parameters and
 sequence identity; donor structures/interactions are supporting hypotheses, not
@@ -166,7 +166,7 @@ for backend feasibility, nor does this ticket authorize their scientific adoptio
 
 The 2026-10-09 transfer-planning note, source links and open status were checked
 by `cyano-regulatory-sites`; current passing repository gates are recorded in
-[the shared assessment](A_regulatory-methods-shortlist__20261008.md#verification).
+[the shared assessment](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
 No infrastructure, model run or UI changed.
 
 Documentation update verified 2026-10-07: the 32-ticket filename/H1/status,

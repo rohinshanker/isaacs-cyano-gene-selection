@@ -486,7 +486,7 @@ Remaining viewer work is separated by dependency:
   offset layer. Native Tan start-site display is already implemented.
 - Ribosome occupancy remains a per-gene value unless an admitted source actually
   supports positional coverage. Predictors and new regulatory layers belong to
-  [A_regulatory-methods-shortlist__20261008](A_regulatory-methods-shortlist__20261008.md),
+  [regulatory-method contracts](../../validation/regulatory-methods.md),
   not this viewer task.
 - Native flanking-neighbour context is implemented in both viewers for all six
   organisms; the linked contract preserves its coordinate and annotation rules.

@@ -43,6 +43,55 @@ validation dependency must have a concrete outcome and retained owner, not be
 silently presented as a successful regulatory-site call. The RBS missing-code
 and iDOG hold tickets remain separate and open.
 
+### Open independent-review findings
+
+DEM-397 reviewed accessibility worker `9184a88` (integrated `ab2c0a4`):
+**VA1 — open:** cached legacy energy fingerprint can accept changed parameter
+sets under a Turner 2004 label. **VA2 — open:** CLI suppresses cleanup-failure
+notes and surviving output paths. **VA3 — open:** re-reading the window table
+for its digest after folding can record bytes that were not parsed. DEM-394 owns
+repairs; the same reviewer must accept the exact repair before closure.
+
+### Current completion evidence
+
+- Promoter evaluation `5dee5d1`: all 2,475 admitted gTSS anchors considered;
+  1,597 selected (823 plus/774 minus), excluding 613 repeated loci, 264
+  overlapping windows and one duplicate sequence. Native any/all tied best
+  starts within ±5 nt: 900/892; matched mononucleotide controls: 397/384.
+  Median anchor rank: 6 native, 22 control. These describe this cohort, not
+  biological accuracy or a genome-wide false-positive rate. Fifty tests pass,
+  including the actual pinned model/native-input check. Independent review pending.
+  Final metadata/producer identity at `17dc0c1`; repeat preserves all numerical results.
+  Report SHA-256 `ab6cbe25b432a61b29fd67b403e32b5dce709b9de0920aaff7c8f2e666209f51`.
+- STREME: `366921a` (worker `9d27c37`), DEM-393: 400 discovery/200 external
+  windows, 1,548 blocks over 2,475 anchors; native AUC 0.624425 versus null
+  0.52345. S1 quantified: 7/8 planted positions recovered (87.5%), not exact
+  consensus; 95/100 independent planted examples have consistent best-match
+  offset/strand. 126 focused/related tests pass with no skips. Durable synthetic
+  fixtures are tracked. DEM-398 reviews this and the Promoter patch.
+- ViennaRNA: `ab2c0a4` (worker `9184a88`), DEM-394: 83 focused tests pass;
+  six windows produce 2,313 rows, independently re-extracted against the genome
+  and compared with `pfl_fold_up`; byte-identical repeat. Window changes can
+  reverse native-versus-shuffle ranks, so no accessibility-based site call is
+  supported. DEM-397 reviews the exact patch.
+- IntaRNA: `a292532` (worker `0ca57c5`) implements the bounded native-window
+  pilot; `7055890`/`f7fc41c` preserve the exact dependency set and complete scratch
+  build recipe. Seventy-one focused tests pass, including two byte-identical
+  native repeats and independent coordinate/base-pair checks. Upstream API and
+  CLI tests pass (3,859 assertions/30 API cases). Default native interactions:
+  5/9, shuffled controls 8/9, disrupted queries 4/5, global-accessibility 6/9,
+  six-base seed 8/9. No confirmed native target claim is supported.
+  I-BUILD-1/I-BUILD-2/I-CLI-1/I-TEST-1 are resolved by the documented isolated
+  build/wrapper contract. I-SCI-1 remains **open** in
+  [the admission ticket](O_regulatory-layer-admission__20261014.md#open-scientific-dependencies)
+  for actual transcript/target evidence; that evidence is not asserted by the
+  completed computational-window producer. DEM-399 reviews the exact patch.
+
+Initial integrated gates at `f7fc41c`: JavaScript **1,584 passed**, Python
+**2,025 passed, 8 skipped, 51 subtests passed**, contract **130 passed, 0 failed,
+1 declared contiguity skip**. Actual Promoter, STREME, IntaRNA and Infernal inputs
+were supplied. Accessibility review repairs and final affected checks remain.
+
 ## Implementation and evaluation, 2026-10-12
 
 Coordinator: `cyano-regulatory-sites`. DEM-361 implements standalone TransTermHP;
