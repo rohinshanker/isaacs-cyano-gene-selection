@@ -156,13 +156,14 @@ test('GO ID and pinned term name search return labelled IEA suggestions', () => 
   const goTerms = { 'GO:0009773': {
     name: 'photosynthetic electron transport in photosystem I',
     namespace: 'biological_process',
+    isObsolete: false,
   } };
   const byId = searchGenes(genes, 'go:0009773', { goTerms });
   assert.equal(byId.total, 1);
   assert.equal(byId.shown[0].matchedOn, 'GO ID');
   assert.deepEqual(byId.shown[0].goMatch, {
     id: 'GO:0009773', name: goTerms['GO:0009773'].name,
-    evidenceCode: 'IEA', mappingAmbiguity: null, isObsolete: false,
+    evidenceCode: 'IEA', qualifier: '', evidenceState: 'positive', mappingAmbiguity: null, isObsolete: false,
   });
   const byName = searchGenes(genes, 'electron transport photosynthetic', { goTerms });
   assert.equal(byName.total, 1);

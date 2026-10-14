@@ -30,8 +30,14 @@ export function searchActionState(pinned, shortlisted) {
 function goMatchLine(goMatch) {
   const term = goMatch.name ? ` — ${goMatch.name}` : '';
   const ambiguity = goMatch.mappingAmbiguity ? '; mapping ambiguous' : '';
-  const obsolete = goMatch.isObsolete ? '; obsolete GO ID in the pinned name release' : '';
-  return `${goMatch.id}${term} (${goMatch.evidenceCode} computational suggestion${ambiguity}${obsolete})`;
+  const obsolete = goMatch.isObsolete === true ? '; obsolete GO ID in the pinned name release'
+    : goMatch.isObsolete === null ? '; ontology status unchecked' : '';
+  const qualifier = goMatch.qualifier ? `${goMatch.qualifier} · ` : '';
+  const code = goMatch.evidenceCode || 'evidence not recorded';
+  const evidence = code === 'IEA' ? 'IEA computational suggestion'
+    : code === 'ND' ? 'ND — no biological data' : `${code} source evidence`;
+  const conflict = goMatch.evidenceState === 'conflict' ? '; conflicting positive and NOT annotations' : '';
+  return `${qualifier}${goMatch.id}${term} (${evidence}${ambiguity}${obsolete}${conflict})`;
 }
 
 /**

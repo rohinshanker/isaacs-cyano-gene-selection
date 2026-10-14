@@ -119,6 +119,15 @@ async (page) => {
       const negative = Number(negativeCounts.match(/Explicit NOT annotation: (\d+)/)?.[1]);
       check(negative > 0, `${tag}: deposited NOT annotation was lost`);
       check((await page.locator('#map-canvas').getAttribute('aria-label')).includes(`${negative} of`), `${tag}: NOT filter count mismatch`);
+      await page.locator('#gene-search').fill(tag === 'syn57' ? 'GO:0047693' : 'GO:0009228');
+      const notLocus = tag === 'syn57' ? 'b0099' : 'PPG85_01680';
+      const notRow = page.locator('#gene-search-results li').filter({ hasText: notLocus });
+      await notRow.waitFor();
+      const notText = await notRow.innerText();
+      check(notText.includes('NOT|') && notText.includes('source evidence'), `${tag}: search lost explicit NOT or source evidence`);
+      await notRow.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: `${root}/${tag}-not-go-search.png` });
+      results.push({ organism, state: 'not-go-search', snapshot: await notRow.ariaSnapshot() });
       await page.screenshot({ path: `${root}/${tag}-not-go-filter.png`, fullPage: true });
       await page.locator('#functional-go-filter').selectOption('any');
       await page.getByRole('tab', { name: 'Chromosome/Gene', exact: true }).click();
@@ -157,6 +166,13 @@ async (page) => {
         await page.screenshot({ path: `${root}/syn61-native-go.png`, fullPage: true });
         await page.screenshot({ path: `${root}/syn61-native-go-viewport.png` });
         results.push({ organism, state: 'native-go-detail', snapshot: await nativeDisclosure.ariaSnapshot() });
+        await page.locator('#gene-search').fill('GO:0009067');
+        const uncheckedRow = page.locator('#gene-search-results li').filter({ hasText: 'PPG85_00010' });
+        await uncheckedRow.waitFor();
+        check((await uncheckedRow.innerText()).includes('ontology status unchecked'), 'Syn61 search implied checked ontology status');
+        await uncheckedRow.scrollIntoViewIfNeeded();
+        await page.screenshot({ path: `${root}/syn61-unchecked-go-search.png` });
+        results.push({ organism, state: 'unchecked-go-search', snapshot: await uncheckedRow.ariaSnapshot() });
       }
       await page.locator('#gene-search').fill('no-gene-matches-zzzz');
       check((await page.locator('#gene-search-results').innerText()).includes('No'), `${tag}: empty search state missing`);

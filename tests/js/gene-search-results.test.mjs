@@ -64,7 +64,7 @@ test('GO, alias, category, and missing-product hits each shape their own lines',
   const dataset = await realDataset();
   const go = searchRowModel(firstHit(dataset, 'GO:0009522'), handlers());
   assert.equal(go.matched, ' matched GO ID');
-  assert.equal(go.goLine, 'GO:0009522 — photosystem I (IEA computational suggestion)');
+  assert.equal(go.goLine, 'located_in · GO:0009522 — photosystem I (IEA computational suggestion)');
 
   const alias = searchRowModel(firstHit(dataset, 'ribosome-binding'), handlers());
   assert.equal(alias.matched, ' matched product via ribosome');
@@ -83,6 +83,26 @@ test('GO, alias, category, and missing-product hits each shape their own lines',
   assert.equal(synthetic.categoryLine, 'Lab-reviewed category: Stress and repair');
   assert.equal(synthetic.goLine, 'GO:0000001 (IEA computational suggestion; mapping ambiguous; '
     + 'obsolete GO ID in the pinned name release)');
+});
+
+test('GO search preserves NOT, conflicts, evidence codes and unknown ontology status', () => {
+  const id = 'GO:0000001';
+  const relation = (qualifier, evidenceCode = 'IDA') => ({ goId: id, qualifier, evidenceCode });
+  const terms = { [id]: { name: 'example activity', isObsolete: false } };
+  const rowFor = (relations, goTerms = terms) => {
+    const gene = { id: 'source', annotationEvidence: { goAnnotations: relations } };
+    return searchRowModel(searchGenes([gene], id, { goTerms }).shown[0], handlers());
+  };
+  assert.match(rowFor([relation('NOT|enables')]).goLine, /^NOT\|enables · GO:/);
+  assert.match(rowFor([relation('NOT|enables')]).goLine, /IDA source evidence/);
+  assert.doesNotMatch(rowFor([relation('enables')]).goLine, /computational suggestion/);
+  assert.match(rowFor([relation('enables'), relation('NOT|enables')]).goLine,
+    /conflicting positive and NOT annotations/);
+  assert.match(rowFor([relation('', 'ND')]).goLine, /ND — no biological data/);
+  assert.match(rowFor([relation('', 'IEA')], {
+    [id]: { name: 'native note term', isObsolete: null },
+  }).goLine, /ontology status unchecked/);
+  assert.match(rowFor([relation('', 'IEA')], {}).goLine, /ontology status unchecked/);
 });
 
 test('every matching row renders through the DOM wrapper with its product and both actions', async () => {

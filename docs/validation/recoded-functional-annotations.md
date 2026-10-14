@@ -67,8 +67,14 @@ source assembly, record release, locus, source checksum, protein checksum and
 method. The browser validates all records before filling missing display fields;
 retries preserve direct annotations. Search uses the same effective symbols and
 GO relationships as detail. It labels native versus inherited GO, while inherited
-reference disclosures identify their provenance and measurement boundary. Export
-manifests retain the native annotation and the full transfer record.
+reference disclosures identify their provenance and measurement boundary. Search
+results retain each matched relationship qualifier, including `NOT`, and identify
+positive/NOT conflicts; evidence codes other than IEA are not labelled as IEA
+computational suggestions. Export manifests retain the native annotation and
+the full transfer record. Their `isObsoleteInNameRelease` is `true` or `false`
+only when the pinned lookup establishes that state, and `null` for unchecked or
+missing terms. Supplemental native term-name provenance travels with each
+exported relationship; search and detail preserve the same uncertainty.
 
 The recoded views expose an exact GO term selector with a readable term name.
 Literal GO ID/name search narrows the native select and retains the selected

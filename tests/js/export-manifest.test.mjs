@@ -679,6 +679,25 @@ test('GO relationships export as evidence-coded suggestions with pinned names', 
   assert.ok(result.manifest.caveats.some((line) => /IEA computational suggestions/.test(line)));
 });
 
+test('GO exports preserve true, false, unchecked and absent ontology states', async () => {
+  const { dataset, registry } = await context();
+  const relations = ['GO:0000001', 'GO:0000002', 'GO:0000003', 'GO:0000004'].map((goId) =>
+    ({ goId, evidenceCode: 'IEA', qualifier: 'enables' }));
+  const gene = { ...dataset.genes[0], annotationEvidence: { goAnnotations: relations } };
+  const goTerms = { terms: {
+    'GO:0000001': { name: 'known active', isObsolete: false },
+    'GO:0000002': { name: 'known obsolete', isObsolete: true },
+    'GO:0000003': { name: 'native note', isObsolete: null,
+      nameSource: 'native GenBank CDS note; ontology obsolescence unchecked' },
+  } };
+  const result = exportFor({ ...dataset, genes: [gene, ...dataset.genes.slice(1)], goTerms },
+    registry, [gene.id], [{ map: {} }]);
+  assert.deepEqual(result.manifest.genes[0].goAnnotations.map((row) => row.isObsoleteInNameRelease),
+    [false, true, null, null]);
+  assert.equal(result.manifest.genes[0].goAnnotations[2].nameSource, goTerms.terms['GO:0000003'].nameSource);
+  assert.equal(result.manifest.genes[0].goAnnotations[3].nameSource, null);
+});
+
 function colourSourceFixture(dataset) {
   const coveredId = dataset.genes[0].id;
   const uncoveredId = dataset.genes[1].id;

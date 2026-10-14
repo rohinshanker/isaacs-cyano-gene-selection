@@ -600,9 +600,8 @@ export function buildExport({
         const goAnnotations = (gene.annotationEvidence?.goAnnotations ?? []).map((relation) => ({
           ...relation,
           name: dataset.goTerms?.terms?.[relation.goId]?.name ?? null,
-          isObsoleteInNameRelease: Boolean(
-            dataset.goTerms?.terms?.[relation.goId]?.isObsolete
-          ),
+          nameSource: dataset.goTerms?.terms?.[relation.goId]?.nameSource ?? null,
+          isObsoleteInNameRelease: dataset.goTerms?.terms?.[relation.goId]?.isObsolete ?? null,
         }));
         return without({
           id: gene.id,

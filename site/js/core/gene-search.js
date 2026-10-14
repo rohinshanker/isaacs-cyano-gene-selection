@@ -14,6 +14,7 @@
  * something to approximate with a scoring heuristic.
  */
 import { DEFAULT_ORGANISM } from './organisms.js';
+import { goTermEvidenceState } from './go-term-evidence.js';
 
 /**
  * Nicknames a lab types, mapped to the phrasing the annotation actually uses.
@@ -182,8 +183,10 @@ export function searchGenes(genes, query, {
         id: go.goId,
         name: best.name || null,
         evidenceCode: go.evidenceCode,
+        qualifier: go.qualifier ?? '',
+        evidenceState: goTermEvidenceState(gene, go.goId, goTerms),
         mappingAmbiguity: go.mappingAmbiguity || null,
-        isObsolete: Boolean(goTerms?.[go.goId]?.isObsolete),
+        isObsolete: goTerms?.[go.goId]?.isObsolete ?? null,
       } : null,
     });
   });
