@@ -100,17 +100,29 @@ def native_slice(sequence: str, low: int, high: int) -> str:
     return sequence[low - 1:high] if low <= high else sequence[low - 1:] + sequence[:high]
 
 
+def load_fasta(path: Path) -> dict[str, str]:
+    return accessibility.parse_fasta(path.read_bytes(), path.name)
+
+
+def parse_windows(path: Path, pins) -> list:
+    return accessibility.parse_windows(path.read_bytes(), path.name, pins)
+
+
+def file_sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 # FASTA and assembly identity
 
 
 def test_load_fasta_reads_plain_and_gzip(tmp_path):
     plain = tmp_path / "g.fna"
     plain.write_text(">a desc\nacg\nT\n\n>b\nGG\n")
-    assert accessibility.load_fasta(plain) == {"a": "ACGT", "b": "GG"}
+    assert load_fasta(plain) == {"a": "ACGT", "b": "GG"}
     compressed = tmp_path / "g.fna.gz"
     with gzip.open(compressed, "wt") as handle:
         handle.write(">a\nAC\n")
-    assert accessibility.load_fasta(compressed) == {"a": "AC"}
+    assert load_fasta(compressed) == {"a": "AC"}
 
 
 @pytest.mark.parametrize(("text", "message"), (
@@ -125,28 +137,32 @@ def test_load_fasta_rejects_malformed_input(tmp_path, text, message):
     path = tmp_path / "g.fna"
     path.write_text(text)
     with pytest.raises(AccessibilityError, match=message):
-        accessibility.load_fasta(path)
+        load_fasta(path)
 
 
-def test_load_fasta_reports_unreadable_input(tmp_path):
+def test_unreadable_or_corrupt_input_is_reported(tmp_path):
     with pytest.raises(AccessibilityError, match="could not read FASTA"):
-        accessibility.load_fasta(tmp_path)
+        accessibility.read_snapshot(tmp_path, "FASTA")
+    with pytest.raises(AccessibilityError, match="could not read FASTA g.fna.gz"):
+        accessibility.parse_fasta(b">a\nAC\n", "g.fna.gz")
+    with pytest.raises(AccessibilityError, match="could not read FASTA g.fna:"):
+        accessibility.parse_fasta(b">a\n\xffAC\n", "g.fna")
 
 
 def test_validate_assembly_lists_every_mismatch(tmp_path):
     fasta = write_fasta(tmp_path / "g.fna", genome())
     pins = fixture_pins(fasta)
-    accessibility.validate_assembly(fasta, accessibility.load_fasta(fasta), pins)
+    accessibility.validate_assembly(file_sha(fasta), load_fasta(fasta), pins)
     changed = genome()
     changed["chr"] = changed["chr"][:-1]
     other = write_fasta(tmp_path / "other.fna", changed)
     with pytest.raises(AccessibilityError) as error:
-        accessibility.validate_assembly(other, accessibility.load_fasta(other), pins)
+        accessibility.validate_assembly(file_sha(other), load_fasta(other), pins)
     assert "FASTA SHA-256" in str(error.value) and "replicons" in str(error.value)
     reordered = write_fasta(tmp_path / "reordered.fna", dict(reversed(genome().items())))
     with pytest.raises(AccessibilityError, match="replicons"):
         accessibility.validate_assembly(
-            reordered, accessibility.load_fasta(reordered),
+            file_sha(reordered), load_fasta(reordered),
             accessibility.Pins("fixture", hashlib.sha256(reordered.read_bytes()).hexdigest(),
                                pins.replicons),
         )
@@ -163,7 +179,7 @@ def test_parse_windows_accepts_plus_minus_origin_and_anchor(tmp_path):
         "m\tchr\t5\t34\t-\t\tminus",
         "o\tchr\t51\t20\t-\t1\torigin",
     )
-    windows = accessibility.parse_windows(path, fixture_pins(fasta))
+    windows = parse_windows(path, fixture_pins(fasta))
     assert [(item.window_id, item.length, item.wraps_origin, item.anchor) for item in windows] == [
         ("p", 30, False, 10), ("m", 30, False, None), ("o", 30, True, 1),
     ]
@@ -190,7 +206,7 @@ def test_parse_windows_rejects_bad_rows(tmp_path, row, message):
     fasta = write_fasta(tmp_path / "g.fna", genome())
     path = write_windows(tmp_path / "w.tsv", row)
     with pytest.raises(AccessibilityError, match=message):
-        accessibility.parse_windows(path, fixture_pins(fasta))
+        parse_windows(path, fixture_pins(fasta))
 
 
 def test_parse_windows_rejects_table_level_problems(tmp_path, monkeypatch):
@@ -207,18 +223,18 @@ def test_parse_windows_rejects_table_level_problems(tmp_path, monkeypatch):
     for text, message in cases:
         path.write_text(text)
         with pytest.raises(AccessibilityError, match=message):
-            accessibility.parse_windows(path, pins)
+            parse_windows(path, pins)
     path.write_bytes(b"\xff\xfe")
     with pytest.raises(AccessibilityError, match="could not read windows"):
-        accessibility.parse_windows(path, pins)
+        parse_windows(path, pins)
     monkeypatch.setattr(accessibility, "MAX_WINDOW_NT", 10)
     path.write_text(HEADER + "a\tchr\t1\t11\t+\t\t\n")
     with pytest.raises(AccessibilityError, match="exceeds 10"):
-        accessibility.parse_windows(path, pins)
+        parse_windows(path, pins)
     monkeypatch.setattr(accessibility, "MAX_WINDOWS", 1)
     path.write_text(HEADER + "a\tchr\t1\t5\t+\t\t\nb\tchr\t2\t6\t+\t\t\n")
     with pytest.raises(AccessibilityError, match="2 windows exceed 1"):
-        accessibility.parse_windows(path, pins)
+        parse_windows(path, pins)
 
 
 # Coordinates
@@ -360,8 +376,10 @@ class FakeCompound:
 
 def fake_rna(real, compound=None, **overrides):
     values = {
-        "__version__": "2.7.2", "md": real.md, "fold": real.fold,
-        "fold_compound": lambda sequence, model, option: compound,
+        "__version__": "2.7.2", "md": real.md, "param": real.param, "exp_param": real.exp_param,
+        "fold_compound": lambda sequence, model, option=None: (
+            real.fold_compound(sequence, model) if option is None else compound
+        ),
         "OPTION_WINDOW": real.OPTION_WINDOW, "PROBS_WINDOW_UP": real.PROBS_WINDOW_UP,
         "ANY_LOOP": real.ANY_LOOP,
     }
@@ -444,14 +462,41 @@ def test_check_runtime_rejects_wrong_version_changed_defaults_and_energies(rna):
 
     with pytest.raises(AccessibilityError, match=re.escape("default model changed: {'dangles': 0}")):
         accessibility.check_runtime(fake_rna(rna, md=changed_model))
-    with pytest.raises(AccessibilityError, match="energy fingerprint"):
-        accessibility.check_runtime(fake_rna(rna, fold=lambda sequence: ("." * len(sequence), 0.0)))
-    with pytest.raises(AccessibilityError, match="energy fingerprint"):
-        accessibility.check_runtime(
-            fake_rna(rna, fold=lambda sequence: (accessibility.ENERGY_FINGERPRINT[1], -13.5))
-        )
+    sequence, structure, mfe, ensemble = accessibility.ENERGY_FINGERPRINT
+    for observed in ((("." * len(sequence)), mfe, ensemble), (structure, -13.5, ensemble),
+                     (structure, mfe, -13.7)):  # the last differs only in Boltzmann factors
+        with pytest.raises(AccessibilityError, match="energy fingerprint"):
+            accessibility.check_runtime(
+                fake_rna(rna, fold_compound=lambda *args, values=observed: FakeFingerprint(*values))
+            )
     runtime = accessibility.check_runtime(fake_rna(rna))  # no compiled extension attribute
     assert runtime["extensionModule"] is None and runtime["extensionModuleSha256"] is None
+
+
+class FakeFingerprint:
+    def __init__(self, structure, mfe, ensemble):
+        self.structure, self.energy, self.ensemble = structure, mfe, ensemble
+
+    def mfe(self):
+        return self.structure, self.energy
+
+    def exp_params_rescale(self, energy):
+        return None
+
+    def pf(self):
+        return self.structure, self.ensemble
+
+
+def test_parameter_caches_are_replaced_with_an_unusable_sentinel_model(rna):
+    requested = []
+    recorder = fake_rna(
+        rna,
+        param=lambda model: requested.append(("param", model.temperature)),
+        exp_param=lambda model: requested.append(("exp_param", model.temperature)),
+    )
+    accessibility.replace_parameter_caches(recorder)
+    assert requested == [("param", -100.0), ("exp_param", -100.0)]
+    assert requested[0][1] < accessibility.TEMPERATURE_RANGE_C[0]
 
 
 def test_shuffle_is_deterministic_composition_preserving_and_keyed():
@@ -500,7 +545,7 @@ def test_end_to_end_outputs_are_complete_consistent_and_reproducible(tmp_path, r
     sequences = genome()
     oriented_by_id = {
         item.window_id: accessibility.oriented_sequence(item, sequences)
-        for item in accessibility.parse_windows(windows, fixture_pins(fasta))
+        for item in parse_windows(windows, fixture_pins(fasta))
     }
     for row in rows:
         oriented = oriented_by_id[row["window_id"]]
@@ -550,9 +595,137 @@ def test_mismatched_inputs_and_runtime_write_nothing(tmp_path, rna):
     with pytest.raises(AccessibilityError, match="'2.6.4' found"):
         accessibility._run(namespace, fixture_pins(fasta), fake_rna(rna, __version__="2.6.4"))
     namespace.windows = tmp_path / "missing.tsv"
-    with pytest.raises(AccessibilityError, match="missing input file"):
+    with pytest.raises(AccessibilityError, match="could not read windows"):
         accessibility._run(namespace, fixture_pins(fasta), rna)
     assert list(namespace.json_out.parent.iterdir()) == []
+
+
+# VA3: the recorded input identity is the identity of the bytes used
+
+
+def edit_during_compute(monkeypatch, path: Path, edit):
+    original = accessibility.compute
+
+    def compute(*args, **kwargs):
+        edit(path)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(accessibility, "compute", compute)
+
+
+@pytest.mark.parametrize("which", ("windows", "fasta"))
+def test_input_edited_after_parsing_is_refused_without_outputs(tmp_path, rna, monkeypatch, which):
+    namespace, fasta, windows = fixture_run(tmp_path)
+    pins = fixture_pins(fasta)
+    target = windows if which == "windows" else fasta
+    edit_during_compute(
+        monkeypatch, target,
+        lambda path: path.write_bytes(path.read_bytes().replace(b"\t5\t48\t", b"\t6\t49\t")
+                                      if which == "windows" else path.read_bytes() + b"\n"),
+    )
+    with pytest.raises(AccessibilityError, match=f"input {re.escape(str(target))} changed during the run"):
+        accessibility._run(namespace, pins, rna)
+    assert list(namespace.json_out.parent.iterdir()) == []
+
+
+def test_input_removed_during_the_run_is_refused(tmp_path, rna, monkeypatch):
+    namespace, fasta, windows = fixture_run(tmp_path)
+    edit_during_compute(monkeypatch, windows, Path.unlink)
+    with pytest.raises(AccessibilityError, match="became unreadable during the run"):
+        accessibility._run(namespace, fixture_pins(fasta), rna)
+    assert list(namespace.json_out.parent.iterdir()) == []
+
+
+def test_recorded_windows_digest_is_the_parsed_snapshot(tmp_path, rna):
+    namespace, fasta, windows = fixture_run(tmp_path)
+    snapshot = windows.read_bytes()
+    payload = accessibility._run(namespace, fixture_pins(fasta), rna)
+    assert payload["inputs"]["windows"]["sha256"] == hashlib.sha256(snapshot).hexdigest()
+    assert [item["nativeStart"] for item in payload["windows"]] == [
+        item.start for item in accessibility.parse_windows(snapshot, windows.name, fixture_pins(fasta))
+    ]
+
+
+# VA1: process-wide ViennaRNA parameter state, in separate real-engine processes
+
+ENGINE_SCENARIO = r"""
+import importlib.util, json, sys
+import RNA
+spec = json.loads(sys.argv[1])
+module_spec = importlib.util.spec_from_file_location("regulatory_accessibility", spec["tool"])
+tool = importlib.util.module_from_spec(module_spec)
+sys.modules[module_spec.name] = tool
+module_spec.loader.exec_module(tool)
+probe = tool.ENERGY_FINGERPRINT[0]
+report = {}
+if spec["scenario"] == "fold-then-turner1999":
+    RNA.fold(probe)
+    RNA.params_load_RNA_Turner1999()
+elif spec["scenario"] == "stale-turner1999-caches":
+    RNA.params_load_RNA_Turner1999()
+    compound = RNA.fold_compound(probe, RNA.md())
+    compound.exp_params_rescale(compound.mfe()[1])
+    compound.pf()
+    RNA.params_load_RNA_Turner2004()
+    stale = RNA.fold_compound(probe, RNA.md())
+    report["staleMfe"] = round(stale.mfe()[1], 2)
+try:
+    if spec["pins"] is None:
+        tool.main(spec["argv"])
+    else:
+        pins = tool.Pins(spec["pins"]["assembly"], spec["pins"]["sha"],
+                         {key: tuple(value) for key, value in spec["pins"]["replicons"].items()})
+        tool._run(tool.parser().parse_args(spec["argv"]), pins, RNA)
+    report["status"] = "ok"
+except (tool.AccessibilityError, SystemExit) as error:
+    report["status"] = "refused"
+    report["error"] = str(error)
+print(json.dumps(report))
+"""
+
+
+def engine_scenario(tmp_path, scenario, argv, pins=None):
+    spec = {
+        "tool": str(ROOT / "tools/regulatory_accessibility.py"), "scenario": scenario, "argv": argv,
+        "pins": None if pins is None else {
+            "assembly": pins.assembly, "sha": pins.fasta_sha256, "replicons": pins.replicons,
+        },
+    }
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", ENGINE_SCENARIO, json.dumps(spec)],
+        capture_output=True, text=True, check=True, cwd=tmp_path,
+        env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+    )
+    return json.loads(result.stdout.strip().splitlines()[-1])
+
+
+def fixture_argv(tmp_path, out):
+    namespace, fasta, windows = fixture_run(tmp_path, out=out)
+    argv = [
+        "--fasta", str(fasta), "--windows", str(windows), "--segment-length", "4",
+        "--folding-window", "20", "--max-bp-span", "15", "--temperature", "37",
+        "--shuffle-replicates", "2", "--shuffle-seed", "7",
+        "--json-out", str(namespace.json_out), "--tsv-out", str(namespace.tsv_out),
+    ]
+    return argv, namespace, fixture_pins(fasta)
+
+
+def test_turner1999_loaded_after_a_cached_fold_is_refused(tmp_path, rna):
+    argv, namespace, pins = fixture_argv(tmp_path, "turner1999")
+    report = engine_scenario(tmp_path, "fold-then-turner1999", argv, pins)
+    assert report["status"] == "refused" and "energy fingerprint" in report["error"]
+    assert "-17.6" in report["error"]
+    assert list(namespace.json_out.parent.iterdir()) == []
+
+
+def test_stale_parameter_caches_cannot_reach_the_probabilities(tmp_path, rna):
+    clean_argv, clean, pins = fixture_argv(tmp_path, "clean")
+    assert engine_scenario(tmp_path, "clean", clean_argv, pins) == {"status": "ok"}
+    stale_argv, stale, _ = fixture_argv(tmp_path, "stale")
+    report = engine_scenario(tmp_path, "stale-turner1999-caches", stale_argv, pins)
+    assert report == {"staleMfe": -17.6, "status": "ok"}  # the trap was armed, then cleared
+    assert stale.tsv_out.read_bytes() == clean.tsv_out.read_bytes()
+    assert stale.json_out.read_bytes() == clean.json_out.read_bytes()
 
 
 # Output safety
@@ -627,10 +800,53 @@ def test_cleanup_failure_is_reported_without_hiding_the_cause(tmp_path, monkeypa
         raise OSError("busy")
 
     monkeypatch.setattr(Path, "unlink", refuse)
-    with pytest.raises(AccessibilityError, match="disk full") as error:
+    with pytest.raises(AccessibilityError) as error:
         accessibility.write_outputs([(first, b"x"), (second, b"y")])
-    notes = error.value.__cause__.__notes__
-    assert any("could not be removed" in note and "busy" in note for note in notes)
+    message = str(error.value)
+    assert message.startswith("could not write outputs: disk full; partial outputs could not be removed: ")
+    assert f"{first} (busy)" in message and f"{second} (busy)" in message
+    interrupted = tmp_path / "d.json"
+    patch_open(monkeypatch, interrupted, KeyboardInterrupt())
+    with pytest.raises(KeyboardInterrupt) as interrupt:
+        accessibility.write_outputs([(tmp_path / "c.tsv", b"x"), (interrupted, b"y")])
+    assert "could not be removed" in interrupt.value.__notes__[0]
+
+
+# VA2: real permission failures during the output transaction
+
+real_permissions = pytest.mark.skipif(
+    not hasattr(os, "chflags") or os.geteuid() == 0,
+    reason="needs BSD file flags and a non-root user for real permission failures",
+)
+
+
+@pytest.fixture
+def unremovable_tsv_dir(tmp_path):
+    """TSV directory accepts new files but refuses removal; JSON directory refuses creation."""
+    import stat
+    tsv_dir, json_dir = tmp_path / "tsv", tmp_path / "json"
+    tsv_dir.mkdir()
+    json_dir.mkdir()
+    os.chflags(tsv_dir, stat.UF_APPEND)
+    json_dir.chmod(0o500)
+    try:
+        yield tsv_dir, json_dir
+    finally:
+        os.chflags(tsv_dir, 0)
+        json_dir.chmod(0o700)
+
+
+@real_permissions
+def test_real_cleanup_failure_names_the_leftover_output(tmp_path, rna, unremovable_tsv_dir):
+    tsv_dir, json_dir = unremovable_tsv_dir
+    namespace, fasta, _ = fixture_run(tmp_path, json_out=json_dir / "a.json", tsv_out=tsv_dir / "a.tsv")
+    with pytest.raises(AccessibilityError) as error:
+        accessibility._run(namespace, fixture_pins(fasta), rna)
+    message = str(error.value)
+    assert f"could not create output {json_dir / 'a.json'}" in message and "Permission denied" in message
+    assert f"partial outputs could not be removed: {tsv_dir / 'a.tsv'}" in message
+    assert "Operation not permitted" in message
+    assert (tsv_dir / "a.tsv").exists() and not (json_dir / "a.json").exists()
 
 
 # Command line
@@ -693,6 +909,37 @@ def test_real_rf01116_and_origin_windows_map_to_native_coordinates(tmp_path, rna
     assert (first_hit["native_start"], first_hit["native_end"]) == ("1364716", "1364725")
     wrapped = [row for row in rows if row["wraps_origin"] == "true"]
     assert [(row["native_start"], row["native_end"]) for row in wrapped][0] == ("2690418", "9")
+
+
+@needs_genome
+@real_permissions
+def test_cli_stderr_names_the_leftover_output_after_real_cleanup_failure(tmp_path, rna, unremovable_tsv_dir):
+    tsv_dir, json_dir = unremovable_tsv_dir
+    windows = write_windows(tmp_path / "w.tsv", "w\tNZ_CP006471.1\t1364566\t1364928\t+\t\t")
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "tools/regulatory_accessibility.py"),
+         "--fasta", str(PINNED_FASTA), "--windows", str(windows), "--segment-length", "10",
+         "--folding-window", "150", "--max-bp-span", "100", "--temperature", "37",
+         "--json-out", str(json_dir / "a.json"), "--tsv-out", str(tsv_dir / "a.tsv")],
+        capture_output=True, text=True, check=False, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+    )
+    assert result.returncode == 1 and result.stdout == ""
+    assert f"error: could not create output {json_dir / 'a.json'}" in result.stderr
+    assert f"partial outputs could not be removed: {tsv_dir / 'a.tsv'}" in result.stderr
+    assert (tsv_dir / "a.tsv").exists()
+
+
+@needs_genome
+def test_real_cli_refuses_turner1999_loaded_after_a_cached_fold(tmp_path, rna):
+    windows = write_windows(tmp_path / "w.tsv", "w\tNZ_CP006471.1\t1364566\t1364928\t+\t\t")
+    argv = [
+        "--fasta", str(PINNED_FASTA), "--windows", str(windows), "--segment-length", "10",
+        "--folding-window", "150", "--max-bp-span", "100", "--temperature", "37",
+        "--json-out", str(tmp_path / "a.json"), "--tsv-out", str(tmp_path / "a.tsv"),
+    ]
+    report = engine_scenario(tmp_path, "fold-then-turner1999", argv)
+    assert report["status"] == "refused" and report["error"].startswith("error: ViennaRNA energy fingerprint")
+    assert not (tmp_path / "a.json").exists() and not (tmp_path / "a.tsv").exists()
 
 
 @needs_genome

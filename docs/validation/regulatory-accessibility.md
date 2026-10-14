@@ -33,10 +33,37 @@ fixtures run through the private `_run` with pins computed from the fixture.
 | Replicons, in order | `NZ_CP006471.1` 2,690,418; `NZ_CP006472.1` 46,366; `NZ_CP006473.1` 7,842; all circular | parsed FASTA identifiers and lengths; topology from the flat file per [regulatory-rfam.md](regulatory-rfam.md) |
 | ViennaRNA | Python module `RNA.__version__` | exactly `2.7.2`; the compiled extension's SHA-256 is recorded, not pinned |
 | Default model | 37 °C, dangles 2, GU and lonely pairs allowed, special hairpins, no G-quadruplexes, linear, minimum loop 3, salt 1.021 M, `betaScale` 1 | every field in `DEFAULT_MODEL` equals `RNA.md()` before the run |
-| Energy parameters | Turner 2004 default set | MFE fingerprint `GGGAAAUCCCGCGCAAGCGUUCGAAAGAACGCGG` → `(((....)))......((((((....))))))..`, −13.60 kcal/mol |
+| Energy parameters | Turner 2004 default set | fingerprint `GGGAAAUCCCGCGCAAGCGUUCGAAAGAACGCGG` → `(((....)))......((((((....))))))..`, MFE −13.60 and ensemble −13.6407 kcal/mol, after the cache replacement below |
 
 A mismatch refuses the run before anything is written. The decompressed FASTA
 is refused because the pin is the compressed file.
+
+### Engine parameter state
+
+ViennaRNA 2.7.2 keeps one cached energy set and one Boltzmann set. It reuses
+them whenever the model details match, ignoring window and span (V9, V10). A set
+cached before another one is loaded therefore survives that load. A legacy
+`RNA.fold` call can also keep returning the old energy while new fold compounds
+use the new set.
+
+Before fingerprinting, the tool requests both sets for a sentinel model at
+−100 °C. No run can use that temperature, so the cached entries are replaced.
+The fingerprint then scales afresh from the loaded set:
+
+- an MFE checks the energy set;
+- a partition function checks the Boltzmann set.
+
+Every set the windows use is created after this check, from the same loaded
+set. At 37 °C the windows reuse the fingerprint's own entries.
+
+Regression tests run the engine in separate processes, so changing these
+global parameters cannot leak into other tests:
+
+- `RNA.fold`, then loading Turner 1999, is refused (MFE −17.6, ensemble −17.8),
+  both through `_run` and through the public CLI on the pinned genome.
+- Loading Turner 1999, filling both caches, then reloading Turner 2004 arms the
+  trap: a plain fold compound still returns −17.6. The run then gives JSON and
+  TSV byte-identical to a clean process.
 
 ## Inputs
 
@@ -119,11 +146,19 @@ coordinates and do not enter the TSV.
 - **JSON**: identities, parameters, runtime, per-window summaries, shuffles and
   the TSV SHA-256 and row count. No timestamp and no directory path appear.
 
+Each input is read once. Parsing and the recorded SHA-256 both use those bytes,
+so the report identifies exactly what was folded. Before writing, the tool
+re-hashes both input files. If either changed or vanished during the run, it
+writes nothing.
+
 All folding finishes in memory before writing. Both paths must be distinct after
 case-folding, must not be an input, must not exist (not even as a dangling
 symlink), and must have an existing parent directory. Each file is created
 exclusively. Any failure or interrupt removes only the files this run created.
-Cleanup failures are attached to the original error.
+
+If a removal fails, the error message names each leftover path and its OS error
+after the original failure; on an interrupt, the same text is attached as an
+exception note. The CLI prints the whole message on stderr and exits 1.
 
 ## Reproducing the pilot
 
@@ -201,11 +236,29 @@ cover:
 - plus, minus and origin-crossing round trips for every oriented index and
   segment;
 - every window, parameter and identity refusal;
-- every output-safety rule, including interrupt and failed cleanup.
+- every output-safety rule, including interrupt and failed cleanup;
+- input edits or deletion between parsing and publication, which are refused
+  with no outputs.
 
-Two tests use the pinned genome and skip without it. One checks the RF01116 and
-origin mappings; the other refuses the decompressed FASTA. In a fresh worktree,
-symlink the canonical pinned `.fna.gz` into ignored `data/raw/`.
+The real-engine parameter-state tests are described under
+[Engine parameter state](#engine-parameter-state). Two tests use genuine
+permission failures and skip on systems without BSD file flags or when run as
+root. In both, the TSV directory is append-only (`chflags uappnd`: creation
+allowed, removal refused) and the JSON directory is read-only:
+
+- one goes through `_run`;
+- one runs the real CLI subprocess and asserts that stderr names the leftover
+  TSV.
+
+Four tests use the pinned genome and skip without it:
+
+- the RF01116 and origin mappings;
+- the CLI's refusal of Turner 1999;
+- the CLI's cleanup report;
+- refusal of the decompressed FASTA.
+
+In a fresh worktree, symlink the canonical pinned `.fna.gz` into ignored
+`data/raw/`.
 
 No test establishes that ViennaRNA's thermodynamics suit this organism, that
 these windows contain functional elements, or anything about regulation. Naive
@@ -228,6 +281,8 @@ stripping tags for HTML).
 | V6 | [`fold_compound.c` v2.7.2](https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/fold_compound.c#L591), line 591 | "else if (md->window_size > (int)fc->length)" | `78d6567470f1767179bb99b9250b3ecbfc757b913bd9af43c2f33d087b6c5cc5` |
 | V7 | same file, line 601 | "md->max_bp_span = md->window_size;" | same as V6 |
 | V8 | NCBI `GCF_000817325.1_ASM81732v1_assembly_report.txt` (canonical `data/raw`; MD5 matches NCBI `md5checksums.txt`), line 30 | "CP006471.1 = NZ_CP006471.1" (tab-separated) | `d20004f66641303245127964328a01edd5f9473c2b4a128eeb39571f5f24b7f8` |
+| V9 | [`params.c` v2.7.2](https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/params/params.c#L157), line 157 (energy set; repeated at line 194 for the Boltzmann set) | "/* ignore window_size, max_bp_span, and min_loop_size here */" | `a6da5b5038e07c6b4b0b843429115db84b6bcb8b48e51074f3180d2842358e7a` |
+| V10 | same file, line 199 | "if (memcmp(md_p, &(pf_pre.model_details), sizeof(vrna_md_t)) == 0) {" | same as V9 |
 
 V1 is the same bytes as receipt S11 in the regulatory-methods shortlist. V3 is
 the same bytes as that ticket's `pf_window.c` receipt.

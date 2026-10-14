@@ -15,7 +15,7 @@ import platform
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any
 
 
 ASSEMBLY_ACCESSION = "GCF_000817325.1"
@@ -42,12 +42,15 @@ DEFAULT_MODEL = {
     "window_size": -1,
     "max_bp_span": -1,
 }
-# Detects a different energy parameter set loaded into the same process.
+# MFE and ensemble free energy (kcal/mol) at 37 °C under the default Turner 2004 set.
 ENERGY_FINGERPRINT = (
     "GGGAAAUCCCGCGCAAGCGUUCGAAAGAACGCGG",
     "(((....)))......((((((....))))))..",
     -13.6,
+    -13.6407,
 )
+# Outside TEMPERATURE_RANGE_C, so no run reuses the parameter-cache entries it creates.
+CACHE_SENTINEL_TEMPERATURE_C = -100.0
 MAX_WINDOW_NT = 10_000
 MAX_WINDOWS = 1_000
 MAX_SHUFFLE_REPLICATES = 100
@@ -125,55 +128,56 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _open_text(path: Path) -> TextIO:
-    if path.suffix == ".gz":
-        return gzip.open(path, "rt", encoding="ascii", newline="")
-    return path.open(encoding="ascii", newline="")
+def read_snapshot(path: Path, label: str) -> bytes:
+    """Read an input once; every parse and digest of that input uses these bytes."""
+    try:
+        return path.read_bytes()
+    except OSError as error:
+        raise AccessibilityError(f"could not read {label} {path}: {error}") from error
 
 
-def load_fasta(path: Path) -> dict[str, str]:
-    """Read FASTA records; reject duplicate IDs, empty records and non-ACGT bases."""
+def parse_fasta(data: bytes, name: str) -> dict[str, str]:
+    """Parse FASTA bytes (gzip when name ends .gz); reject duplicates, empty records, non-ACGT."""
+    try:
+        text = (gzip.decompress(data) if name.endswith(".gz") else data).decode("ascii")
+    except (OSError, EOFError, UnicodeError) as error:
+        raise AccessibilityError(f"could not read FASTA {name}: {error}") from error
     records: dict[str, list[str]] = {}
     current: str | None = None
-    try:
-        with _open_text(path) as handle:
-            for line_number, raw_line in enumerate(handle, 1):
-                line = raw_line.strip()
-                if not line:
-                    continue
-                if line.startswith(">"):
-                    header = line[1:].split(maxsplit=1)
-                    if not header:
-                        raise AccessibilityError(f"{path.name}:{line_number}: empty FASTA identifier")
-                    current = header[0]
-                    if current in records:
-                        raise AccessibilityError(f"{path.name}:{line_number}: duplicate FASTA ID {current}")
-                    records[current] = []
-                    continue
-                if current is None:
-                    raise AccessibilityError(f"{path.name}:{line_number}: sequence before FASTA header")
-                bases = line.upper()
-                unknown = sorted(set(bases) - set("ACGT"))
-                if unknown:
-                    raise AccessibilityError(
-                        f"{path.name}:{line_number}: {current} contains non-ACGT bases {''.join(unknown)}"
-                    )
-                records[current].append(bases)
-    except (OSError, UnicodeError, EOFError) as error:
-        raise AccessibilityError(f"could not read FASTA {path.name}: {error}") from error
+    for line_number, raw_line in enumerate(text.splitlines(), 1):
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith(">"):
+            header = line[1:].split(maxsplit=1)
+            if not header:
+                raise AccessibilityError(f"{name}:{line_number}: empty FASTA identifier")
+            current = header[0]
+            if current in records:
+                raise AccessibilityError(f"{name}:{line_number}: duplicate FASTA ID {current}")
+            records[current] = []
+            continue
+        if current is None:
+            raise AccessibilityError(f"{name}:{line_number}: sequence before FASTA header")
+        bases = line.upper()
+        unknown = sorted(set(bases) - set("ACGT"))
+        if unknown:
+            raise AccessibilityError(
+                f"{name}:{line_number}: {current} contains non-ACGT bases {''.join(unknown)}"
+            )
+        records[current].append(bases)
     if not records:
-        raise AccessibilityError(f"{path.name}: no FASTA records")
+        raise AccessibilityError(f"{name}: no FASTA records")
     sequences = {identifier: "".join(parts) for identifier, parts in records.items()}
     empty = [identifier for identifier, sequence in sequences.items() if not sequence]
     if empty:
-        raise AccessibilityError(f"{path.name}: empty FASTA records: {', '.join(empty)}")
+        raise AccessibilityError(f"{name}: empty FASTA records: {', '.join(empty)}")
     return sequences
 
 
-def validate_assembly(fasta: Path, sequences: dict[str, str], pins: Pins) -> None:
+def validate_assembly(observed_sha: str, sequences: dict[str, str], pins: Pins) -> None:
     """Require the exact pinned FASTA bytes, replicon set, order and lengths."""
     problems = []
-    observed_sha = sha256_file(fasta)
     if observed_sha != pins.fasta_sha256:
         problems.append(f"FASTA SHA-256 {observed_sha}, expected {pins.fasta_sha256}")
     observed = [(identifier, len(sequence)) for identifier, sequence in sequences.items()]
@@ -188,21 +192,21 @@ def _window_length(start: int, end: int, replicon_length: int) -> int:
     return end - start + 1 if start <= end else replicon_length - start + 1 + end
 
 
-def parse_windows(path: Path, pins: Pins) -> list[Window]:
-    """Read and validate the explicit native window table."""
+def parse_windows(data: bytes, name: str, pins: Pins) -> list[Window]:
+    """Parse and validate the explicit native window table from its byte snapshot."""
     try:
-        text = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError) as error:
-        raise AccessibilityError(f"could not read windows {path.name}: {error}") from error
+        text = data.decode("utf-8")
+    except UnicodeError as error:
+        raise AccessibilityError(f"could not read windows {name}: {error}") from error
     reader = csv.reader(io.StringIO(text, newline=""), delimiter="\t")
     rows = list(reader)
     if not rows or tuple(rows[0]) != WINDOW_FIELDS:
-        raise AccessibilityError(f"{path.name}: header must be {' '.join(WINDOW_FIELDS)}")
+        raise AccessibilityError(f"{name}: header must be {' '.join(WINDOW_FIELDS)}")
     windows: list[Window] = []
     identifiers: set[str] = set()
     intervals: set[tuple[str, int, int, str]] = set()
     for line_number, row in enumerate(rows[1:], 2):
-        where = f"{path.name}:{line_number}"
+        where = f"{name}:{line_number}"
         if len(row) != len(WINDOW_FIELDS):
             raise AccessibilityError(f"{where}: expected {len(WINDOW_FIELDS)} columns")
         window_id, replicon, start_text, end_text, strand, anchor_text, context = row
@@ -242,9 +246,9 @@ def parse_windows(path: Path, pins: Pins) -> list[Window]:
         intervals.add(key)
         windows.append(window)
     if not windows:
-        raise AccessibilityError(f"{path.name}: no windows")
+        raise AccessibilityError(f"{name}: no windows")
     if len(windows) > MAX_WINDOWS:
-        raise AccessibilityError(f"{path.name}: {len(windows)} windows exceed {MAX_WINDOWS}")
+        raise AccessibilityError(f"{name}: {len(windows)} windows exceed {MAX_WINDOWS}")
     return windows
 
 
@@ -325,8 +329,22 @@ def validate_parameters(
         raise AccessibilityError("--shuffle-seed must be non-negative")
 
 
+def replace_parameter_caches(rna: Any) -> None:
+    """Force fresh parameter scaling from the energy set currently loaded.
+
+    ViennaRNA 2.7.2 keeps one cached energy set and one Boltzmann set and reuses
+    them whenever the model details match, ignoring window and span (params.c),
+    even after another set is loaded. Requesting both for a sentinel model that
+    no run uses replaces those entries.
+    """
+    model = rna.md()
+    model.temperature = CACHE_SENTINEL_TEMPERATURE_C
+    rna.param(model)
+    rna.exp_param(model)
+
+
 def check_runtime(rna: Any) -> dict[str, object]:
-    """Require ViennaRNA 2.7.2 with untouched default model and energy parameters."""
+    """Require ViennaRNA 2.7.2 with untouched default model and Turner 2004 energies."""
     version = getattr(rna, "__version__", None)
     if version != VIENNARNA_VERSION:
         raise AccessibilityError(f"ViennaRNA {version!r} found, expected {VIENNARNA_VERSION}")
@@ -337,12 +355,16 @@ def check_runtime(rna: Any) -> dict[str, object]:
     }
     if changed:
         raise AccessibilityError(f"ViennaRNA default model changed: {changed}")
-    sequence, structure, energy = ENERGY_FINGERPRINT
-    observed_structure, observed_energy = rna.fold(sequence)
-    if observed_structure != structure or round(observed_energy, 2) != energy:
+    replace_parameter_caches(rna)
+    sequence, structure, mfe, ensemble = ENERGY_FINGERPRINT
+    compound = rna.fold_compound(sequence, rna.md())
+    observed_structure, observed_mfe = compound.mfe()
+    compound.exp_params_rescale(observed_mfe)
+    observed_ensemble = compound.pf()[1]
+    observed = (observed_structure, round(observed_mfe, 2), round(observed_ensemble, 4))
+    if observed != (structure, mfe, ensemble):
         raise AccessibilityError(
-            f"ViennaRNA energy fingerprint {observed_structure} {observed_energy}, "
-            f"expected {structure} {energy}"
+            f"ViennaRNA energy fingerprint {observed}, expected {(structure, mfe, ensemble)}"
         )
     extension = getattr(getattr(rna, "_RNA", None), "__file__", None)
     return {
@@ -529,6 +551,7 @@ def build_payload(
     pins: Pins,
     fasta: Path,
     windows_path: Path,
+    windows_sha256: str,
     sequences: dict[str, str],
     documents: list[dict[str, object]],
     tsv: bytes,
@@ -568,11 +591,15 @@ def build_payload(
                 "max_bp_span": parameters.max_bp_span,
                 "temperature": parameters.temperature,
             },
-            "energyParameters": "ViennaRNA 2.7.2 default (Turner 2004), checked by fingerprint",
+            "energyParameters": (
+                "ViennaRNA 2.7.2 default (Turner 2004), checked by MFE and ensemble "
+                "fingerprint after replacing the engine's parameter caches"
+            ),
             "energyFingerprint": {
                 "sequence": ENERGY_FINGERPRINT[0],
                 "structure": ENERGY_FINGERPRINT[1],
                 "mfeKcalPerMol": ENERGY_FINGERPRINT[2],
+                "ensembleKcalPerMol": ENERGY_FINGERPRINT[3],
             },
         },
         "inputs": {
@@ -589,7 +616,7 @@ def build_payload(
             },
             "windows": {
                 "file": windows_path.name,
-                "sha256": sha256_file(windows_path),
+                "sha256": windows_sha256,
                 "count": len(documents),
             },
         },
@@ -634,17 +661,30 @@ def write_outputs(writes: list[tuple[Path, bytes]]) -> None:
             with handle:
                 handle.write(data)
     except BaseException as error:
-        failures = []
+        leftovers = []
         for path in created:
             try:
                 path.unlink(missing_ok=True)
             except OSError as cleanup_error:
-                failures.append(f"{path}: {cleanup_error}")
-        if failures:
-            error.add_note("partial outputs could not be removed: " + "; ".join(failures))
-        if isinstance(error, OSError):
-            raise AccessibilityError(f"could not write outputs: {error}") from error
+                leftovers.append(f"{path} ({cleanup_error})")
+        note = "partial outputs could not be removed: " + "; ".join(leftovers) if leftovers else ""
+        if isinstance(error, (AccessibilityError, OSError)):
+            reason = str(error) if isinstance(error, AccessibilityError) else f"could not write outputs: {error}"
+            raise AccessibilityError("; ".join(filter(None, (reason, note)))) from error
+        if note:
+            error.add_note(note)
         raise
+
+
+def require_unchanged(snapshots: list[tuple[Path, str]]) -> None:
+    """Refuse to publish when an input no longer holds the bytes this run used."""
+    for path, digest in snapshots:
+        try:
+            current = sha256_file(path)
+        except OSError as error:
+            raise AccessibilityError(f"input {path} became unreadable during the run: {error}") from error
+        if current != digest:
+            raise AccessibilityError(f"input {path} changed during the run; nothing was written")
 
 
 def _run(arguments: argparse.Namespace, pins: Pins, rna: Any) -> dict[str, object]:
@@ -652,18 +692,19 @@ def _run(arguments: argparse.Namespace, pins: Pins, rna: Any) -> dict[str, objec
     windows_path = arguments.windows
     outputs = [arguments.json_out, arguments.tsv_out]
     preflight_outputs(outputs, [fasta, windows_path])
-    for path in (fasta, windows_path):
-        if not path.is_file():
-            raise AccessibilityError(f"missing input file {path}")
+    fasta_bytes = read_snapshot(fasta, "FASTA")
+    windows_bytes = read_snapshot(windows_path, "windows")
+    fasta_sha256 = sha256_bytes(fasta_bytes)
+    windows_sha256 = sha256_bytes(windows_bytes)
     runtime = check_runtime(rna)
-    windows = parse_windows(windows_path, pins)
+    windows = parse_windows(windows_bytes, windows_path.name, pins)
     parameters = Parameters(
         arguments.segment_length, arguments.folding_window,
         arguments.max_bp_span, float(arguments.temperature),
     )
     validate_parameters(parameters, windows, arguments.shuffle_replicates, arguments.shuffle_seed)
-    sequences = load_fasta(fasta)
-    validate_assembly(fasta, sequences, pins)
+    sequences = parse_fasta(fasta_bytes, fasta.name)
+    validate_assembly(fasta_sha256, sequences, pins)
     documents, rows = compute(
         rna, windows, sequences, parameters,
         arguments.shuffle_replicates, arguments.shuffle_seed, pins,
@@ -671,11 +712,13 @@ def _run(arguments: argparse.Namespace, pins: Pins, rna: Any) -> dict[str, objec
     tsv = tsv_bytes(rows)
     payload = build_payload(
         runtime=runtime, parameters=parameters, pins=pins, fasta=fasta,
-        windows_path=windows_path, sequences=sequences, documents=documents,
+        windows_path=windows_path, windows_sha256=windows_sha256,
+        sequences=sequences, documents=documents,
         tsv=tsv, tsv_rows=len(rows), replicates=arguments.shuffle_replicates,
         seed=arguments.shuffle_seed,
     )
     json_data = (json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n").encode("utf-8")
+    require_unchanged([(fasta, fasta_sha256), (windows_path, windows_sha256)])
     write_outputs([(arguments.tsv_out, tsv), (arguments.json_out, json_data)])
     return payload
 
@@ -708,7 +751,8 @@ def main(argv: list[str] | None = None) -> None:
     try:
         payload = run(parser().parse_args(argv))
     except AccessibilityError as error:
-        raise SystemExit(f"error: {error}") from error
+        lines = [f"error: {error}", *getattr(error, "__notes__", ())]
+        raise SystemExit("\n".join(lines)) from error
     print(json.dumps({
         "status": "ok",
         "windows": len(payload["windows"]),
