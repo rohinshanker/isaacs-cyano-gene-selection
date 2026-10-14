@@ -58,8 +58,12 @@ export function searchRowModel(hit, handlers) {
       ? ` matched ${hit.matchedOn} via ${hit.alias}`
       : ` matched ${hit.matchedOn}`,
     product: gene.product ?? 'no product description',
-    goLine: hit.goMatch ? goMatchLine(hit.goMatch) : null,
+    goLine: hit.goMatch ? (gene.annotationEvidence?.goAnnotationsOrigin === 'native-source'
+      ? 'Native GenBank GO · ' : gene.annotationEvidence?.functionalTransfer ? 'Inherited reference GO · ' : '')
+      + goMatchLine(hit.goMatch) : null,
     categoryLine: hit.categoryMatch ? `Lab-reviewed category: ${hit.categoryMatch}` : null,
+    transferLine: gene.annotationEvidence?.functionalTransfer?.inheritedFields?.length
+      ? 'Includes inherited reference annotation; see gene detail for the exact protein crosswalk. Not a recoded measurement or lab review.' : null,
     pinned,
     shortlisted,
     labels,
@@ -225,7 +229,7 @@ export class GeneSearchResults {
     product.className = 'search-result-product';
     product.textContent = row.product;
     text.append(heading, product);
-    for (const line of [row.goLine, row.categoryLine]) {
+    for (const line of [row.goLine, row.categoryLine, row.transferLine]) {
       if (!line) continue;
       const note = document.createElement('p');
       note.className = 'search-result-product';

@@ -328,6 +328,7 @@ export class FilterPanel {
       && (state.neighborSiteFilter ?? 'any') === 'any'
       && (state.overlapClassFilter ?? []).length === 0
       && (state.pccEssentialityFilter ?? []).length === 0
+      && (state.goEvidenceFilter ?? 'any') === 'any'
       && (state.categoryFilter ?? []).length === 0;
   }
 

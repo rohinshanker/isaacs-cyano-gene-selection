@@ -1,5 +1,7 @@
 import { neighborSiteModel, neighborSiteFilterSummary, passesNeighborSiteFilter, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_COLORS } from './core/neighbor-sites.js';
 import { renderNeighborSiteLegend } from './ui/neighbor-sites.js';
+import { GO_TERM_COLOR_KEY, goTermEvidenceModel, passesGoTermFilter } from './core/go-term-evidence.js';
+import { GoTermControls, GO_EVIDENCE_COLORS, renderGoTermLegend } from './ui/go-term-controls.js';
 import { buildCategoricalScale } from './ui/colors.js';
 import { OVERLAP_LENGTH_METRICS, overlapLengthFilterActive, passesOverlapLengthFilter } from './core/overlap-length.js';
 /**
@@ -589,6 +591,12 @@ function computeMask() {
     if (mask[i] && !passesNeighborSiteFilter(context.neighborSites, i, state.neighborSiteFilter)) mask[i] = 0;
   }
   context.baseMask = mask;
+  if (organism.functionalAnnotations && state.goTerm && state.goEvidenceFilter !== 'any') {
+    const goModel = goTermEvidenceModel(dataset, state.goTerm);
+    for (let i = 0; i < count; i += 1) {
+      if (mask[i] && !passesGoTermFilter(goModel, i, state.goEvidenceFilter)) mask[i] = 0;
+    }
+  }
 
   let finalMask = mask;
   // A pending model has nothing to filter by; its selection is kept and
@@ -810,6 +818,7 @@ function persist() {
 let plot = null;
 let schemeEditor = null;
 let filterPanel = null;
+let goTermControls = null;
 let dataSourcesPanel = null;
 let chromosomeDataSourcesPanel = null;
 const axisDataSourcesPanels = { x: null, y: null };
@@ -941,6 +950,11 @@ function overlapModel() {
  *   scale: string|null, availability: Map<string, object>|null}}
  */
 function resolveColorScale() {
+  if (state.colorBy === GO_TERM_COLOR_KEY && organism.functionalAnnotations) {
+    state.colorScale = null;
+    const model = goTermEvidenceModel(context.dataset, state.goTerm);
+    return { categorical: true, goTerm: model, metric: null, values: model.values, scale: null, availability: null };
+  }
   if (state.colorBy === NEIGHBOR_SITE_COLOR_KEY) {
     state.colorScale = null;
     return { categorical: true, neighborSites: true, metric: null,
@@ -1011,6 +1025,12 @@ function colorModel() {
     drawDirectionControl: drawDirectionControlState(resolved, state.drawOnTop),
     drawOnTop: normalizeDrawDirection(state.drawOnTop),
   };
+  if (resolved.goTerm) {
+    return { ...shared, categories: null, goTerm: resolved.goTerm, categorical: true,
+      scaleControl: { ...shared.scaleControl, reason: 'GO evidence states have no numeric scale. Each colour names an annotation evidence state, not a broad function category.' },
+      metric: { label: resolved.goTerm.label }, values: resolved.goTerm.values,
+      scale: buildCategoricalScale(GO_EVIDENCE_COLORS), valueScale: null, derived: null, label: resolved.goTerm.label };
+  }
   if (resolved.neighborSites) {
     const model = context.neighborSites ?? resolveNeighborSiteModel();
     return { ...shared, categories: null, neighborSites: model, categorical: true,
@@ -1158,6 +1178,7 @@ function drawOrderExplanation(colors) {
  */
 function renderColorLegend(host, colors, { markerConventions = true, controlsHost = element('map-legend-instructions') } = {}) {
   controlsHost.replaceChildren();
+  if (colors.goTerm) { renderGoTermLegend(host, colors.goTerm); return; }
   const { categorical, categories, metric, values, scale } = colors;
   if (colors.neighborSites) {
     renderNeighborSiteLegend(host, colors.neighborSites, { markerConventions, showHidden: state.showHidden, hiddenCount: context.dataset.genes.length - context.passing });
@@ -1277,6 +1298,9 @@ function optionLabel(metric) {
 
 function colorSelectOptions() {
   const options = [];
+  if (organism.functionalAnnotations) {
+    options.push({ group: 'Functional annotation', value: GO_TERM_COLOR_KEY, label: 'Selected GO term evidence' });
+  }
   if (context.dataset.functionCategories) {
     options.push({ group: 'Reviewed function', value: FUNCTION_COLOR_KEY, label: 'Function category' });
   }
@@ -1312,6 +1336,14 @@ function colorSelectOptions() {
 }
 
 function renderColorHelp(host) {
+  if (state.colorBy === GO_TERM_COLOR_KEY) {
+    host.hidden = false;
+    host.querySelector('summary').textContent = 'Selected GO term evidence explanation';
+    const note = document.createElement('p'); note.className = 'panel-note';
+    note.textContent = 'The selected exact GO term colours positive, NOT, conflicting, absent-positive and unavailable evidence separately. Source evidence codes retain their original meaning; an inherited annotation is not a recoded measurement. No broad function category is inferred.';
+    host.querySelector('.help-content').replaceChildren(note);
+    return;
+  }
   if (state.colorBy === NEIGHBOR_SITE_COLOR_KEY) {
     host.hidden = false;
     host.querySelector('summary').textContent = `${NEIGHBOR_SITE_LABEL} explanation`;
@@ -1784,6 +1816,7 @@ function renderLiveFilters() {
 function renderAll({ schemeErrors = [] } = {}) {
   element('reset-selections').disabled = !state.pinnedId && state.shortlist.length === 0;
   computeMask();
+  goTermControls?.update(context.dataset, state, goTermEvidenceModel(context.dataset, state.goTerm));
   renderCurrentView();
   renderDetail();
   schemeEditor.update({
@@ -1802,6 +1835,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     followColor: context.trafficFollowsColor,
     filters: state.filters,
     categoryFilter: state.categoryFilter,
+    goEvidenceFilter: state.goTerm ? state.goEvidenceFilter : 'any',
     count: context.dataset.genes.length,
     passing: context.passing,
     missingHidden: context.missingHidden,
@@ -1846,6 +1880,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       neighborSiteFilterStatus: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter),
       overlapClasses: state.overlapClassFilter,
       categoryFilter: state.categoryFilter,
+      ...(organism.functionalAnnotations ? { goTerm: state.goTerm, goEvidenceFilter: state.goEvidenceFilter } : {}),
       ...(PCC_ESSENTIALITY_COPY ? { pcc7942Essentiality: state.pccEssentialityFilter } : {}),
       proteinEvidence: state.proteinFilter,
       expression: state.expressionFilter,
@@ -2122,6 +2157,7 @@ function renderCitationsTab(manifest) {
  * trips through the same `state.panel` field either way.
  */
 function renderCurrentView() {
+  goTermControls?.update(context.dataset, state, goTermEvidenceModel(context.dataset, state.goTerm));
   const citationsActive = state.panel === CITATIONS_TAB.id;
   const lengthsActive = state.panel === LENGTH_TAB.id;
   const regulatoryActive = state.panel === REGULATORY_TAB.id;
@@ -2885,6 +2921,7 @@ function normalizeAndApply(decoded) {
   // A category selection means nothing in a dataset with no function
   // categories, so it is not kept in the state, the address, or an export.
   if (!context.dataset.functionCategories) state.categoryFilter = [];
+  if (!organism.functionalAnnotations) { state.goTerm = ''; state.goEvidenceFilter = 'any'; }
   // Likewise an essentiality selection for an organism without the calls.
   state.pccEssentialityFilter = PCC_ESSENTIALITY_COPY
     ? normalizePccEssentialitySelection(state.pccEssentialityFilter) : [];
@@ -2934,6 +2971,7 @@ function normalizeAndApply(decoded) {
   if (!state.colorBy || !((context.registry.byKey.has(state.colorBy)
     && metricInScope(context.registry.byKey.get(state.colorBy)))
     || state.colorBy === NEIGHBOR_SITE_COLOR_KEY
+    || (state.colorBy === GO_TERM_COLOR_KEY && organism.functionalAnnotations)
     || state.colorBy === OVERLAP_COLOR_KEY
     || (state.colorBy === PCC_ESSENTIALITY_COLOR_KEY && PCC_ESSENTIALITY_COPY)
     || (state.colorBy === FUNCTION_COLOR_KEY && context.dataset.functionCategories))) {
@@ -3113,6 +3151,7 @@ function refreshProteinRecords() {
  */
 function promotedFileKeys(view) {
   const keys = new Set();
+  if (view.goTerm || view.colorBy === GO_TERM_COLOR_KEY) { keys.add('annotations'); keys.add('goTerms'); }
   if (view.colorBy === NEIGHBOR_SITE_COLOR_KEY || view.neighborSiteFilter !== 'any' || view.pinnedId || view.panel === 'chromosome') { keys.add('tssEvidence'); keys.add('regulatoryTss'); }
   if (overlapLengthFilterActive(view.overlapLengthFilter) || view.overlapClassFilter?.length > 0) keys.add('geneOverlaps');
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
@@ -3194,6 +3233,7 @@ function colorMetricFileKeys(key) {
   };
   if (key === FUNCTION_COLOR_KEY) addWithDependencies('sourceDerivedCategories');
   if (key === NEIGHBOR_SITE_COLOR_KEY) { addWithDependencies('tssEvidence'); addWithDependencies('regulatoryTss'); }
+  if (key === GO_TERM_COLOR_KEY) { addWithDependencies('annotations'); addWithDependencies('goTerms'); }
   if (key === OVERLAP_COLOR_KEY) addWithDependencies('geneOverlaps');
   if (key === PCC_ESSENTIALITY_COLOR_KEY) addWithDependencies('candidateEvidence');
   const direct = context.registry.byKey.get(key)?.fileKey ?? null;
@@ -3576,6 +3616,18 @@ async function boot() {
   context.basisCounts = expressionBasisCounts(dataset.genes);
   loadProgress.completePreparation('context');
 
+  if (organism.functionalAnnotations) {
+    const host = document.createElement('section');
+    host.setAttribute('aria-label', 'Functional GO term');
+    element('panel-tabs').after(host);
+    goTermControls = new GoTermControls(host, (change) => {
+      Object.assign(state, change);
+      syncSharedControls();
+      renderAll();
+      persist();
+      announce('Functional GO term selection updated.');
+    });
+  }
   normalizeAndApply(decodeState(window.location.hash, organism));
   loadProgress.completePreparation('state');
 
@@ -3706,6 +3758,7 @@ async function boot() {
     onLiveChange: (filters) => applyFiltersLive(filters),
     onClear: () => {
       Object.assign(state, clearedFilterState());
+      state.goEvidenceFilter = 'any';
       renderAll();
       announce(`All filters cleared. Showing all ${formatCount(context.dataset.genes.length)} genes.`);
     },

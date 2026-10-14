@@ -38,6 +38,7 @@ import { endOverlapLengths, OVERLAP_LENGTH_METRICS } from './overlap-length.js';
 import { sameReplicon } from './chromosome-model.js';
 import { OVERLAP_CLASS_IDS, validateGeneOverlaps } from './gene-overlaps.js';
 import { validateExpressionAgreement } from './expression-agreement.js';
+import { joinFunctionalTransfers, validateFunctionalTransfers } from './functional-transfer.js';
 
 /** One shared empty list, so a gene with no partner costs no allocation. */
 const NO_PARTNERS = Object.freeze([]);
@@ -283,6 +284,7 @@ export function buildCoreDataset(meta, genes, functionCategoryData) {
 export const DATA_APPLIERS = Object.freeze({
   annotations(dataset, annotations) {
     const { meta, genes } = dataset;
+    validateFunctionalTransfers(annotations, dataset);
     if (meta.annotationRelease && (!annotations || typeof annotations !== 'object')) {
       throw new Error('annotations.json is required by meta.annotationRelease');
     }
@@ -295,7 +297,7 @@ export const DATA_APPLIERS = Object.freeze({
     }
     // Joined only once every gene is known to have a record, so a file that
     // fails half way leaves no gene carrying evidence its neighbours lack.
-    for (const gene of genes) gene.annotationEvidence = annotations[gene.id];
+    joinFunctionalTransfers(annotations, dataset);
   },
 
   candidateEvidence(dataset, candidateEvidence) {

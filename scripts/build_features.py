@@ -1904,6 +1904,10 @@ def main() -> None:
     genes, excluded, _, _ = build(
         raw_dir, output_dir, annotation_dir, organism
     )
+    if organism.organism_id == "ecoli-syn61-delta3-ev5":
+        sys.path.insert(0, str(repository / "tools"))
+        from recoded_functional_annotations import publish
+        publish(organism.organism_id, output_dir)
     print(f"Wrote {len(genes)} genes and {len(excluded)} exclusions to {output_dir}")
 
 

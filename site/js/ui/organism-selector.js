@@ -311,7 +311,7 @@ export function searchCopy(organism) {
       ? 'Locus, product, category, or GO term' : 'Locus, product, or GO term',
     hint: 'Searches locus tags, gene names, product descriptions, '
       + `${categories ? 'reviewed function categories, ' : ''}GO IDs and GO term names. `
-      + 'GO annotations are computational suggestions. Common nicknames such as '
+      + `${organism.copy.goSearchNote} Common nicknames such as `
       + `${organism.searchAliasExample} are translated into the wording this genome uses.`,
   };
 }

@@ -42,6 +42,7 @@ export const ECOLI_SYN61_DELTA3_EV5 = {
   freshAxes: { x: 'lengthNt', y: 'gc3' },
   locusExample: 'PPG85_00005',
   annotationSources: [],
+  functionalAnnotations: { referenceOrganismIds: ['ecoli-mds42-public-reference', 'ecoli-k12-mg1655'] },
   layers: {},
   strainFitnessDatasets: [{
     id: 'nyerges-2026-syn61-fitness',
@@ -103,7 +104,7 @@ export const ECOLI_SYN61_DELTA3_EV5 = {
       + 'transcription-termination-site data set is admitted for this strain, so none of those '
       + 'tracks is drawn.',
     directProteomicsLabel: 'Direct proteomics detection',
-    goSearchNote: 'No GO relationship layer is admitted for this deposited genome.',
+    goSearchNote: 'Native GO relationships retain the deposited GenBank notes. Missing GO is inherited from MG1655 through unique identical proteins in public MDS42 and Syn61. Inherited annotations are not Syn61 measurements.',
     metricMethods: {},
     metricReading: {
       cai: 'A convention-derived index, not a measurement: read it as supporting context '
@@ -113,6 +114,6 @@ export const ECOLI_SYN61_DELTA3_EV5 = {
       expressionProxy: 'A rank built from CAI and tAI, so it inherits both conventions: '
         + 'read it as supporting context.',
     },
-    goTermsCaveat: 'No GO relationship layer is admitted for this deposited genome.',
+    goTermsCaveat: 'Native GO relationships come from GenBank notes; missing GO uses inherited MG1655 annotations via public MDS42. Inherited annotations are not Syn61 measurements or lab review. The public reference is not an exact experimental parent; categories remain unknown.',
   },
 };

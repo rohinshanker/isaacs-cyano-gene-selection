@@ -1,8 +1,12 @@
 {
   "files": {
+    "annotations.json": {
+      "bytes": 15941032,
+      "sha256": "e9a7299c50fa485dab7e55b2162f1a1830c62bcffd4ef0581bd59b5a456aaf8a"
+    },
     "citations.json": {
-      "bytes": 19872,
-      "sha256": "9922464770b336415c5b5c73029413682ef7d95d425ca966f202b6b879c1fd65"
+      "bytes": 25349,
+      "sha256": "009aa572f8ea017a666f9e11db541d665debfbf1e52dd3a3462f4554eb63ab8c"
     },
     "codon_pca.json": {
       "bytes": 20877,
@@ -24,6 +28,10 @@
       "bytes": 537630,
       "sha256": "c906388bd5d6794014a51a82eb5645848f2e2dd931518daa1e664e27220d7baf"
     },
+    "functional_annotation_audit.json": {
+      "bytes": 1670928,
+      "sha256": "3defc4031a52be6092f8c66458baf1764ea8b393b1191fcc128ee482d9f60330"
+    },
     "gene_overlaps.json": {
       "bytes": 697715,
       "sha256": "6483f7fe2981559c1833e84f6efff6a037291382821ead0618af3b2d469950fb"
@@ -31,6 +39,10 @@
     "genes.json": {
       "bytes": 5263398,
       "sha256": "d54f15fa067ab2afbb6a610f6cdf960eae7b9b84f542ea0e6f1b4cac1433f345"
+    },
+    "go-term-names-v1.json": {
+      "bytes": 323658,
+      "sha256": "e54837cb179a2d908a6e92357daeb700596ba6a1d4e357b1701381b16bc6bd8b"
     },
     "meta.json": {
       "bytes": 107397,

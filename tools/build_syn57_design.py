@@ -715,6 +715,8 @@ def build(source: Path = SOURCE, output: Path | None = None) -> dict[str, int]:
             build_gene_overlaps.serialize(overlap), encoding="utf-8"
         )
     write_json(output / "citations.json", citations())
+    from recoded_functional_annotations import publish
+    publish(ORGANISM_ID, output)
     build_data_manifest.write_manifest(output)
     return counts
 

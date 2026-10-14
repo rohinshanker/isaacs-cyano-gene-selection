@@ -31,6 +31,7 @@ import { normalizeHiddenMarkers } from './marker-layers.js';
 
 const KEYS = {
   panel: 'p', colorBy: 'c', scheme: 's', schemeName: 'n', highExpressed: 'x',
+  goTerm: 'gt', goEvidenceFilter: 'gf',
   filters: 'f', shortlist: 'l', pinned: 'g', compareTab: 't', showHidden: 'v',
   exceptionFilter: 'e', expressionFilter: 'm', trafficKey: 'k', version: 'ver',
   lengthCohort: 'lc', proteinFilter: 'pr', axisX: 'ax', axisY: 'ay',
@@ -134,6 +135,7 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     highExpressed: false,
     filters: {},
     categoryFilter: [],
+    goTerm: '', goEvidenceFilter: 'any',
     colorSources: defaultColorSources(organism.annotationSources),
     shortlist: [],
     pinnedId: null,
@@ -245,6 +247,7 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     axisXSources: Array.isArray(state.axisXSources) ? [...state.axisXSources] : [],
     axisYSources: Array.isArray(state.axisYSources) ? [...state.axisYSources] : [],
     categoryFilter: state.categoryFilter,
+    ...(organism.functionalAnnotations ? { goTerm: state.goTerm ?? '', goEvidenceFilter: state.goEvidenceFilter ?? 'any' } : {}),
     neighborSiteFilter: state.neighborSiteFilter ?? 'any',
     overlapLengthFilter: state.overlapLengthFilter ?? null,
     ...(publishesPccCalls(organism)
@@ -307,6 +310,10 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   if (state.highExpressed) push(KEYS.highExpressed, '1');
   push(KEYS.filters, encodeFilters(state.filters));
   push(KEYS.categoryFilter, [...(state.categoryFilter ?? [])].sort().join(','));
+  if (organism.functionalAnnotations) {
+    push(KEYS.goTerm, state.goTerm);
+    if (state.goTerm && state.goEvidenceFilter !== 'any') push(KEYS.goEvidenceFilter, state.goEvidenceFilter);
+  }
   // Every colour source on is the fresh default and leaves no field. Otherwise
   // the enabled toggles are listed, or `none` when every toggle is off: an
   // empty value would be dropped by `push` and read back as the default.
@@ -434,6 +441,11 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   if (values.has(KEYS.version)) state.version = Number(values.get(KEYS.version)) || undefined;
   if (values.has(KEYS.panel)) state.panel = values.get(KEYS.panel);
   if (values.has(KEYS.colorBy)) state.colorBy = values.get(KEYS.colorBy);
+  if (organism.functionalAnnotations && /^GO:\d{7}$/.test(values.get(KEYS.goTerm) ?? '')) {
+    state.goTerm = values.get(KEYS.goTerm);
+    const filter = values.get(KEYS.goEvidenceFilter);
+    if (['positive', 'negative', 'conflict', 'unknown', 'unavailable'].includes(filter)) state.goEvidenceFilter = filter;
+  }
   if (values.has(KEYS.scheme)) state.schemeMap = parseSchemeMap(values.get(KEYS.scheme));
   if (values.has(KEYS.schemeName)) state.schemeName = values.get(KEYS.schemeName);
   if (values.has(KEYS.highExpressed)) state.highExpressed = values.get(KEYS.highExpressed) === '1';

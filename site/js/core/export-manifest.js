@@ -23,6 +23,7 @@ import {
   compileScheme, serializeSchemeMap, replacementAt, occurrenceCounter,
 } from './scheme.js';
 import { computeLiveMetrics, INITIATION_INDEX } from './live-metrics.js';
+import { goTermEvidenceState } from './go-term-evidence.js';
 import { declaredMeasurementSources, expressionBasisOf } from './metric-registry.js';
 import { tssInitiationBasis } from './tss-evidence.js';
 import { metricHelp } from './metric-help.js';
@@ -628,6 +629,15 @@ export function buildExport({
           derivedFunctionCategories: Object.fromEntries([roleIds.product, roleIds.go]
             .filter(Boolean).map((sourceId) => [sourceId, derivedEntry(sourceId)])),
           goAnnotations,
+          ...(gene.annotationEvidence?.functionalTransfer ? {
+            functionalAnnotationTransfer: gene.annotationEvidence.functionalTransfer,
+            goAnnotationsOrigin: gene.annotationEvidence.goAnnotationsOrigin ?? null,
+            nativeAnnotation: gene.annotationEvidence.nativeAnnotation ?? null,
+          } : {}),
+          ...(viewState?.goTerm ? { selectedGoTermEvidence: {
+            term: viewState.goTerm,
+            state: goTermEvidenceState(gene, viewState.goTerm, dataset.goTerms?.terms),
+          } } : {}),
         }, omittedGeneKeys);
       }),
     metrics: metrics.map((metric) => {

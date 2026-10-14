@@ -33,6 +33,7 @@
 <link rel="modulepreload" href="js/core/folding-client.js">
 <link rel="modulepreload" href="js/core/folding-sequences.js">
 <link rel="modulepreload" href="js/core/function-categories.js">
+<link rel="modulepreload" href="js/core/functional-transfer.js">
 <link rel="modulepreload" href="js/core/gene-identity.js">
 <link rel="modulepreload" href="js/core/gene-neighbours.js">
 <link rel="modulepreload" href="js/core/gene-overlaps.js">
@@ -40,6 +41,7 @@
 <link rel="modulepreload" href="js/core/gene-sequence-model.js">
 <link rel="modulepreload" href="js/core/gene-view-model.js">
 <link rel="modulepreload" href="js/core/go-iea-essentiality.js">
+<link rel="modulepreload" href="js/core/go-term-evidence.js">
 <link rel="modulepreload" href="js/core/left-panels.js">
 <link rel="modulepreload" href="js/core/length-cohorts.js">
 <link rel="modulepreload" href="js/core/live-metrics.js">
@@ -97,6 +99,7 @@
 <link rel="modulepreload" href="js/ui/gene-search-results.js">
 <link rel="modulepreload" href="js/ui/gene-sequence-view.js">
 <link rel="modulepreload" href="js/ui/gene-viewer.js">
+<link rel="modulepreload" href="js/ui/go-term-controls.js">
 <link rel="modulepreload" href="js/ui/instant-hints.js">
 <link rel="modulepreload" href="js/ui/left-panels.js">
 <link rel="modulepreload" href="js/ui/legend.js">
@@ -711,8 +714,8 @@ if (window.location.protocol === 'file:') {
         </p>
         <p class="visually-hidden" id="gene-search-hint">
           Searches locus tags, gene names, product descriptions, reviewed function
-          categories, GO IDs and GO term names. GO annotations are computational
-          suggestions. Common nicknames
+          categories, GO IDs and GO term names. GO matches are RefSeq IEA computational
+          suggestions, not tested UTEX 2973 functions. Review their evidence before selecting a candidate. Common nicknames
           such as rubisco are translated into the wording this genome uses.
         </p>
         <p class="visually-hidden" id="annotation-source-hint">

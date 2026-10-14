@@ -25,7 +25,16 @@ export function annotationEvidenceModel(gene, meta = {}, goTerms = null) {
   const release = meta.annotationRelease ?? {};
   const curated = evidence.curatedFunction && typeof evidence.curatedFunction === 'object'
     ? evidence.curatedFunction : null;
+  const transfer = evidence.functionalTransfer ?? null;
+  const fieldLabels = { name: 'Gene symbol', product: 'Product', goAnnotations: 'GO evidence',
+    curatedFunction: 'UniProt entry' };
   return {
+    functionalTransfer: evidence.functionalTransfer ?? null,
+    inheritedFieldLabels: transfer ? transfer.inheritedFields.map((key) => fieldLabels[key] ?? key)
+      .concat(transfer.inheritedFields.includes('curatedFunction') && curated?.function?.length
+        ? ['Curated function description'] : []) : [],
+    nativeAnnotation: evidence.nativeAnnotation ?? null,
+    goOrigin: evidence.goAnnotationsOrigin ?? null,
     // A curated UniProtKB entry joined to the locus, where the release carries
     // one: the function text stays the curators' sentences, never a category.
     curatedFunction: curated ? {
@@ -61,6 +70,7 @@ export function annotationEvidenceModel(gene, meta = {}, goTerms = null) {
       text: `${entry.goId}${goTerms?.[entry.goId]?.name
         ? ` — ${goTerms[entry.goId].name}` : ''}`
         + `${goTerms?.[entry.goId]?.isObsolete ? ' [obsolete ID in pinned GO name release]' : ''}`
+        + `${goTerms?.[entry.goId]?.isObsolete === null ? ' [native note label; ontology obsolescence not checked]' : ''}`
         + ` · ${entry.qualifier || 'relation not recorded'} · `
         + `${ASPECT_LABELS[entry.aspect] ?? entry.aspect ?? 'aspect not recorded'} · `
         + `${entry.evidenceCode || 'evidence not recorded'}`
@@ -69,6 +79,10 @@ export function annotationEvidenceModel(gene, meta = {}, goTerms = null) {
         + `${entry.mappingMethod ? ` · via ${entry.mappingMethod}` : ''}`
         + `${entry.mappingAmbiguity ? ` · ${entry.mappingAmbiguity}` : ''}`,
     })),
-    attribution: release.goAttribution ?? null,
+    attribution: release.goAttribution ?? (evidence.functionalTransfer ? {
+      creator: 'Gene Ontology Consortium; UniProtKB; NCBI RefSeq; EcoCyc',
+      license: 'GO and UniProtKB: CC BY 4.0; RefSeq/EcoCyc attribution under the source ledger',
+      source: 'https://geneontology.org/; https://www.uniprot.org/; https://ecocyc.org/',
+    } : null),
   };
 }

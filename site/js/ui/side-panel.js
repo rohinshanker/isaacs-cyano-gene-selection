@@ -7,6 +7,7 @@
  * value is unusual.
  */
 import { firstUnsettled, pendingState } from '../core/data-files.js';
+import { GO_EVIDENCE_BUCKETS, goTermEvidenceState } from '../core/go-term-evidence.js';
 import { pendingNote } from './loading-note.js';
 import {
   formatValue, formatDelta, formatPercentile, formatCount,
@@ -99,9 +100,9 @@ function labelledList(label, values) {
 /**
  * The RefSeq annotation-method/inference/coordinate rows are the organism's own
  * release content; the GO relationships inside the same bundle are its GO
- * annotations. Nothing here comes from another strain.
+ * annotations. Recoded transfers explicitly retain their reference provenance.
  */
-function annotationDisclosure(gene, meta, goTerms) {
+function annotationDisclosure(gene, meta, goTerms, selectedTerm = '') {
   const model = annotationEvidenceModel(gene, meta, goTerms);
   if (!model) return null;
   const details = document.createElement('details');
@@ -115,7 +116,42 @@ function annotationDisclosure(gene, meta, goTerms) {
     + 'not collapsed into pathway or functional-category claims.';
   const list = document.createElement('dl');
   list.className = 'annotation-evidence-list';
-  list.append(
+  if (selectedTerm) {
+    const status = goTermEvidenceState(gene, selectedTerm, goTerms);
+    list.append(labelledList('Selected GO term evidence', [
+      `${selectedTerm} · ${goTerms?.[selectedTerm]?.name ?? 'term unavailable'} · ${GO_EVIDENCE_BUCKETS.find((b) => b.id === status).label}`,
+    ]));
+  }
+  if (model.functionalTransfer) {
+    const transfer = model.functionalTransfer;
+    summary.textContent = transfer.inheritedFields.length
+      ? 'Transferred functional annotation · reference provenance'
+      : 'Functional annotation · reference audit';
+    intro.textContent = 'Inherited reference annotation, not lab review or a measurement of this recoded genome. '
+      + 'Every accepted hop uses a unique full-length identical protein. Native coordinates and annotations take precedence. '
+      + 'Public references do not establish exact experimental parent identity. Function categories remain unknown.';
+    if (!transfer.inheritedFields.length) {
+      intro.textContent = 'No missing functional annotation was transferred for this locus. ' + intro.textContent;
+    }
+    list.append(
+      labelledList('Crosswalk status', [transfer.status]),
+      labelledList('Inherited fields', model.inheritedFieldLabels),
+      labelledList('Reference provenance', transfer.sources.map((source) =>
+        `${source.assembly} · ${source.locusTag} · ${source.recordRelease.map((r) => `${r.sequence} (${r.date ?? 'date unavailable'})`).join(', ')} · ${source.method} · protein SHA-256 ${source.proteinSha256}`)),
+      labelledList('Source annotation release', transfer.annotationRelease ? [transfer.annotationRelease] : []),
+      labelledList('Native identity', [`${transfer.native.id} · symbol ${transfer.nativeSymbol ?? 'not reported'} · ${transfer.nativeProduct ?? 'product not reported'}`]),
+      labelledList('Annotation disagreements (native retained)', transfer.disagreements.map((row) =>
+        `${row.field}: native ${row.native ?? 'not reported'}; reference ${row.sources.map(([id, value]) => `${id}: ${value}`).join('; ')}`)),
+    );
+    if (model.nativeAnnotation) list.append(
+      labelledList('Native annotation source', [`${model.nativeAnnotation.source.assembly} · ${model.nativeAnnotation.source.recordRelease.map((r) => `${r.sequence} (${r.date ?? 'date unavailable'})`).join(', ')} · SHA-256 ${model.nativeAnnotation.source.sha256}`]),
+      labelledList('Native annotation notes', model.nativeAnnotation.notes),
+      labelledList('Native inference', model.nativeAnnotation.inferences),
+      labelledList('Native EC numbers', model.nativeAnnotation.ecNumbers),
+      labelledList('Native gene synonyms', model.nativeAnnotation.geneSynonyms),
+    );
+  }
+  if (!model.functionalTransfer) list.append(
     labelledList('Replicon', [model.replicon]),
     labelledList('Annotation method', model.methods),
     labelledList('Inference', model.inferences),
@@ -127,11 +163,13 @@ function annotationDisclosure(gene, meta, goTerms) {
       labelledList('Curated function (UniProtKB)', curated.functions),
     );
   }
-  list.append(
+  if (!model.functionalTransfer) list.append(
     labelledList('Overlapping CDS', model.overlaps.map((entry) => entry.text)),
     labelledList('Nearby non-coding RNA (≤250 nt)', model.nearby.map((entry) => entry.text)),
-    labelledList('GO relationships', model.go.map((entry) => entry.text)),
   );
+  list.append(labelledList(model.goOrigin === 'native-source' ? 'Native GO relationships (GenBank notes)'
+    : model.functionalTransfer ? 'Inherited GO relationships' : 'GO relationships',
+    model.go.map((entry) => entry.text)));
   details.append(summary, intro, list);
   if (model.attribution) {
     const attribution = document.createElement('p');
@@ -892,7 +930,7 @@ export class SidePanel {
     const annotation = pendingSection(dataset, ['annotations', 'goTerms'],
       'Annotation evidence and recoding context', 'annotation evidence')
       ?? this.rememberDisclosure(
-        annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms), 'annotation',
+        annotationDisclosure(gene, dataset.meta, dataset.goTerms?.terms, state.goTerm), 'annotation',
       );
     if (annotation) this.host.append(annotation);
 

@@ -32,6 +32,7 @@ export const ECOLI_SYN57_DESIGN = {
   freshAxes: { x: 'lengthNt', y: 'gc3' },
   locusExample: 'b0002',
   annotationSources: [],
+  functionalAnnotations: { referenceOrganismIds: ['ecoli-k12-mg1655'] },
   layers: {},
   recoding: {
     recordType: 'design',
@@ -67,7 +68,7 @@ export const ECOLI_SYN57_DESIGN = {
       + 'transcription-termination-site, omics, growth, or fitness data set is admitted for this '
       + 'design record, so none of those tracks is drawn.',
     directProteomicsLabel: 'Direct proteomics detection',
-    goSearchNote: 'No GO relationship layer is admitted for this design record.',
+    goSearchNote: 'GO relationships are inherited from MG1655 only through unique identical proteins. They are not measurements of the Syn57 design.',
     metricOrigin: 'the publisher-deposited Ec_Syn57 complete-design CDSs in native design coordinates (not a RefSeq assembly or a measurement)',
     metricMethods: {
       tai: 'Dos Reis tAI over a defined approximate annotation model: 75 ordinary codon-recognition notes are reverse-complemented, three explicit initiator anticodon notes are used as stated, one Sec special convention is excluded from the elongator pool, and six unsupported tRNAs are excluded from the model. These are not established genomic anticodons or charging calls.',
@@ -79,6 +80,6 @@ export const ECOLI_SYN57_DESIGN = {
       tai: 'A defined approximate annotation model using 75 reverse-complemented ordinary notes and three explicit initiator notes; one Sec convention is excluded from the elongator pool and six unsupported tRNAs are excluded from the model. These are not established anticodons or charging measurements.',
       expressionProxy: 'A rank built from CAI and the qualified approximate tAI model; it is design context, not expression.',
     },
-    goTermsCaveat: 'No GO relationship layer is admitted for this design record.',
+    goTermsCaveat: 'GO relationships are inherited MG1655 annotations, not Syn57 measurements or lab review. No function categories are assigned.',
   },
 };

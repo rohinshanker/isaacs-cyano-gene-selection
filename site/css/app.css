@@ -1452,9 +1452,15 @@ input[type="range"] { width: 100%; }
 .annotation-evidence-list { margin: 0 0 0.55rem; font-size: 0.78rem; }
 .annotation-evidence-list > div { margin-bottom: 0.45rem; }
 .annotation-evidence-list dt { color: var(--ink-muted); font-weight: 600; }
-.annotation-evidence-list dd { margin: 0.08rem 0 0; }
+.annotation-evidence-list dd { margin: 0.08rem 0 0; overflow-wrap: anywhere; }
 .annotation-evidence-list ul { margin: 0; padding-left: 1.1rem; }
 .annotation-evidence-list li { margin-bottom: 0.12rem; }
+.go-term-controls { margin: 0.75rem 0; padding: 0.75rem 0; border-block: 1px solid var(--line); }
+.go-term-controls select { min-width: 0; width: 100%; max-width: 100%; }
+.go-term-controls input { min-width: 0; width: 100%; max-width: 100%; }
+.go-term-controls .field-row { min-width: 0; }
+.go-term-controls h3 { margin-top: 0; }
+.go-term-controls .panel-note { overflow-wrap: anywhere; }
 .tss-evidence { overflow-wrap: anywhere; }
 .tss-caveat { margin: 0.15rem 0 0.55rem; }
 .tss-empty { margin: 0.3rem 0 0.55rem; font-size: 0.8rem; color: var(--ink-muted); }
