@@ -73,7 +73,8 @@ Coordinator source/acceptance checks, pending final implementation:
 | RFA-01 | Functional filtering/colouring must select real inherited GO terms; detail/search or annotation-coverage colours alone do not satisfy the ticket. Negative, conflicting, ND and missing evidence remain distinct. | open |
 | RFA-02 | Native EC qualifiers and structured GO annotations embedded in Syn61 GenBank notes must be preserved and inventoried separately from transferred GO. | open |
 | RFA-03 | Syn57 `yddH`/`iroK` generated product placeholders must not be mistaken for a native product qualifier. | open |
-| RFA-04 | A UniProt entry without function text must not be counted as an actual curated function statement. | open |
+| RFA-04 | A UniProt entry without function text must not be counted or labelled as an actual curated function statement; use human field labels in the UI. | open |
+| RFA-05 | GO controls must remain available on every gene-map tab while their colour/filter state is active, including risk, UMAP and perturbation. | open |
 
 No independent final-patch audit has run yet; closure awaits that audit and
 resolution of any findings it returns.
