@@ -320,6 +320,8 @@ establish historical version parity or biological calibration.
 
 Prediction, version and fullhelp calls pin `--personality=IntaRNA3`, so a
 renamed regular copy cannot silently select legacy parameters from its file name.
+The pinned program emits a generic personality notice in fullhelp even though
+IntaRNA3 and IntaRNA share the unchanged-default branch (receipt I8).
 The base prediction uses `--model=X --mode=H --energy=V --temperature=37`,
 `--seedBP=7 --seedMaxUP=0`, computed accessibilities
 `--acc=C --accW=150 --accL=100`, one reported optimum and one thread. Remaining
@@ -360,8 +362,9 @@ folding (`accW=accL=0`, variant `whole_input_window_folding`) and a six-base see
 ED always depends on the supplied finite input window. Setting both limits to
 zero folds that input window as a whole; it does not recover missing transcript
 context. At lengths 63 and 103, the default 150-nt accessibility window already
-covers the full query. For 150-nt targets, this sensitivity primarily removes the
-100-nt base-pair-span limit. The 163-nt query also changes sliding-window context.
+covers the full query; the separate 100-nt pairing-span limit still slightly
+constrains the 103-nt query. For 150-nt targets, this sensitivity primarily removes
+that pairing-span limit. The 163-nt query also changes sliding-window context.
 Together the experiment contains
 39..48 runs, depending on how many default native pairs support a disruption.
 
@@ -407,8 +410,8 @@ There is **no SIGKILL cleanup guarantee** for the wrapper. Cleanup can fail if
 the OS refuses deletion or child termination; such failures retain diagnostics.
 Cleanup failures are reported without masking the original exception. Preexisting
 outputs remain untouched. A renamed binary records its real `binaryFileName`;
-only that provenance field may differ in `pilot.json` for the same build. Fullhelp
-may also include the invoked file name; CSV/FASTA numerical outputs must agree.
+only that provenance field may differ in `pilot.json` for the same build. With
+the pinned personality, fullhelp and CSV/FASTA numerical outputs must agree.
 The source tree contains the tool, tests, runbook and exact dependency manifests.
 
 ## Primary-source receipts and scientific limit
@@ -424,6 +427,7 @@ substring matching after whitespace normalization (XML uses element text).
 | I5 | [Tan 2018](https://www.ebi.ac.uk/europepmc/webservices/rest/PMC6091082/fullTextXML), Results PsrR1 paragraph | “was identified as a homolog of the sRNA PsrR1” | `7063969b6577a330390269bec64df5f22c696203239257cb06fc21ef5148f7d8` |
 | I6 | Official release `src/bin/CommandLineParsing.cpp:165` | `seedBP("seedBP",2,20,7)` | `c54b2a55fad4f299c5d3251a2c08c8862192fcf51860190996c2243032f916b3` |
 | I7 | [3.4.1 LICENSE](https://raw.githubusercontent.com/BackofenLab/IntaRNA/v3.4.1/LICENSE), heading | “The MIT License (MIT)” | `a54b0ef3107272a60da3d39ec57ab10ab9c2d785f28c562b1d25cb947461e409` |
+| I8 | Official release `src/bin/CommandLineParsing.cpp:225–229`, shared IntaRNA / IntaRNA3 switch branch | “no changes” | `c54b2a55fad4f299c5d3251a2c08c8862192fcf51860190996c2243032f916b3` |
 
 The release distribution's `COPYING` points to LICENSE but omits that file;
 retain the official tag-addressed LICENSE separately. Its receipt is source

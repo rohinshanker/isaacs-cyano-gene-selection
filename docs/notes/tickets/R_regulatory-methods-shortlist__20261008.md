@@ -1,14 +1,14 @@
-# A_regulatory-methods-shortlist__20261008 — Active
+# R_regulatory-methods-shortlist__20261008 — Resolved
 
 Scope: Complete the selected regulatory-method assessment and reproducible native-UTEX pilots, with independent review and explicit transfer/evaluation limits.
-Status: active
+Status: resolved
 Opened: 2026-10-08
 Updated: 2026-10-14
 
-## Current State
+## Outcome
 
-`cyano-regulatory-sites` owns integration and closure. The owner requested this
-completion pass on 2026-10-14. Work remains in isolated worktrees; other Agent
+**Closed by `cyano-regulatory-sites` on 2026-10-14**, after the owner requested
+completion and every implementation/review finding was resolved. Work remains in isolated worktrees; other Agent
 Deck sessions have not been contacted or interrupted. Canonical baseline was
 `40047f0`; the coordinator merged other-session main through `b4092f5` without
 changing its work. No browser regulatory layer is admitted by this ticket.
@@ -25,9 +25,10 @@ stays open under the owner's execution/closure hold. FIMO and an SD-only substit
 remain unselected. Neither a donor coordinate nor a protein orthologue establishes
 a native regulatory interval.
 
-Promoter/STREME and accessibility repairs have independent acceptance. IntaRNA's
-five review repairs and same-reviewer recheck remain before closure, followed by
-final Python gates and documentation cleanup.
+All six executable pilot scopes are complete. DEM-397, DEM-398 and DEM-399
+accepted the exact new producer repairs; the earlier Promoter preparation,
+TransTermHP and Rfam reviews remain accepted. All repository gates pass, with
+only the declared source-cache/contiguity skips below.
 
 ## Current Evaluation Evidence
 
@@ -68,8 +69,12 @@ final Python gates and documentation cleanup.
   pilot gives default interactions **5/9**, shuffled **8/9**, disrupted **4/5**,
   whole-input-window folding **6/9**, and six-base seed **8/9**. All default ±50-nt
   query-window interactions lie outside the RF01116 core. These are computational
-  window interactions, not recovered or validated native targets. Final repair
-  evidence and acceptance are pending below.
+  window interactions, not recovered or validated native targets. Repair `b636f02` (worker `a01bd6e`) preserves all numerical results, adds
+  explicit personality and runtime identity, and passes **94 focused tests**.
+  Rebuilt upstream API/CLI checks pass; DEM-399 independently accepted all five
+  repair findings at `b636f02`. Default/renamed regular copies retain 44 runs and
+  32 interactions; real SIGTERM/SIGINT timing probes leave no partial outputs,
+  scratch or orphaned owned children.
 
 These final Promoter/STREME summaries supersede earlier counts/interpretations.
 Raw reports and receipts are under `/tmp/cyano-regulatory-completion-20261014/`;
@@ -92,17 +97,20 @@ in the linked validation contracts, not dependent on that temporary directory.
 | PR1, PR2, PR3 | `194397c`; tolerance/ranks, three in-vivo plus one in-vitro source wording, and inert sigma metadata fixed. DEM-398 accepted at `f8d4700`. |
 | ST1, ST2 | `82ac870`; blocked genomic comparisons/interpretation and interruption/cleanup semantics fixed. DEM-398 accepted at `f8d4700`. |
 | VA1, VA2, VA3 | `6630492`; parameter-cache identity, surfaced cleanup failures and snapshot input provenance fixed. DEM-397 independently accepted worker `bd4beb1`. |
-| I-BUILD-1, I-BUILD-2, I-CLI-1, I-TEST-1 | Initial runtime/wrapper fixes in `a292532` and recipe/manifests in `7055890`/`f7fc41c`; revised isolated recipe is under I-REV review below. |
-| I-REV-1 | **open**, DEM-395 repair / DEM-399 recheck: replace environment-registering download-only command with verified archive extraction. Coordinator removed only this task's registration and two empty cache directories; unrelated registry entries are byte-preserved. |
-| I-REV-2 | **open**, DEM-395/399: explicit IntaRNA3 personality independent of executable basename. |
-| I-REV-3 | **open**, DEM-395/399: precise finite whole-input-window folding and reused-shuffle labels. |
-| I-REV-4 | **open**, DEM-395/399: CLI SIGTERM cleanup, owned-child termination and restored programmatic handler. |
-| I-REV-5 | **open**, DEM-395/399: complete durable build identities, accurate architecture/linkage and extraction recipe. |
+| I-BUILD-1, I-BUILD-2, I-CLI-1, I-TEST-1 | Initial runtime/wrapper fixes in `a292532` and recipe/manifests in `7055890`/`f7fc41c`; revised isolated recipe in `b636f02` is independently accepted by DEM-399. |
+| I-REV-1 | `b636f02`; verified exact-archive extraction replaces environment creation. DEM-399 accepted the recipe and identities. Coordinator removed only this task's prior registry line and empty cache directories; shared registry SHA remained `f67374b8bd50bd1a1e475b50361b2b6e1b51ba7dab39ae9f0ad513aa8d2c0c97` before/after the repair checks. |
+| I-REV-2 | `b636f02`; explicit IntaRNA3 personality; DEM-399 reproduced exact numerical equivalence with a renamed regular binary. |
+| I-REV-3 | `b636f02`; finite whole-input-window context, reused query shuffles and partial/complete core exclusion stated; DEM-399 accepted. |
+| I-REV-4 | `b636f02`; owned-child/output/temp cleanup, signal status and handler restoration; DEM-399 accepted 94 tests and real signal timing probes. |
+| I-REV-5 | `b636f02`; complete build recipe, package/runtime/library identities and consistent arm64 evidence; DEM-399 accepted. |
 | I-SCI-1 | **open**, retained in [regulatory-layer admission](O_regulatory-layer-admission__20261014.md#open-scientific-dependencies): full UTEX Yfr1 transcript ends and actual target interactions are unestablished. This gates those biological claims, not the explicitly approximate computational-window producer. |
 
-No unclaimed review finding may be discarded at closure. Independent acceptance
-is required for the remaining IntaRNA repairs; correct numbers alone do not waive
-label/provenance/I/O findings.
+No unresolved implementation or audit finding remains. I-SCI-1 is retained in
+the admission ticket because the completed pilot does not assert the biological
+identity/function it gates. The reviewer's informational fullhelp notice and
+103-nt pairing-span wording are clarified in the runbook against pinned source
+receipt I8 and the explicit model settings; optional loader hardening was not a
+finding or acceptance condition.
 
 ## Durable Knowledge and Remaining Work
 
@@ -129,14 +137,16 @@ Actual Promoter, STREME, IntaRNA and Infernal inputs were supplied.
 After merging main through `b4092f5`, JavaScript again has **1,584 passed, 0 skipped**;
 contract **130 passed, 0 failed, 1 declared spliced-CDS contiguity skip**. DEM-398's
 repair recheck has **125 focused tests passed** with actual model/runtime and no
-skips. DEM-397 has **93 passed**, no skips. Final Python after IntaRNA integration
-is pending. Changed Markdown links and all 28 open/active ticket identities,
+skips. DEM-397 has **93 passed**, no skips. Final Python at `b636f02`, with all real regulatory tools and pinned inputs, has
+**2,082 passed, 8 skipped, 51 subtests passed**. All regulatory tests ran. The eight
+source-cache skips are Syn57 annotation, GO OBO and six existing Tan workbook/
+article/archive checks. Changed Markdown links and all 27 remaining open/active ticket identities,
 statuses and queue entries pass. `git diff --check` passes.
 
 ## Cleanup
 
-Before closing, record the closing session/date, every final finding resolution,
-independent acceptances and final gates. Then rename to R and set resolved, remove
-only this queue row, verify durable links, commit the resolution, and delete the
-resolved ticket last. Keep I-SCI-1, RBS and iDOG dependencies visibly owned in their
-remaining tickets. No one-off execution ledger is added to permanent documentation.
+Reusable contracts and source receipts are distilled into validation runbooks
+and indexed. All links to the retiring ticket were redirected. Remove only this
+queue row and commit this named resolution, then delete the resolved ticket last.
+I-SCI-1, RBS and iDOG dependencies remain explicitly owned in their open tickets.
+No one-off execution ledger is added to permanent documentation.

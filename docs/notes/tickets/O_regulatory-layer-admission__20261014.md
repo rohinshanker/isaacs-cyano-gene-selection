@@ -7,8 +7,8 @@ Updated: 2026-10-14
 
 ## Current State
 
-Unassigned. The regulatory-method shortlist owns reproducible non-release pilots and their
-independent review. This ticket owns subsequent source/layer selection and browser
+Unassigned. The completed regulatory-method shortlist provides reproducible
+non-release pilots with independent review. This ticket owns source/layer selection and browser
 admission; it does not reclassify pilot results as measured regulatory function.
 The owner permits very rough predictions transferred from other bacteria even
 without evaluated UTEX sites. Missing UTEX calibration limits the claims, rather
