@@ -266,7 +266,7 @@ def fake_run(pins, monkeypatch):
     monkeypatch.setattr(pilot, "EXPECTED_REPLICON_LENGTHS", {"NZ_CP006471.1": 300})
     monkeypatch.setattr(pilot, "load_anchors", lambda *args: [anchor()])
     monkeypatch.setattr(pilot, "load_calculator", lambda path: Calculator())
-    for name in ("numpy", "sklearn"):
+    for name in ("numpy", "sklearn", "scipy", "Bio"):
         monkeypatch.setitem(sys.modules, name, SimpleNamespace(__version__="fixture"))
     return pins
 
