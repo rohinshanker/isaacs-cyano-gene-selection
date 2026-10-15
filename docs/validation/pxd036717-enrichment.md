@@ -144,10 +144,111 @@ Preserve the discrepancy with the archive protocol. Supplement
 table; neither supplies per-row p-values. Those selection calls are separate
 evidence and are not inferred by this reader.
 
+## Exact identifier mapping
+
+[`tools/map_pxd036717.py`](../../tools/map_pxd036717.py) attaches an audited
+identity result to every original workbook row without changing its cells,
+ratios, means, flags or detection counts. It re-reads the pinned workbook,
+rather than trusting a previously edited evidence JSON. Its output still has
+`releaseEligible: false`; an identity link is not source admission.
+
+```sh
+.venv/bin/python tools/map_pxd036717.py \
+  --input data/interim/pxd036717/1-s2.0-S1096717623001490-mmc1.xlsx \
+  --output data/interim/pxd036717/mapped-evidence.json
+.venv/bin/python -m pytest -q tests/test_map_pxd036717.py tests/test_pxd036717_enrichment.py
+```
+
+The command also verifies these existing repository inputs before using them:
+
+| Input | Rows | SHA-256 |
+| --- | ---: | --- |
+| `data/expression/ingest/uniprot_pcc7942_orf_names.tsv` | 2,751 | `d3a018d87aa173c89468a068da5d71aa8c4166b9b5607c777354bab807bee515` |
+| `data/annotation/releases/GCF_000817325.1-RS_2026_05_13/identifier-crosswalk-v1.tsv` | 22,356 | `97e3022e53cd1e31f5931ead37f425e1d99c032704e5ff8f02c0d75d1755e9ae` |
+
+The route is exact UniProt accession → one PCC 7942 ordered-locus name →
+one UTEX locus under `pcc7942_old_locus_tag`. That crosswalk relationship is
+based on an exact shared RefSeq protein identifier between the PCC and UTEX
+annotations, as documented in the [existing provenance](../../data/expression/PROVENANCE.md)
+and [crosswalk contract](annotation-release-readiness.md). This does not compare
+the study's original protein sequences or establish identity of engineered
+alleles. The UniProt table is reused as pinned; no live lookup, alias repair or
+new homology inference is performed. Preserve PCC 7942 evidence labels.
+
+Uniqueness is evaluated in both directions across each entire mapping input,
+including proteins absent from this experiment. All 2,567 relevant crosswalk
+edges participate in ambiguity detection; the sixteen flagged edges cannot
+be made harmless by filtering them away first. Source protein groups stay
+unassigned even if individual members have candidate links. Native PCC
+identities remain inspectable when no UTEX assignment is allowed. The exact
+`B` and trailing-letter locus identifiers present in the input are preserved;
+these are identifiers, not aliases or a spelling correction.
+
+The row's `mapping.status` and `mapping.utexLocus` govern assignment. Only
+`status: mapped` assigns a UTEX locus. Each member retains candidate identifiers,
+versioned RefSeq IDs and 1-based physical TSV row numbers (including the header)
+for audit. `proteinCompetitors` and `crosswalkCompetitors` also identify the
+other source identifiers and TSV rows responsible for reverse collisions.
+Member candidates never authorize assigning a group's measurements.
+If two source rows would assign the same target within one bait, **both** become
+`target_collision` with no assigned UTEX locus; file order never wins. The same
+target in different baits is allowed because the experiments remain separate.
+
+If a nonempty UniProt RefSeq list has no accession in common with the
+crosswalk's shared-protein evidence, the row is `refseq_disagreement` and its
+UTEX assignment is withheld. Assignment requires `refseqComparison: agrees`.
+A missing RefSeq list is explicitly `not_available` and produces the non-assigning
+status `refseq_unconfirmed`; missing confirmation never authorizes a transfer.
+Isoform annotations following
+an accession are retained in the pinned source but do not change that accession.
+These two observed disagreements affect seven source rows:
+
+| UniProt | PCC locus | UniProt RefSeq | Crosswalk evidence | Unassigned UTEX candidate |
+| --- | --- | --- | --- | --- |
+| Q31PP6 | Synpcc7942_0943 | WP_011377800.1 | WP_321167209.1 | M744_RS11435 |
+| Q31NP5 | Synpcc7942_1294 | WP_011377967.1 | WP_231621311.1 | M744_RS09670 |
+
+Different accession versions/records do not establish a biological mismatch.
+They do require a separate, recorded identity check before restoring these
+rows. Do not silently substitute the newer identifier. Both forms of missing
+confirmation retain the original evidence and candidate identifiers.
+
+The pinned source has 84 additional rows (35 accessions) with no UniProt RefSeq
+confirmation. Their workbook `Sequence length` (column AE) differs from the
+candidate UTEX `protein_length_aa` in every case. The seven explicitly disagreeing
+rows also have different lengths; all 1,466 assigned rows have matching lengths.
+Reproduce this offline comparison using
+`data/protein-evidence/releases/GCF_000817325.1-RS_2026_05_13-protein-evidence-v1/protein-identity-v1.tsv`
+(SHA-256 `3e9b2b4dafab2ed7e88d09a6126e4464d83bf7929e9e5fc7f5ffdf70eb19e79a`).
+Length equality alone does not establish sequence identity. These results support
+withholding unconfirmed assignments, rather than interpreting an empty RefSeq
+cell as a safe transfer. Restoring any of these 91 rows requires a recorded
+identity check.
+
+### Mapping regression counts
+
+| Bait | Assigned rows | No crosswalk edge | No UniProt locus | Ambiguous UniProt locus | Groups | RefSeq disagreement | RefSeq unconfirmed | Assigned valid A/B/C | Assigned complete means |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| RpaA | 347 | 8 | 2 | 3 | 1 | 2 | 20 | 218 / 181 / 209 | 179 |
+| CikB | 330 | 8 | 2 | 3 | 4 | 1 | 17 | 180 / 140 / 167 | 136 |
+| NblS | 381 | 8 | 2 | 3 | 3 | 2 | 21 | 279 / 211 / 261 | 194 |
+| ManS | 408 | 13 | 2 | 3 | 3 | 2 | 26 | 199 / 142 / 155 | 131 |
+
+All 1,625 source rows are retained: 1,466 assigned and 159 unassigned. These are
+bait/protein rows, not 1,466 distinct UTEX genes. There are 2,342 assigned
+replicate ratios and 640 assigned complete means. The JSON includes every
+exclusion with source worksheet/row and member-level reasons, plus each bait's
+assigned detection-state totals. No source row is discarded because its
+ratios are missing. Tests cover whole-table conflicts, flagged edges, duplicate
+rows, groups, missing mappings, source/output alias protection, all three pins,
+real-source counts and exact preservation of the reader's original output.
+The real-input regression asserts every exclusion status and detection total,
+including the absence of target collisions, not only assigned-row counts.
+
 ## Admission boundary
 
-Before releasing browser layers, complete the source-specific identifier join,
-protein-group ambiguity policy, peptide/identification checks, condition record,
+The identifier join and ambiguity policy above are implemented. Before releasing
+browser layers, complete peptide/identification checks, the condition record,
 separate enrichment quantity, citation/provenance wiring and rendered tests.
 Reconstruction alone does not admit any row or establish an interactor. Preserve
 PCC 7942-to-UTEX transfer labels if an approved crosswalk is used.

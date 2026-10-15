@@ -4,7 +4,7 @@ Reusable contracts and runbooks for this repository.
 
 | Document | Covers |
 | --- | --- |
-| [pxd036717-enrichment.md](pxd036717-enrichment.md) | Pinned APEX2 supplement preservation, non-imputed LFQ enrichment reconstruction, complete per-bait means, missing-intensity diagnostics and browser-admission boundary |
+| [pxd036717-enrichment.md](pxd036717-enrichment.md) | Pinned APEX2 supplement preservation, non-imputed LFQ reconstruction, detection states, exact protein-to-gene mapping with group/RefSeq ambiguity preserved, and browser-admission boundary |
 | [geo-array-reader.md](geo-array-reader.md) | Lossless GEO processed-sample reader, pinned SOFT/matrix equality, exact GPL9534 gene mapping, distinct array quantities, source-specific optional summaries and author probe-averaging disclosure |
 | [tss-recoding-edits.md](tss-recoding-edits.md) | Exact active-scheme sequence edits at admitted Tan TSS points, physical-site counts and evaluated denominators, strand/segment mapping, missingness and independent release-data checks |
 | [neighbor-regulatory-sites.md](neighbor-regulatory-sites.md) | Native source-associated TSS points inside actual CDS segments, mapped-owner and deduplication rules, shared filtering/colouring/viewers, purple lines and exact-base underlines with visible active focus, missing RBS evidence, the distinct-site count shared by the numeric colour, the inclusive count filter and the export, source and visibility state, and rendered regression checks |

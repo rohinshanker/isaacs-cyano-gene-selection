@@ -29,12 +29,23 @@ retains original cells/formulas and distinguishes reconstructed values from the
 authors' imputed ratios. LFQ intensities are processed MaxQuant outputs, not raw
 mass spectra. Complete-case means require all three valid ratios.
 
+PXD-JOIN is complete (cyano-lit-unreach, 2026-10-15; independently reviewed
+implementation `b890507`): the pinned exact join assigns
+1,466 source rows and preserves all 159 exclusions, including eleven groups,
+seven rows with two RefSeq identifier disagreements, and 84 rows without
+RefSeq confirmation. No measurements change;
+source evidence remains labelled PCC 7942. See the
+[mapping contract](../../validation/pxd036717-enrichment.md#exact-identifier-mapping).
+
 Remaining PXD036717 admission findings (open):
 
-- **PXD-JOIN:** exact protein-to-locus join and eleven multi-accession row groups;
-  no gene-alias guessing or duplicate attribution of group intensities.
 - **PXD-IDENT:** retain peptide/identification evidence and resolve any admission
   filtering contract; the reader itself does not infer protein identification.
+  Q31PP6/Q31NP5 remain excluded from UTEX assignment because the pinned UniProt
+  and crosswalk RefSeq fields disagree; restoring them requires a recorded
+  identity check. The same hold applies to 84 rows (35 accessions) without a
+  UniProt RefSeq cross-reference: their source protein lengths also differ from
+  the proposed UTEX targets. This does not block admission of other eligible rows.
 - **PXD-CONDITION:** finish the condition record and preserve the PRIDE protocol's
   "both" versus workbook/article three-replicate discrepancy.
 - **PXD-RELEASE:** separate enrichment quantity, twelve replicate layers plus
