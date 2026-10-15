@@ -12,6 +12,7 @@ finding is reverted rather than argued about.
 | Ticket | Scope |
 | --- | --- |
 | [A_ortholog-product-text__20261014](A_ortholog-product-text__20261014.md) | BIO-06: decode escaped commas at use time in pinned ortholog product text; preserve raw evidence and all other fields |
+| [A_annotation-search-noncoding__20261014](A_annotation-search-noncoding__20261014.md) | Active 2026-10-14, owned by cyano-unblocked-tix: owner decision D10, split from the cross-strain ticket. Search and open noncoding genes and pseudogenes in every organism without entering CDS metrics, filters, shortlist, recoding or projections; label hypothetical proteins as unknown function |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
 | [O_yfr1-transcript-interaction-evidence__20261014](O_yfr1-transcript-interaction-evidence__20261014.md) | I-SCI-1 remains open: establish full native Yfr1 transcript boundaries and target evidence before any such claim; separate from the admitted RF01116 family interval |
 | [A_add-ecoli-organism__20261005](A_add-ecoli-organism__20261005.md) | MG1655 view shipped; show/flag selenoproteins, review newest CDS and publication evidence, and review CAI membership evidence while retaining current membership. Additional E. coli source choices remain open; SRI notification was sent 2026-10-07 |

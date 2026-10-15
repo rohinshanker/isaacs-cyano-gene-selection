@@ -123,6 +123,32 @@ change has been identified and deliberately accepted.
    a skipped deployment. Do not report publication complete until both the
    workflow and live-content checks succeed.
 
+Compare selected public files against the exact deployed commit with the
+standard-library checker (paths are relative to `site/`):
+
+```sh
+python3 tools/check_deployed_content.py \
+  --base-url https://rohinshanker.github.io/isaacs-cyano-gene-selection/ \
+  --ref DEPLOYED_COMMIT_SHA \
+  --path index.html --path js/app.js --path css/app.css \
+  --path data/data-manifest.json
+```
+
+Add `--path` for every changed published file and the affected organisms'
+manifests. The command resolves the commit once and reads its committed blobs,
+ignoring local modifications. It prints byte counts and SHA-256 values and
+returns 0 only when every selected file matches; mismatches and retrieval failures
+return 1, invalid inputs return 2. It compares only the explicitly selected files,
+not the entire deployment, and does not establish that Actions succeeded or that
+browser interactions work.
+
+Requests are sequential, request cache revalidation, and include the resolved
+commit in the query string. Each response is bounded to the expected size plus
+one byte; `--timeout` sets the socket timeout (20 seconds by default). HTTP errors,
+partial responses, unexpected content encoding and oversized responses fail.
+Redirects are followed and their final bytes compared. No credentials, site
+writes, automatic retries or publishing actions are involved.
+
 Production smoke test:
 
 - [ ] The Pages URL loads over HTTPS without console or network errors.

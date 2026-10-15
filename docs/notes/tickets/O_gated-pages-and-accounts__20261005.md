@@ -26,7 +26,7 @@ ACC-01, ACC-02, ACC-04, ACC-06, BIO-01 to BIO-03, BIO-07, LIC-01, LIC-02.
 | BioCyc summary pages | page-view metering redirects to an account page | Owner logs in with their own account in their own browser, checks whether Yale holds a subscription, and exports the wanted pages or files | None. No agent creates an account or drives a logged-in session. If the owner later wants an agent to use a session, that is a separate, disclosed decision, after the BioCyc terms are quoted |
 | BioCyc and KEGG reuse terms | never quoted | — | The public licence pages are readable. Queue a terms-quotation claim; the permission decision is the ledger's |
 | GtRNAdb, GSE225426, GSE311172 | no terms published anywhere | Owner writes to the maintainers or depositors; a draft is prepared for each. A reply is quoted with its date | None |
-| Deployed site against the audited tree | never compared | — | The agents fetch the deployed bundle and compare file hashes with the tree. Entirely in-repository work |
+| Deployed site against the audited tree | independent of source access; comparison tooling complete | — | `tools/check_deployed_content.py` compares selected live files with an immutable commit. The [release gate](../../validation/release-gate.md#publish-and-smoke-test) documents its use and the separate workflow/browser checks |
 
 ## Decisions for the owner
 
@@ -42,7 +42,9 @@ ACC-01, ACC-02, ACC-04, ACC-06, BIO-01 to BIO-03, BIO-07, LIC-01, LIC-02.
 
 ## Verification
 
-Not started. A rendered page is saved outside the working tree with its retrieval
+Source-access verification remains pending; the independent deployment checker
+has automated failure tests and a successful live-file comparison. A rendered
+source page is saved outside the working tree with its retrieval
 date and SHA-256, and any quotation from it is re-matched against the saved text.
 Any step needing a credential is named to the owner first, with the exact action
 and reason. A ledger row changes only on quoted terms.
