@@ -45,7 +45,17 @@ not zero. A sequence/coordinate mismatch also remains unevaluated. The condition
 selector affects evidence availability, not site coordinates; all Tan condition
 layers retain the same admitted positions. Replacing a payload, switching the
 scheme or changing organisms must invalidate the appropriate cached comparison.
-Visibility controls affect drawing, not the numerical result.
+Visibility controls affect drawing, not the numerical result. Readiness and
+initial file promotion include both `tssEvidence` and `regulatoryTss` for colors,
+axes and numeric filters. Automatic scales wait for both payloads; a saved
+explicit scale stays the reader's choice.
+
+Native sequence validation and site-to-codon/occurrence mapping are cached
+separately from scheme results. A scheme change compares the recorded site bases
+against the new substitutions without rebuilding complete per-base models for
+every CDS. Exporting other schemes retains the current scheme's cached result.
+Even a gene with no recorded sites must pass sequence/coordinate validation
+before receiving evaluated zero counts.
 
 ## Browser and export
 
@@ -53,7 +63,10 @@ The numeric metric **Edited TSS sites in CDS** uses key
 `editedTssSitesInCds`. **Evaluated recorded TSS in CDS** provides its denominator
 as `evaluatedTssSitesInCds`. The ordinary numeric registry supplies coloring,
 axes and custom filters. Saved color/filter state uses those keys and the usual
-scheme state. The sequence-edit inspection disclosure in both compact viewers
+scheme state. The edited count is scheme-dependent and cannot be a fixed
+panel-design constraint; the panel engine also rejects restored/manual attempts
+to use it that way. The evaluated-site denominator is scheme-independent and can
+be constrained. The sequence-edit inspection disclosure in both compact viewers
 and the expanded sequence view lists each original site, edit state and base
 pair; the expanded view can center a selected site for exact-base inspection.
 Keep start-site visibility controls effective while preserving the counts/list.
@@ -91,9 +104,12 @@ session, open `/site/?uiArtifacts=/absolute/ignored/artifact/directory` and run:
 ```sh
 node --test tests/js/tss-recoding.test.mjs tests/js/tss-recoding-oracle.test.mjs
 playwright-cli -s=YOUR_SESSION run-code --filename=tools/ui/check_tss_recoding.js
+playwright-cli -s=YOUR_SESSION run-code --filename=tools/ui/check_tss_recoding_repairs.js
 ```
 
-The browser harness uses real release records and controlled loading/failure
-states. Inspect its screenshots and semantic snapshots; a CLI `### Error` is a
+Reopen the URL with `uiArtifacts` before each harness. The browser checks use
+real release records and controlled loading/failure states. The repair checks
+cover saved/late metric selection with either payload delayed, explicit scale
+preservation, fixed panel constraints and repeated scheme timings. Inspect its screenshots and semantic snapshots; a CLI `### Error` is a
 failure even if the command exits zero. Keep failure fixtures consistent with
 published integrity requirements and do not bypass the data loader.
