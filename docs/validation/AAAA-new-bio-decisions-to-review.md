@@ -372,9 +372,11 @@ for a recorded human judgement, not an automatic pooling rule. See
   no temperature reported, so temperature cannot be checked against the default
   screen for this pair. The recorded screen passed the other five axes, including
   OD₇₅₀ 0.3 on both sides; temperature was unresolved. See
-  [the recorded pair judgements](../notes/tickets/O_comparability-lab-judgements__20261005.md).
-- Reviewer and date:
-- Decision (comparable, keep separate, or leave undecided):
+  [the recorded pair judgements](#pair-judgements-from-the-review-sheet).
+- Reviewer and date: repository owner, 2026-10-06.
+- Decision: conditional display together despite the unknown temperature, recorded
+  as pair judgement 33. Keep the unknown explicit; any depositor answer updates
+  the source evidence separately.
 
 **J10. "The 32 escalated pairs, one by one: may each share a layer?"**
 

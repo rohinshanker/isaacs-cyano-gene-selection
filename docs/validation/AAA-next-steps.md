@@ -16,7 +16,7 @@ The SRI notification about EcoCyc-derived content was sent, recorded in
 [A_add-ecoli-organism__20261005](../notes/tickets/A_add-ecoli-organism__20261005.md).
 The question to the O'Shea lab about the flask-culture temperature was sent,
 recorded under J2 in
-[O_comparability-lab-judgements__20261005](../notes/tickets/O_comparability-lab-judgements__20261005.md).
+[the pair-decision contract](pair-review-intake.md#applying-an-explicit-owner-decision).
 
 Two items remain, both deferred by you rather than blocked.
 

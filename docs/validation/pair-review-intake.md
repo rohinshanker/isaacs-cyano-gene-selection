@@ -8,6 +8,33 @@ a layer join or a contract edit. Each of those stays a separate reviewed step.
 `tools/pair_review_sheet.py` still writes the Markdown sheet people read; this
 tool only validates what comes back.
 
+## Applying an explicit owner decision
+
+Record the exact pair identities, reviewer, date, answer and basis in
+`data/expression/pair_judgements.json` and the linked lab decision document.
+An explicit answer can supersede a prior extrapolation; attribute the replacement
+to the owner. Preserve unrelated decisions and source uncertainties. The source
+document's `judged` date is its latest decision update, not a new date assigned to
+every historical answer. Do not derive decisions from free text automatically.
+
+Regenerate `meta.pairJudgements` through
+`scripts/build_features.py::load_pair_judgements`, preserving unrelated release
+metadata, then rebuild `site/data/data-manifest.json` with
+`tools/build_data_manifest.py build`. Replay the
+[current condition screen](condition-metadata-recovery.md#replaying-the-current-screen)
+to refresh displayed owner calls and the source hash. A decision-only update
+must not change condition values, default verdicts or missing-field rankings.
+Check source-to-site equality in `tests/test_pair_judgements.py` and replay
+reproducibility in `tests/test_rescore_condition_pairs.py`, then run the project
+gates. No source is admitted or pooled by this transcription step.
+
+Conditional and unresolved decisions remain usable outcomes. J2 is recorded as
+conditional pair 33 while its source temperature remains unknown; depositor
+follow-up is separate. Pairs 26/27 remain undecided while the reported 80–120
+light range cannot establish the owner's narrower 80–90 condition. Pairs 11/30
+retain their explicitly authorized extrapolation labels. Source-specific array
+pooling and raw-read reprocessing have independent implementation scopes.
+
 ## Commands
 
 ```sh
