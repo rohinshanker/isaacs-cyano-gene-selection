@@ -6,6 +6,7 @@
  * would cost it. The export writes a CSV plus a manifest so two exports under two
  * schemes stay distinguishable without relying on filenames.
  */
+import { functionStatusNote } from '../core/annotation-records.js';
 import { exportBlockedReason } from '../core/export-manifest.js';
 import { formatCount, formatValue } from './format.js';
 import { buildExport } from '../core/export-manifest.js';
@@ -151,6 +152,13 @@ export class ShortlistPanel {
       : 'not in this dataset';
     if (view?.product) product.title = view.product;
     text.append(select, product);
+    const functionNote = gene ? functionStatusNote(view) : null;
+    if (functionNote) {
+      const note = document.createElement('p');
+      note.className = 'shortlist-row-product gene-function-status';
+      note.textContent = functionNote;
+      text.append(note);
+    }
     if (index !== undefined && state.filterMask && !state.filterMask[index]) {
       const hidden = document.createElement('p');
       hidden.className = 'provenance-warning';

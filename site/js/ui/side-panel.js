@@ -6,6 +6,7 @@
  * the genome, because a bare number does not tell a bench scientist whether the
  * value is unusual.
  */
+import { functionStatusNote } from '../core/annotation-records.js';
 import { firstUnsettled, pendingState } from '../core/data-files.js';
 import { GO_EVIDENCE_BUCKETS, goTermEvidenceState } from '../core/go-term-evidence.js';
 import { pendingNote } from './loading-note.js';
@@ -840,6 +841,14 @@ export class SidePanel {
 
     header.append(title, statusRow);
     if (identity?.kind === 'Gene symbol') header.append(product);
+    // A hypothetical protein is a CDS of unknown function, never a noncoding gene.
+    const functionNote = functionStatusNote(view);
+    if (functionNote) {
+      const note = document.createElement('p');
+      note.className = 'panel-note gene-function-status';
+      note.textContent = functionNote;
+      header.append(note);
+    }
     header.append(location);
 
     if (gene.translationalException) {

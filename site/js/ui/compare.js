@@ -9,6 +9,7 @@
  * A missing value is drawn as a gap plus an open cross where no value could sit.
  * It is never placed at the median, so the picture and the table agree.
  */
+import { functionStatusNote } from '../core/annotation-records.js';
 import { divergingColor } from './colors.js';
 import { confirmedReset } from './confirm-dialog.js';
 import { formatValue, formatDelta, formatCount, MISSING } from './format.js';
@@ -1197,7 +1198,10 @@ export class ComparePanel {
       tr.append(first);
       const displayGene = entry.displayGene ?? entry.gene;
       tr.append(Object.assign(document.createElement('td'), { textContent: displayGene.name ?? MISSING }));
-      tr.append(Object.assign(document.createElement('td'), { textContent: displayGene.product ?? MISSING }));
+      const functionNote = functionStatusNote(displayGene);
+      tr.append(Object.assign(document.createElement('td'), {
+        textContent: displayGene.product ? `${displayGene.product}${functionNote ? ' (function unknown)' : ''}` : MISSING,
+      }));
       for (const metric of metrics) {
         tr.append(this.valueCell(metric, metric.read(entry.index), entry.gene));
       }

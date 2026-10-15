@@ -1,3 +1,4 @@
+import { functionStatusNote } from '../core/annotation-records.js';
 import { RfamSitesPanel, drawRfamIntervals } from './rfam-sites.js';
 import { rfamMarkers } from '../core/rfam-evidence.js';
 import { markerPlacement as rfamPlacement } from '../core/gene-sequence-model.js';
@@ -789,7 +790,8 @@ export class GeneSequenceView {
     this.identity.textContent = model.name ? `${model.id} ${model.name}` : model.id;
     this.facts.textContent = `${model.strand === '-' ? 'minus' : 'plus'} strand, `
       + `${formatCount(model.lengthNt)} nt, ${formatCount(model.lengthCodons)} codons`;
-    this.product.textContent = model.product ?? '';
+    const functionNote = functionStatusNote(model);
+    this.product.textContent = model.product ? `${model.product}${functionNote ? ` · ${functionNote}` : ''}` : '';
     this.product.hidden = !model.product;
     this.writeUpstreamControl();
     if (!this.camera) this.camera = openingCamera(model.domain, this.width());

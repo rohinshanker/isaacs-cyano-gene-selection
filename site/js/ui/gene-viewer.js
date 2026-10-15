@@ -1,3 +1,4 @@
+import { functionStatusNote } from '../core/annotation-records.js';
 import { RfamSitesPanel, drawRfamIntervals } from './rfam-sites.js';
 import { rfamGeneRows } from '../core/rfam-evidence.js';
 const rfamMounts = new WeakMap();
@@ -1046,6 +1047,13 @@ export function renderGeneViewer(host, gene, {
       product.className = 'gene-view-product';
       product.textContent = model.product;
       heading.append(document.createElement('br'), product);
+      const functionNote = functionStatusNote(model);
+      if (functionNote) {
+        const note = document.createElement('span');
+        note.className = 'gene-view-product gene-function-status';
+        note.textContent = functionNote;
+        heading.append(document.createElement('br'), note);
+      }
     }
     const picture = geneViewSvg(model, tssPending, organism, visible);
     const familyRows = !rfamPending ? rfamGeneRows(rfamEvidence, gene, model.domain) : [];

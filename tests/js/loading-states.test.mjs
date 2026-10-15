@@ -323,8 +323,10 @@ test('a GO search that misses while GO annotations load is not reported as a mis
       /still loading/);
     assert.match(message(datasetWith({ annotations: FAILED })),
       /GO annotations could not be loaded, so GO IDs and GO term names cannot match\.$/);
+    // With GO ready, nothing more about GO follows; this fixture has no annotation
+    // catalogue, which the status names because genes outside the CDS set went unsearched.
     assert.match(message(datasetWith({ annotations: FILE_STATE.READY, goTerms: FILE_STATE.READY })),
-      /name the annotation uses\.$/);
+      /name the annotation uses\. This release has no annotation catalogue, so genes outside the plotted CDS set, such as noncoding genes and pseudogenes, are not searched\.$/);
     // A query that does match something is still not the whole list while GO loads.
     const matched = (dataset) => {
       const host = document.createElement('div');

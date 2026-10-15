@@ -500,6 +500,9 @@ export function validateGeneOverlaps(payload, genes, organism) {
   return Object.freeze({
     state: 'ready',
     neighbours,
+    // Every annotated gene of the release, CDS or not, in the feature schema;
+    // null for an older payload without `contextFeatures`.
+    catalogue: catalogue ? Object.freeze(catalogue) : null,
     definition: Object.freeze({ ...definition }),
     release: Object.freeze({ ...payload.release }),
     replicons: Object.freeze(replicons.map((replicon) => Object.freeze({ ...replicon }))),
