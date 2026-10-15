@@ -9,7 +9,9 @@ import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import { computeLiveMetrics } from '../../site/js/core/live-metrics.js';
 import { buildExport, parseCsv } from '../../site/js/core/export-manifest.js';
 import { metricHelp } from '../../site/js/core/metric-help.js';
-import { constrainableMetrics } from '../../site/js/ui/panel-designer.js';
+import { normaliseConfig, resolveConstraints } from '../../site/js/core/panel-design.js';
+import { metricFileKeys, metricPendingState } from '../../site/js/core/data-files.js';
+import { panelInputKey, constrainableMetrics } from '../../site/js/ui/panel-designer.js';
 import { encodeState, decodeState, defaultState, applyDecoded, viewStateOf } from '../../site/js/core/url-state.js';
 import { genomicPositions } from '../../site/js/core/gene-sequence-model.js';
 import { ShortlistPanel } from '../../site/js/ui/shortlist.js';
@@ -145,7 +147,7 @@ test('registry, custom numeric filters, help, CSV per-scheme values and blank mi
   let model = tssRecodingModel(dataset, compileScheme({}, dataset.table), { evidence });
   const registry = buildMetricRegistry(dataset.meta, dataset.genes, computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields, tssRecodingMetrics(() => model));
   for (const key of [TSS_EDIT_KEY, TSS_EVALUATED_KEY]) {
-    assert.ok(constrainableMetrics(registry).some((m) => m.key === key));
+    assert.equal(constrainableMetrics(registry).some((m) => m.key === key), key === TSS_EVALUATED_KEY);
     const metric = registry.byKey.get(key);
     assert.match(metricHelp(metric, dataset).origin, /Tan 2018 Table S1.*active scheme/);
     assert.equal(metric.integer, true);
@@ -225,4 +227,77 @@ test('all-site line keys name the drawn set while neighbor counts keep their own
     assert.match(GeneSequenceView.prototype.tssLineNote.call(state, false), /TSS edit inspection/);
     assert.equal(dataset.neighborSites.byGene.get('focal').count, 0);
   });
+});
+
+
+test('panel hard constraints reject restored edit counts while fixed metrics keep their input contract', () => {
+  const { dataset, evidence } = setup();
+  let model = tssRecodingModel(dataset, scheme(), { evidence });
+  const metrics = tssRecodingMetrics(() => model);
+  const fixed = { key: 'lengthNt', label: 'CDS length', family: 'Genomic context', source: 'pipeline', read: () => 15 };
+  const registry = { metrics: [...metrics, fixed], byKey: new Map([...metrics, fixed].map((m) => [m.key, m])) };
+  assert.ok(!constrainableMetrics(registry).some((m) => m.key === TSS_EDIT_KEY));
+  assert.ok(constrainableMetrics(registry).some((m) => m.key === TSS_EVALUATED_KEY));
+  for (const range of [{ min: 0, max: 0 }, { includeMissing: false }]) {
+    const config = normaliseConfig({ ranges: { [TSS_EDIT_KEY]: range } });
+    const resolved = resolveConstraints({ registry, config });
+    assert.ok(!resolved.active.some((c) => c.key === TSS_EDIT_KEY));
+    assert.match(resolved.blocked.find((c) => c.id === `range:${TSS_EDIT_KEY}`).reason, /changes with the recoding scheme/);
+  }
+  const config = normaliseConfig({ ranges: { [TSS_EVALUATED_KEY]: { min: 1 }, lengthNt: { min: 10 } } });
+  const schemes = [{ map: { TAG: 'TAA' } }];
+  const before = panelInputKey(config, schemes);
+  const allowed = resolveConstraints({ registry, config });
+  assert.deepEqual(allowed.active.filter((c) => c.kind === 'range').map((c) => c.key), [TSS_EVALUATED_KEY, 'lengthNt']);
+  const denominator = registry.byKey.get(TSS_EVALUATED_KEY).read(0);
+  assert.equal(registry.byKey.get(TSS_EDIT_KEY).read(0), 4, 'interactive metric still reads active scheme');
+  model = tssRecodingModel(dataset, scheme({}), { evidence });
+  assert.equal(registry.byKey.get(TSS_EDIT_KEY).read(0), 0, 'interactive filtering remains available');
+  assert.equal(registry.byKey.get(TSS_EVALUATED_KEY).read(0), denominator);
+  assert.equal(panelInputKey(config, schemes), before, 'fixed constraints do not need display scheme in input');
+});
+
+test('scheme comparisons and per-scheme exports reuse native validation without evicting active results', async () => {
+  const dataset = await expressionFixtureDataset();
+  const evidence = { available: true, index: indexNativeSites(dataset.genes, [], DEFAULT_ORGANISM) };
+  let decoded = 0;
+  const decode = dataset.table.decode.bind(dataset.table);
+  dataset.table.decode = (...args) => { decoded++; return decode(...args); };
+  const active = compileScheme({ TCG: 'AGC' }, dataset.table);
+  const initial = tssRecodingModel(dataset, active, { evidence });
+  assert.equal(decoded, dataset.genes.length, 'every gene validated even with zero recorded sites');
+  const nativeDecodes = decoded;
+  for (const map of [{}, { TAG: 'TAA' }, { TCG: [['TCC', 50], ['TCT', 50]] }]) {
+    const result = tssRecodingModel(dataset, compileScheme(map, dataset.table), { evidence });
+    assert.equal(result.evaluatedCounts[0], 0);
+  }
+  assert.equal(decoded, nativeDecodes, 'changing scheme never decodes full CDSs again');
+  const registry = buildMetricRegistry(dataset.meta, dataset.genes,
+    computeLiveMetrics(dataset, active).fields, tssRecodingMetrics(() => initial));
+  buildExport({ dataset, registry, ids: [dataset.genes[0].id], schemes: [{ map: {} }, { map: { TAG: 'TAA' } }], tssRecodingEvidence: evidence });
+  assert.equal(tssRecodingModel(dataset, active, { evidence }), initial, 'export cannot evict the active model');
+  const beforeReturn = decoded;
+  tssRecodingModel(dataset, compileScheme({}, dataset.table), { evidence });
+  assert.equal(decoded, beforeReturn, 'export preserves native preparation too');
+  dataset.genes = dataset.genes.map((gene, i) => i ? gene : { ...gene, end: gene.end + 1 });
+  const invalid = tssRecodingModel(dataset, active, { evidence });
+  assert.ok(Number.isNaN(invalid.editedCounts[0]), 'changed gene identity is revalidated even with no sites');
+  dataset.genes[0] = { ...dataset.genes[0], end: dataset.genes[0].end - 1 };
+  assert.equal(tssRecodingModel(dataset, active, { evidence }).editedCounts[0], 0,
+    'individual gene replacement is revalidated even inside the same genes array');
+});
+
+test('both metric keys declare both files and remain pending whichever payload is delayed', () => {
+  for (const metric of tssRecodingMetrics(() => null)) {
+    assert.deepEqual(metricFileKeys(metric), ['tssEvidence', 'regulatoryTss']);
+    for (const key of metricFileKeys(metric)) {
+      const dataset = { files: { tssEvidence: { state: 'ready' }, regulatoryTss: { state: 'ready' } } };
+      dataset.files[key].state = 'loading';
+      assert.equal(metricPendingState(dataset, metric), 'loading');
+      dataset.files[key].state = 'failed';
+      assert.equal(metricPendingState(dataset, metric), 'failed');
+      dataset.files[key].state = 'ready';
+      assert.equal(metricPendingState(dataset, metric), null);
+    }
+  }
 });

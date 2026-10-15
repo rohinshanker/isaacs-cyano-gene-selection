@@ -148,13 +148,13 @@ export function resolveConstraints({ registry, config }) {
     if (normalised.min === null && normalised.max === null && normalised.includeMissing) continue;
     // A live metric is whatever the currently active scheme makes it, so a hard
     // constraint on one would mean something different the moment the scheme
-    // changed. Constraints stay on the scheme-independent published metrics.
-    if (metric.source === 'live') {
+    // changed. Constraints stay on the scheme-independent metrics.
+    if (metric.source === 'live' || metric.schemeDependent === true) {
       blocked.push({
         id: `range:${key}`,
         label: metric.label,
         reason: `${metric.label} changes with the recoding scheme, so it cannot be a hard `
-          + 'constraint. Constrain a published metric instead.',
+          + 'constraint. Constrain a scheme-independent metric instead.',
       });
       continue;
     }

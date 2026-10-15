@@ -44,7 +44,7 @@ const PREFERRED_CONSTRAINT_KEYS = ['lengthCodons', 'gc3', 'rareFraction', 'mfeSt
 /**
  * Every metric that can be a hard constraint, best evidence first.
  *
- * Only published metrics qualify. A live metric is whatever the active scheme
+ * Published and explicitly permitted derived metrics qualify only if scheme-independent. A live metric is whatever the active scheme
  * makes it, so constraining on one would mean something different as soon as the
  * scheme changed.
  *
@@ -58,7 +58,7 @@ const PREFERRED_CONSTRAINT_KEYS = ['lengthCodons', 'gc3', 'rareFraction', 'mfeSt
  * in; this only sets its rank once it is offered.
  */
 export function constrainableMetrics(registry) {
-  const published = registry.metrics.filter((metric) => metric.source === 'pipeline' || metric.constrainable === true);
+  const published = registry.metrics.filter((metric) => (metric.source === 'pipeline' || metric.constrainable === true) && !metric.schemeDependent);
   const native = published.filter(
     (metric) => isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
       && metric.provenance?.isTargetOrganism === true,
@@ -520,10 +520,10 @@ export class PanelDesigner {
     const note = element('p', 'panel-note');
     note.id = 'panel-range-note';
     note.textContent = Object.keys(this.config.ranges).length === 0
-      ? 'No value range is set, so only the flags above narrow the pool. Only published metrics '
+      ? 'No value range is set, so only the flags above narrow the pool. Only scheme-independent published or permitted derived metrics '
         + 'can be constrained: anything that changes with the recoding scheme would mean a '
         + 'different thing under a different scheme.'
-      : 'Only published metrics can be constrained, because a value that changes with the '
+      : 'Only scheme-independent published or permitted derived metrics can be constrained, because a value that changes with the '
         + 'recoding scheme would mean a different thing under a different scheme.';
     wrap.append(note);
     return wrap;

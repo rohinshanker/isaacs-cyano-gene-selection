@@ -236,3 +236,15 @@ export function firstUnsettled(dataset, keys) {
   }
   return null;
 }
+
+/** All payloads needed to read one metric; older single-file metrics keep their contract. */
+export function metricFileKeys(metric) {
+  return metric?.fileKeys ?? (metric?.fileKey ? [metric.fileKey] : []);
+}
+
+/** A metric is unreadable until every required payload has settled successfully. */
+export function metricPendingState(dataset, metric) {
+  const states = metricFileKeys(metric).map((key) => pendingState(dataset, key));
+  return states.includes(FILE_STATE.FAILED) ? FILE_STATE.FAILED
+    : states.includes(FILE_STATE.LOADING) ? FILE_STATE.LOADING : null;
+}

@@ -17,7 +17,7 @@ import { OVERLAP_LENGTH_METRICS, overlapLengthFilterActive, passesOverlapLengthF
 import { loadDatasetStaged } from './core/dataset.js';
 import {
   CORE_FILE_KEYS, DATA_FILES, DATA_FILE_BY_KEY, FILE_STATE, dataFileLabel, dataRequest,
-  hasFailed, isLoading, pendingState, tierLabelsFor,
+  hasFailed, isLoading, pendingState, tierLabelsFor, metricFileKeys, metricPendingState,
 } from './core/data-files.js';
 import {
   canonicalSearch, layerOf, resolveDataDirectory, resolveOrganism, storageKeys,
@@ -1124,15 +1124,19 @@ function resolveColorScale() {
   };
   const availability = valueScaleAvailability(values, options);
   const requested = state.colorScale;
-  const pinned = VALUE_SCALES.includes(requested) && availability.get(requested).available;
+  const pendingFiles = metricFileKeys(metric).filter((key) => isLoading(context.dataset, key));
+  const hasValues = values.some(Number.isFinite);
+  const pinned = VALUE_SCALES.includes(requested)
+    && (pendingFiles.length > 0 || !hasValues || availability.get(requested).available);
   // A default chosen while the metric's own file is still loading was chosen
   // over no values at all; it is chosen again, from the real values, once the
   // file lands. A scale the reader or the link asked for stays.
-  if (!pinned && metric.fileKey && isLoading(context.dataset, metric.fileKey)) {
-    context.scaleAwaitsFile = { key: metric.key, fileKey: metric.fileKey };
-  }
+  context.scaleAwaitsFile = !pinned && pendingFiles.length
+    ? { key: metric.key, fileKeys: metricFileKeys(metric) } : null;
   const scale = pinned ? requested : defaultValueScale(values, options);
-  state.colorScale = scale;
+  // Render an empty ramp while pending, without persisting it as a reader preference.
+  if (!pinned && (pendingFiles.length || !hasValues)) state.colorScale = null;
+  else state.colorScale = scale;
   return { categorical: false, metric, values, scale, availability };
 }
 
@@ -2669,7 +2673,7 @@ async function openTrafficDatasetSelection(key, opener) {
 function axisMetricResourceState(axis, key = state[axisMetricField(axis)]) {
   const contributors = axisContributorState(axis, key);
   return {
-    state: contributors.state,
+    state: contributors.state ?? metricPendingState(context.dataset, metricForAxis(axis, key)),
     requestedCount: contributors.requested.length,
     availableCount: contributors.available.length,
     affectedIds: contributors.affected.map(({ dataset }) => dataset.id),
@@ -3522,8 +3526,7 @@ function promotedMetricFileKeys(view, registry) {
   const named = [view.colorBy, view.trafficKey, ...Object.keys(view.filters ?? {})];
   const keys = new Set();
   for (const key of named) {
-    const fileKey = registry.byKey.get(key)?.fileKey;
-    if (fileKey) keys.add(fileKey);
+    for (const fileKey of metricFileKeys(registry.byKey.get(key))) keys.add(fileKey);
   }
   if (isTypeKey(view.trafficKey) && Array.isArray(view.trafficSources) && context.datasets?.length) {
     for (const fileKey of requestedAxisFileKeys(
@@ -3535,7 +3538,7 @@ function promotedMetricFileKeys(view, registry) {
   }
   for (const [axis, key] of [['x', view.axisX], ['y', view.axisY]]) {
     const metric = registry.metricForAxis?.(axis, key) ?? registry.byKey.get(key);
-    if (metric?.fileKey) keys.add(metric.fileKey);
+    for (const fileKey of metricFileKeys(metric)) keys.add(fileKey);
     for (const fileKey of requestedAxisFileKeys(
       axisContributorState(axis, key),
       (dataset) => registry.byKey.get(dataset.metricKey),
@@ -3588,8 +3591,7 @@ function colorMetricFileKeys(key) {
   if (key === GO_TERM_COLOR_KEY) { addWithDependencies('annotations'); addWithDependencies('goTerms'); }
   if (key === OVERLAP_COLOR_KEY) addWithDependencies('geneOverlaps');
   if (key === PCC_ESSENTIALITY_COLOR_KEY) addWithDependencies('candidateEvidence');
-  const direct = context.registry.byKey.get(key)?.fileKey ?? null;
-  if (direct) addWithDependencies(direct);
+  for (const fileKey of metricFileKeys(context.registry.byKey.get(key))) addWithDependencies(fileKey);
   if (isTypeKey(key)) {
     const contributors = contributingDatasets(
       key, state.typeSources, context.datasets, sourceSelection(),
@@ -3684,7 +3686,7 @@ function flushLandings() {
     }
   }
   const awaiting = context.scaleAwaitsFile;
-  if (awaiting && keys.has(awaiting.fileKey)) {
+  if (awaiting && awaiting.fileKeys.every((key) => !isLoading(dataset, key))) {
     context.scaleAwaitsFile = null;
     if (state.colorBy === awaiting.key) state.colorScale = null;
   }
