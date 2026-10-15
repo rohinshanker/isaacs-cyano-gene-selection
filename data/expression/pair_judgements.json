@@ -3,7 +3,7 @@
   "source": "docs/validation/AAAA-new-bio-decisions-to-review.md#pair-judgements-from-the-review-sheet",
   "reviewSheet": "docs/notes/handoff/cyano_escalated_pairs_review_20261005.md",
   "scoredBy": "docs/notes/handoff/cyano_package_D_pairs_20261004.tsv",
-  "judged": "2026-10-06",
+  "judged": "2026-10-14",
   "calls": {
     "share": "the pair may share a comparable set",
     "separate": "the pair stays apart",
@@ -112,9 +112,12 @@
         "row": 77
       },
       "narrowAxis": "lightIntensity",
-      "call": "undecided",
+      "call": "separate",
       "by": "owner",
-      "entry": "maybe - the 75-100 lighting is a bit too distant from 50 lighting as it has changing conditions. note this for future pairs as well, and maybe it can be filed into its own subcategories"
+      "entry": "remain separate",
+      "reviewer": "Rohin",
+      "date": "2026-10-14",
+      "basis": "Owner D8 explicitly keeps pairs 7 and 8 separate: PXD030282 condition rows 72/74 versus PXD062851 row 77, with 75-to-100 versus 50 µmol photons m⁻² s⁻¹ and the changing-light concern."
     },
     {
       "pair": 8,
@@ -127,9 +130,12 @@
         "row": 77
       },
       "narrowAxis": "lightIntensity",
-      "call": "undecided",
-      "by": "extrapolated",
-      "entry": "same two studies and light values as pair 7, so it takes pair 7's entry"
+      "call": "separate",
+      "by": "owner",
+      "entry": "remain separate",
+      "reviewer": "Rohin",
+      "date": "2026-10-14",
+      "basis": "Owner D8 explicitly keeps pairs 7 and 8 separate: PXD030282 condition rows 72/74 versus PXD062851 row 77, with 75-to-100 versus 50 µmol photons m⁻² s⁻¹ and the changing-light concern."
     },
     {
       "pair": 9,

@@ -3,7 +3,7 @@
 - **Scope:** Owner/labmate follow-up with depositors for remaining condition and sample-identity questions; evidence intake after replies.
 - **Status:** open
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-14
 
 ## Current State
 
@@ -13,14 +13,14 @@ the condition-metadata recovery or Tan visibility tickets. A reply may improve a
 condition value or resolve a column/sample identity; it never automatically
 admits a source or authorizes a biological-replicate comparison.
 
-The owner or a labmate sends the drafts below. No messages have been sent by
-agents. Apply each answer only to its explicit sample scope, retain the dated
+The owner or a labmate handles correspondence; check each query's status before
+sending. No messages have been sent by agents. Apply each answer only to its explicit sample scope, retain the dated
 reply outside the public release as appropriate, quote and mechanically match
 its factual evidence, and rerun the deterministic current pair screen. Public
 contact details and the send workflow are in
 [AAA-next-steps.md](../../validation/AAA-next-steps.md).
 
-## Depositor queries — prepared, not sent
+## Depositor queries and correspondence status
 
 Use the subjects and bodies below with the corresponding submitter or authors.
 Every answer needs a dated reply, explicit sample scope and source intake.
@@ -29,6 +29,15 @@ under the ticket's established workflow. Reuse permission is not re-requested;
 the owner's citation-only distribution decision of 2026-10-06 applies.
 
 ### GSE50920 / GSE50922 — temperature of clock-rescue flask cultures
+
+The owner sent the O'Shea-lab version on 2026-10-07, according to repository
+record `3bd7dd0`. That version is retained in
+`3bd7dd0^:docs/validation/AAA-next-steps.md`, section 4: it asks about flask
+temperature and the turbidostat lamp. No reply is recorded. The fuller draft
+below, including GSE50922/GSM scope and protocol questions, was not sent; do not
+send it without a new owner instruction. J2 remains conditional pair 33, and
+temperature and lamp identity remain unknown. Intake any reply only within the
+scope it actually establishes.
 
 Hello,
 
@@ -153,8 +162,9 @@ association rather than an explicit accession link. Please also clarify the
 independent biological-replicate count and any pooling, and the CO2 and
 lamp/spectrum at RNA harvest where these were not reported. Thank you.
 
-Each draft is addressed to its corresponding study's submitter. No messages
-have been sent.
+Each draft is addressed to its corresponding study's submitter. Apart from the
+owner's recorded GSE50920 query above, these remain prepared drafts; no messages
+have been sent by agents.
 
 ### Additional depositor drafts from intake
 

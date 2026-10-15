@@ -31,6 +31,22 @@ source pins, scoped evidence and remaining limitations.
 | AUD-03 | resolved | cyano_literature_source_checks_20261014.json: bounded Rubin/Adomako primary read and workbook identity; no original-S3 parity or UTEX equivalence claimed |
 | MET-05 | source silent; owner judgement separate | Supplied Markson/Vijayan methods do not name the lamp; J1 is an owner judgement, not a recovered value |
 
+## Comparability decision dispositions
+
+Reconciled 2026-10-14 against the existing contracts and explicit owner answers.
+These dispositions supersede the historical “owner decision pending” cells;
+source uncertainty and separately tracked implementation remain explicit.
+
+| Item | Current disposition | Contract or remaining scope |
+| --- | --- | --- |
+| MET-04 | J3 answered: OD730/A730 accepted alongside OD750 | [Condition comparability](../../validation/data-contract.md#condition-comparability) |
+| MET-05 | J1 answered: shared spectrum class by owner judgement; lamp identity still unknown | Source absence is preserved in the literature dispositions above |
+| MET-06 | J4 answered: no fixed narrow-miss boundary | Human pair review and the deterministic default screen remain distinct |
+| MET-07 | J5 answered: arrays separate by default, optional inclusion | [Source-specific array pooling/reader](../tickets/O_array-expression-reader__20261007.md) remains open |
+| MET-11 | J9 answered and fitness type implemented | [Fitness-screen contract](../../validation/fitness-screen-data.md); proposed P4 sweep remains separate under OWN-13 below |
+| OWN-11 | Default selection/conflict display settled; D10 retains PCA and authorizes annotation search/open | [Cross-strain implementation](../tickets/O_cross-strain-data-scan__20260927.md) remains open |
+| OWN-12 | Default-screen versus lab-decision contract reconciled | [Pair-decision intake](../../validation/pair-review-intake.md#applying-an-explicit-owner-decision); pairs 7/8 separate, 26/27 undecided, J2 conditional |
+
 ## Sources read
 
 Every file in `docs/notes/handoff/` (four RET files, the SEND file, package A/B/C/D tables, the audit .md/.tsv, the crosswalk second-check .md/.tsv; the 2,716-line ortholog table only for its header and intake notes); `docs/notes/tickets/INDEX.md`; the offload, scan and audit tickets; `O_data-use-audit-fixes__20261004.md`; the six `O_biocyc-*` tickets; the tRNA, RBS, folding, recoding and topology tickets where a queue row points to them; `docs/validation/claude-science-handoff.md`; `docs/validation/source-ledger.md`. Package B `not retrieved` cells and package D undecidable-axis counts were computed from the TSVs on 2026-10-05. The three DOIs with no deposit (LIT-01, LIT-06, LIT-07) were re-probed on 2026-10-05; all three remain unreadable for the same reasons.

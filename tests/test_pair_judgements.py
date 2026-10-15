@@ -97,9 +97,27 @@ def test_the_shipped_meta_carries_the_33_judged_pairs():
     assert [j["pair"] for j in judgements] == list(range(1, 34))
     assert {j["call"] for j in judgements} == {"share", "separate", "conditional", "undecided"}
     calls = {c: sum(j["call"] == c for j in judgements) for c in ("share", "separate", "conditional", "undecided")}
-    assert calls == {"share": 24, "separate": 3, "conditional": 2, "undecided": 4}  # pair 33 is J2, 2026-10-06
-    assert [j["call"] for j in source["judgements"]] == [j["call"] for j in judgements]
-    assert sum(j["by"] == "extrapolated" for j in source["judgements"]) == 3
+    assert calls == {"share": 24, "separate": 5, "conditional": 2, "undecided": 2}
+    assert judgements == load_pair_judgements(ROOT / "data/expression/pair_judgements.json")
+    assert {j["pair"] for j in source["judgements"] if j["by"] == "extrapolated"} == {11, 30}
     report = Report()
     validate_pair_judgements(meta, report)
     assert report.failures == []
+
+
+def test_explicit_owner_decisions_keep_exact_pairs_separate_without_resolving_unknowns():
+    source = json.loads((ROOT / "data/expression/pair_judgements.json").read_text(encoding="utf-8"))
+    pairs = {item["pair"]: item for item in source["judgements"]}
+    for pair, condition_row in ((7, 72), (8, 74)):
+        judgement = pairs[pair]
+        assert judgement["a"] == {"studyId": "PXD030282", "row": condition_row}
+        assert judgement["b"] == {"studyId": "PXD062851", "row": 77}
+        assert judgement["call"] == "separate"
+        assert judgement["by"] == "owner"
+        assert judgement["entry"] == "remain separate"
+        assert judgement["reviewer"] == "Rohin"
+        assert judgement["date"] == "2026-10-14"
+        assert judgement["basis"]
+    # These require narrower source light evidence; D8 did not settle them.
+    assert {p for p, j in pairs.items() if j["call"] == "undecided"} == {26, 27}
+    assert pairs[33]["call"] == "conditional"

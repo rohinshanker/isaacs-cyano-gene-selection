@@ -177,6 +177,14 @@ the one format actually copied or downloaded, SHA-256 of the exact RNA sequence,
 and the ViennaRNA version only when that action took a dot-bracket or CT file from
 an exact completed fold. Preparing other formats does not claim that they were used.
 
+## 6. A filter that was off must say so in the table
+
+A row's `passesCurrentFilters` follows the effective mask. When the reader had
+turned filters off, every row reads `true (filters turned off at export)` rather
+than a plain `true`, and the manifest's `filterState.note` says the recorded
+criteria were not applied (owner decision, 2026-10-14). A reader holding only
+the CSV cannot mistake the whole table for genes that passed the filters.
+
 ## Checks
 
 Unit tests, which must stay green:

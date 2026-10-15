@@ -56,7 +56,7 @@ test('a metric range row carries a two-thumb slider in step with its fields', as
     assert.equal(min.dataset.filterKey, 'gc3');
     assert.equal(min.value, '0.3');
     assert.equal(max.value, '0.8', 'no upper bound puts the thumb at the top of the data');
-    const fields = host.querySelectorAll('input').filter((input) => input.type === 'number');
+    const fields = host.querySelectorAll('input').filter((input) => input.type === 'number' && input.id.startsWith('filter-'));
     assert.deepEqual(fields.map((f) => f.value), ['0.3', '']);
 
     // Dragging the upper thumb: the fields and the histogram follow, the page is
@@ -108,7 +108,7 @@ test('a metric with no spread gets fields but no slider', async () => {
     reg.metrics.push(flat); reg.byKey.set('flat', flat);
     panel.update({ ...state({ flat: { min: null, max: null, includeMissing: true } }), registry: reg });
     assert.equal(thumbs(host).length, 0);
-    assert.equal(host.querySelectorAll('input').filter((input) => input.type === 'number').length, 2);
+    assert.equal(host.querySelectorAll('input').filter((input) => input.type === 'number' && input.id.startsWith('filter-')).length, 2);
   });
 });
 
@@ -136,5 +136,48 @@ test('the activity threshold reports live on input and commits on change', async
     slider.dispatch('change');
     assert.deepEqual(Object.keys(calls.change.at(-1)), ['cai']);
     assert.deepEqual(calls.change.at(-1).cai, { min: 0.7, max: 0.9, includeMissing: true });
+  });
+});
+
+test('Add filter and its range rows render into the Custom filters host', async () => {
+  await withFakeDocument(async (document) => {
+    const host = document.createElement('div');
+    const customHost = document.createElement('div');
+    document.body.append(customHost, host);
+    const calls = { live: [], change: [] };
+    const panel = new FilterPanel(host, {
+      onChange: (filters) => calls.change.push(filters),
+      onLiveChange: (filters) => calls.live.push(filters),
+      onClear: () => {}, onExceptionFilterChange: () => {}, onExpressionFilterChange: () => {},
+      onTrafficKeyChange: () => {}, onTrafficFollowChange: () => {}, onSelectSource: () => {},
+      onProteinFilterChange: () => {},
+    }, { customHost });
+    panel.update({ ...state({ gc3: { min: 0.3, max: null, includeMissing: true } }), passing: 3 });
+
+    const byId = (root, id) => root.querySelectorAll('select').find((select) => select.id === id);
+    assert.ok(byId(customHost, 'filter-add'), 'the metric selector moved to Custom filters');
+    assert.equal(byId(host, 'filter-add'), undefined, 'and is gone from Filters');
+    assert.ok(customHost.querySelector('div.filter-row'), 'the custom range row lives beside it');
+    assert.equal(host.querySelector('div.filter-row'), null);
+    assert.ok(host.querySelectorAll('input').some((input) => input.id === 'traffic-threshold'),
+      'the built-in low-traffic threshold stays in Filters');
+    assert.match(host.querySelector('p.filter-summary').textContent, /3 of 5 genes pass/);
+    assert.ok(host.querySelectorAll('button').some((b) => b.textContent === 'Clear all filters'));
+
+    // Adding from the new host writes the same shared filter state.
+    const add = byId(customHost, 'filter-add');
+    add.value = 'cai';
+    customHost.querySelectorAll('button').find((b) => b.textContent === 'Add').dispatch('click');
+    assert.deepEqual(Object.keys(calls.change.at(-1)).sort(), ['cai', 'gc3']);
+
+    // A thumb held in the moved row is still recognised as the live control.
+    const [min] = customHost.querySelectorAll('input.range-slider-thumb');
+    const row = customHost.querySelector('div.filter-row');
+    min.focus();
+    min.value = '0.4';
+    min.dispatch('input');
+    panel.update({ ...state({ gc3: { min: 0.4, max: null, includeMissing: true } }), passing: 2 });
+    assert.equal(customHost.querySelector('div.filter-row'), row, 'the held row survives an update');
+    assert.equal(customHost.querySelectorAll('input.range-slider-thumb')[0], min);
   });
 });

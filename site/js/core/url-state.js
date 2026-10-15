@@ -1,4 +1,7 @@
-import { NEIGHBOR_SITE_FILTERS } from './neighbor-sites.js';
+import {
+  NEIGHBOR_SITE_FILTERS, decodeNeighborSiteCountFilter, encodeNeighborSiteCountFilter,
+  normalizeNeighborSiteCountFilter,
+} from './neighbor-sites.js';
 import { overlapLengthFilterActive, parseOverlapLengthFilter } from './overlap-length.js';
 /**
  * URL hash serialization.
@@ -41,10 +44,10 @@ const KEYS = {
   typeSources: 'src',
   fitnessDatasetId: 'fd',
   strainFitnessSources: 'fds',
-  axisXSources: 'xds', axisYSources: 'yds',
+  axisXSources: 'xds', axisYSources: 'yds', trafficSources: 'tds', trafficFollowsColor: 'tf',
   hiddenMarkers: 'mk',
-  neighborSiteFilter: 'ns', overlapClassFilter: 'og', overlapLengthFilter: 'ol',
-  pccEssentialityFilter: 'pe',
+  neighborSiteFilter: 'ns', neighborSiteCountFilter: 'nc', overlapClassFilter: 'og', overlapLengthFilter: 'ol',
+  pccEssentialityFilter: 'pe', filtersBypassed: 'fo',
 };
 
 /**
@@ -59,7 +62,10 @@ const KEYS = {
  * comparison metrics (`cm`) is why version 4 became 5, moving those chosen
  * metrics out of the link into browser storage is why version 5 became 6, and
  * independent X/Y dataset contributor lists are why version 6 became 7.
- * The condition-specific Tan default is why version 7 became 8.
+ * The condition-specific Tan default is why version 7 became 8. The Custom
+ * filters panel is why version 8 became 9: an explicit `pc` from an older
+ * encoder never names it, which must read as collapsed, while a version 9 `pc`
+ * that omits it means the reader opened it.
  *
  * The colour scale `csc` deliberately did not bump it. A version number is only
  * useful where the absence of a field has to mean two different things to two
@@ -96,8 +102,10 @@ const KEYS = {
  * were visible by default then and had no persisted state at all. So an
  * omitted `mk` has exactly one meaning and no older one to preserve.
  */
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 export const TAN_CONDITION_SELECTION_VERSION = 8;
+/** The first encoder version whose explicit `pc` can leave Custom filters open. */
+export const CUSTOM_FILTERS_PANEL_VERSION = 9;
 
 /**
  * The first encoder version whose omitted `ax`/`ay` mean measured fresh-view
@@ -150,6 +158,11 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // before the field existed drew, so its absence has exactly one meaning
     // and the encoder version did not move for it.
     neighborSiteFilter: 'any',
+    // An inclusive range on the count of neighbouring-gene TSS sites in a CDS.
+    // An omitted `nc` means no range, which is also what every earlier link
+    // drew, so the encoder version did not move for it. The categorical `ns`
+    // choices keep their meaning beside it and are never rewritten as counts.
+    neighborSiteCountFilter: null,
     overlapClassFilter: [],
     overlapLengthFilter: null,
     // The PCC 7942 essentiality buckets the reader is keeping, written by the
@@ -158,7 +171,20 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // encoder version did not move for it. Only an organism that publishes the
     // calls reads or writes it.
     pccEssentialityFilter: [],
+    // Turn filters off: every configured filter kept but bypassed. An omitted
+    // `fo` means filters apply, which is also what every earlier link drew, so
+    // its absence has one meaning and the encoder version did not move for it.
+    filtersBypassed: false,
     trafficKey: null,
+    // The low-traffic threshold's own datasets, chosen with Use same source as
+    // colouring off. An omitted `tds` means the threshold reads the datasets
+    // the Data Sources selection gives its type, which is what every earlier
+    // link drew, so the encoder version did not move for it.
+    trafficSources: null,
+    // Use same source as colouring. An omitted `tf` means on, the fresh view and
+    // what every earlier link drew; `tf=0` keeps an own threshold source, which
+    // a reload must not quietly replace with the colouring's datasets.
+    trafficFollowsColor: true,
     lengthCohort: 'annotated',
     proteinFilter: 'any',
     axisX: organism.freshAxes.x,
@@ -249,7 +275,11 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     categoryFilter: state.categoryFilter,
     ...(organism.functionalAnnotations ? { goTerm: state.goTerm ?? '', goEvidenceFilter: state.goEvidenceFilter ?? 'any' } : {}),
     neighborSiteFilter: state.neighborSiteFilter ?? 'any',
+    neighborSiteCountFilter: normalizeNeighborSiteCountFilter(state.neighborSiteCountFilter),
     overlapLengthFilter: state.overlapLengthFilter ?? null,
+    // The configured filters are recorded either way; this says whether they
+    // were in force or temporarily off when the view was saved.
+    filtersBypassed: state.filtersBypassed === true,
     ...(publishesPccCalls(organism)
       ? { pccEssentialityFilter: normalizePccEssentialitySelection(state.pccEssentialityFilter) }
       : {}),
@@ -354,6 +384,8 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
     push(KEYS.overlapLengthFilter, `${end},${min ?? ''},${max ?? ''}`);
   }
   if (state.neighborSiteFilter && state.neighborSiteFilter !== 'any') push(KEYS.neighborSiteFilter, state.neighborSiteFilter);
+  const countRange = encodeNeighborSiteCountFilter(state.neighborSiteCountFilter);
+  if (countRange) push(KEYS.neighborSiteCountFilter, countRange);
   push(KEYS.overlapClassFilter, [...(state.overlapClassFilter ?? [])].sort().join(','));
   if (publishesPccCalls(organism)) {
     push(KEYS.pccEssentialityFilter,
@@ -366,6 +398,7 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
     push(KEYS.expressionFilter, state.expressionFilter);
   }
   if (!state.showHidden) push(KEYS.showHidden, '0');
+  if (state.filtersBypassed === true) push(KEYS.filtersBypassed, '1');
   // Written only when reversed. Omitted means highest on top, which is the
   // fresh view and what every earlier encoder's link showed; see STATE_VERSION.
   if (state.drawOnTop && state.drawOnTop !== DEFAULT_DRAW_DIRECTION) {
@@ -410,6 +443,10 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   // carry the independent copies so colour/PCA state can change separately.
   if (Array.isArray(state.axisXSources) && state.axisXSources.length > 0) {
     push(KEYS.axisXSources, state.axisXSources.join(','));
+  }
+  if (state.trafficFollowsColor === false) push(KEYS.trafficFollowsColor, '0');
+  if (Array.isArray(state.trafficSources) && state.trafficSources.length > 0) {
+    push(KEYS.trafficSources, state.trafficSources.join(','));
   }
   if (Array.isArray(state.axisYSources) && state.axisYSources.length > 0) {
     push(KEYS.axisYSources, state.axisYSources.join(','));
@@ -468,6 +505,9 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
     }
   }
   if (NEIGHBOR_SITE_FILTERS.includes(values.get(KEYS.neighborSiteFilter))) state.neighborSiteFilter = values.get(KEYS.neighborSiteFilter);
+  if (values.has(KEYS.neighborSiteCountFilter)) {
+    state.neighborSiteCountFilter = decodeNeighborSiteCountFilter(values.get(KEYS.neighborSiteCountFilter));
+  }
   if (values.has(KEYS.overlapClassFilter)) {
     const ids = values.get(KEYS.overlapClassFilter).split(',')
       .filter((id) => OVERLAP_CLASS_IDS.includes(id));
@@ -487,6 +527,7 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
     if (EXPRESSION_FILTERS.includes(mode)) state.expressionFilter = mode;
   }
   if (values.has(KEYS.showHidden)) state.showHidden = values.get(KEYS.showHidden) !== '0';
+  if (values.has(KEYS.filtersBypassed)) state.filtersBypassed = values.get(KEYS.filtersBypassed) === '1';
   if (values.has(KEYS.trafficKey)) state.trafficKey = values.get(KEYS.trafficKey);
   if (values.has(KEYS.lengthCohort)) {
     const cohort = values.get(KEYS.lengthCohort);
@@ -541,6 +582,12 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   if (values.has(KEYS.panelCollapsed)) {
     const raw = values.get(KEYS.panelCollapsed);
     state.panelCollapsed = raw === NO_PANELS_COLLAPSED ? [] : normalizeCollapsed(raw.split(','));
+    // Only this encoder from version 9 knew the panel, so any other collapsed set
+    // predates it and gets the panel's fresh collapsed state. Every panel the
+    // link did name keeps its explicit state.
+    if (!(state.version >= CUSTOM_FILTERS_PANEL_VERSION)) {
+      state.panelCollapsed = normalizeCollapsed([...state.panelCollapsed, 'custom-filters']);
+    }
   }
   // Dataset ids are validated against the loaded sources by the app; here only
   // the shape is read, and an empty or malformed field means the default.
@@ -570,6 +617,11 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   if (values.has(KEYS.axisXSources)) {
     state.axisXSources = values.get(KEYS.axisXSources).split(',')
       .filter((id) => /^[\w.-]+$/.test(id));
+  }
+  if (values.has(KEYS.trafficFollowsColor)) state.trafficFollowsColor = values.get(KEYS.trafficFollowsColor) !== '0';
+  if (values.has(KEYS.trafficSources)) {
+    const ids = values.get(KEYS.trafficSources).split(',').filter((id) => /^[\w.-]+$/.test(id));
+    state.trafficSources = ids.length ? ids : null;
   }
   if (values.has(KEYS.axisYSources)) {
     state.axisYSources = values.get(KEYS.axisYSources).split(',')

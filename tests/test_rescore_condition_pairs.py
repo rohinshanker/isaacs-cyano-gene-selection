@@ -201,6 +201,15 @@ def test_real_941_pair_replay_and_targeted_corrections():
     assert [int(row["package_d_row"]) for row in screens] == list(range(1, 942))
     assert not any(row["default_verdict"] == "escalate" for row in screens)
 
+    # Owner decisions are displayed alongside the independent default screen.
+    for condition_row in ("72", "74"):
+        decision = next(row for row in screens if (
+            row["condition_row_a"], row["condition_row_b"]
+        ) == (condition_row, "77"))
+        assert decision["owner_pair_call"] == "separate"
+        assert decision["owner_pair_judgement"] == "remain separate"
+        assert decision["default_verdict"] == "not comparable"
+
     # GSE311172 lost the unsupported temporal assertion. Its reviewed narrow-band
     # class still fails a different reviewed class under the default contract.
     assert "sampling schedule unknown" in screens[441]["light_regime"]

@@ -91,9 +91,14 @@ export function indexNativeSites(genes, records, organism) {
   return Object.freeze({ byGene, sites: Object.freeze(allSites), marks: Object.freeze(marks) });
 }
 
+/** Whether the reader's source selection lets the site evidence be used at all. */
+export function neighborSiteSourcesSelected(sources = []) {
+  return sources.some((id) => TAN_SOURCES.includes(id));
+}
+
 /** Selection gates evidence access; condition-specific scores never replace site coordinates. */
 export function neighborSiteModel(dataset, { sources = [], pending = null, sourcePending = null } = {}) {
-  const selected = sources.some((id) => TAN_SOURCES.includes(id));
+  const selected = neighborSiteSourcesSelected(sources);
   const index = dataset.neighborSites;
   const organism = organismOf(dataset);
   const declared = layerOf(organism, 'tssEvidence') && layerOf(organism, 'regulatoryTss');
@@ -107,9 +112,88 @@ export function neighborSiteModel(dataset, { sources = [], pending = null, sourc
     : index.byGene.get(gene.id)?.count > 0 ? 1 : 0);
   const counts = [0, 0, 0];
   for (const value of values) counts[value] += 1;
-  return { index: available ? index : null, available, reason, values, counts,
+  // The number of distinct admitted sites inside each CDS, from either strand;
+  // unknown, never zero, while the evidence cannot be read.
+  const siteCounts = Float64Array.from(dataset.genes, (gene) => (available
+    ? index.byGene.get(gene.id)?.count ?? Number.NaN : Number.NaN));
+  return { index: available ? index : null, available, reason, values, counts, siteCounts,
     forGene: (gene) => available ? index.byGene.get(gene?.id) ?? null : null,
     marks: available ? index.marks : EMPTY };
+}
+
+export const NEIGHBOR_SITE_COUNT_UNIT = 'sites';
+
+/**
+ * The count as a colour metric: a nonnegative integer per gene, NaN while the
+ * evidence is unavailable. `fileKey` names a site file still loading, so the
+ * scale chosen over no values is chosen again when it lands.
+ */
+export function neighborSiteCountMetric(model, fileKey = null) {
+  return {
+    key: NEIGHBOR_SITE_COLOR_KEY,
+    label: NEIGHBOR_SITE_LABEL,
+    unit: NEIGHBOR_SITE_COUNT_UNIT,
+    integer: true,
+    scale: 'sequential',
+    family: 'Genomic context',
+    source: 'derived',
+    fileKey,
+    desc: 'Distinct admitted Tan 2018 TSS sites inside this gene\'s actual CDS segments that a '
+      + 'source associates with another gene, counting same- and opposite-strand sites alike. '
+      + SITE_CAVEAT,
+    read: (index) => model.siteCounts?.[index] ?? Number.NaN,
+  };
+}
+
+/** Each distinct count present and how many genes carry it, ascending, then unavailable genes. */
+export function neighborSiteCountTally(model) {
+  const tally = new Map();
+  let unavailable = 0;
+  for (const value of model.siteCounts ?? []) {
+    if (!Number.isFinite(value)) unavailable += 1;
+    else tally.set(value, (tally.get(value) ?? 0) + 1);
+  }
+  return { rows: [...tally.entries()].sort((a, b) => a[0] - b[0]).map(([count, genes]) => ({ count, genes })),
+    unavailable };
+}
+
+/**
+ * An inclusive count range, `{min, max}` with nonnegative integer bounds and
+ * either open, or null when both are open. Anything else is no range.
+ */
+export function normalizeNeighborSiteCountFilter(value) {
+  if (!value || typeof value !== 'object') return null;
+  const bound = (raw) => (Number.isInteger(raw) && raw >= 0 ? raw : null);
+  const min = bound(value.min);
+  const max = bound(value.max);
+  return min === null && max === null ? null : { min, max };
+}
+
+/** `nc` in a link: `min:max`, either side blank when open. */
+export function encodeNeighborSiteCountFilter(filter) {
+  const range = normalizeNeighborSiteCountFilter(filter);
+  return range ? `${range.min ?? ''}:${range.max ?? ''}` : null;
+}
+
+export function decodeNeighborSiteCountFilter(text) {
+  const match = /^(\d*):(\d*)$/.exec(text ?? '');
+  if (!match) return null;
+  return normalizeNeighborSiteCountFilter({
+    min: match[1] === '' ? null : Number(match[1]), max: match[2] === '' ? null : Number(match[2]),
+  });
+}
+
+/**
+ * Inclusive at both ends. Like the shortcuts, a saved range is suspended, not
+ * applied, while the evidence cannot be read, and an unavailable gene is never
+ * counted as zero.
+ */
+export function passesNeighborSiteCountFilter(model, geneIndex, filter) {
+  const range = normalizeNeighborSiteCountFilter(filter);
+  if (!range || !model.available) return true;
+  const value = model.siteCounts[geneIndex];
+  if (!Number.isFinite(value)) return false;
+  return (range.min === null || value >= range.min) && (range.max === null || value <= range.max);
 }
 
 export function passesNeighborSiteFilter(model, geneIndex, filter = 'any') {
@@ -120,9 +204,12 @@ export function passesNeighborSiteFilter(model, geneIndex, filter = 'any') {
 }
 
 /** Preserve the requested saved view while exports identify actual narrowing. */
-export function neighborSiteFilterSummary(model, requested = 'any') {
+export function neighborSiteFilterSummary(model, requested = 'any', countFilter = null) {
   const suspended = !model.available && ['with', 'without'].includes(requested);
+  const countRange = normalizeNeighborSiteCountFilter(countFilter);
+  const countSuspended = Boolean(countRange) && !model.available;
   return { requested, effective: suspended ? 'any' : requested, suspended,
+    countRange, effectiveCountRange: countSuspended ? null : countRange, countSuspended,
     evidenceAvailable: model.available, reason: model.reason };
 }
 

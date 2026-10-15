@@ -33,8 +33,42 @@ current mask or nearest plotted neighbour. All four Tan condition selectors and
 the explicit legacy pooled choice retain identical Table S1 site coordinates.
 Removing every Tan initiation source or failing/loading either site payload or
 the informing initiation payload suspends narrowing and marks consistently.
-Unavailable is a third colour bucket, never a count of zero or “without overlap”.
+Unavailable is unknown, never a count of zero or “without overlap”.
 The unavailable filter is explicit; saved with/without narrowing is suspended.
+
+## The count
+
+Owner request, 2026-10-13. A gene's total is the number of distinct admitted
+sites inside the union of its actual CDS segments, boundaries inclusive, that a
+source associates with another resolved gene. Same- and opposite-strand sites
+count alike, the strand relation being the site's strand against the focal
+CDS's, so two same-strand and three opposite-strand sites total five. A site's
+identity is study, type, replicon, base and strand, so opposite-strand sites at
+one base are two, and repeated conditions or several owners of one site are one.
+`relation.count`, `model.siteCounts`, the colour metric, the count filter, the
+site list, both compact gene viewers, the expanded sequence view and the export
+all read this one number. Display zoom, hidden marks and filtered-out
+neighbouring genes never change it.
+
+- **Colour.** The Neighbouring-gene TSS in CDS option, still first in Genomic
+  context, draws the count on the numeric ramps and Scale control
+  (`neighborSiteCountMetric`). Its legend lists one row per count present, with
+  its gene total and its exact drawn colour, then the unavailable genes in the
+  no-value colour. A site file still loading names itself as the metric's
+  `fileKey`, so the scale chosen over no values is chosen again when it lands.
+- **Filter.** An inclusive *At least*/*At most* range on the count sits in the
+  same fieldset and applies together with the shortcuts above it. With recorded
+  overlap is the same as at least 1 and Without the same as at most 0; neither is
+  rewritten as a range. A saved range is suspended, never applied, while the
+  evidence is unavailable, and an inverted range keeps nothing and says so.
+- **Saved state.** `nc` carries `min:max`, either side blank when open, and is
+  omitted with no range, which is what every earlier link drew, so no version
+  bump. `ns` keeps its four values and meanings. Clear all filters clears both.
+  The export manifest records `countRange`, `effectiveCountRange` and
+  `countSuspended` beside the existing status fields.
+- **Export.** `neighborTssSitesInCds` follows `tssMappedSiteCount` and belongs
+  to the TSS evidence layer, so an organism without the layer omits it. It is
+  blank, not zero, while the evidence is unavailable.
 
 Colour changes preserve the shared explanation disclosure structure. Check
 round trips between neighbouring-site, numerical and other categorical colours
@@ -80,6 +114,8 @@ self-associated and neighbouring Tan marks. Hidden marks have no pointer or keyb
 and evidence counts remain, with an explicit hidden-state explanation. A gene
 with only neighbouring markers still has its control.
 
+Run `tests/js/neighbor-site-count.test.mjs` for the count, its range filter,
+saved state and the shipped-data comparison against an independent enumeration.
 Run `tests/js/neighbor-sites.test.mjs` for segment boundaries/gaps, both strands,
 origin ordering, identities, self/multiple/unassigned source links, condition
 repeats, source suspension and the independent shipped-data membership oracle.

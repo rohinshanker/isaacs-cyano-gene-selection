@@ -53,7 +53,7 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor',
   'overlapClass', 'overlapPartnerCount', 'overlapSharedBases', 'overlapPartners', 'operonId',
   'expressionBasis', 'expressionSourceId', 'tssInitiationBasis',
-  'tssInitiationBasisReason', 'tssMappedSiteCount', 'passesCurrentFilters',
+  'tssInitiationBasisReason', 'tssMappedSiteCount', 'neighborTssSitesInCds', 'passesCurrentFilters',
   'pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag', 'pcc7942MappingStatus',
   'essentialityEvidenceTier', 'goIeaEssentialityContext', 'goIeaCoreProcessProbability',
   'annotationDiscrepancies',
@@ -65,7 +65,8 @@ const LAYER_COLUMNS = Object.freeze({
     'functionCategoryEvidence', 'functionCategoryConflict'],
   sourceDerivedCategories: ['pcc7942DerivedCategory', 'pcc7942DerivedProbability',
     'goIeaDerivedCategory', 'goIeaDerivedProbability'],
-  tssEvidence: ['tssInitiationBasis', 'tssInitiationBasisReason', 'tssMappedSiteCount'],
+  tssEvidence: ['tssInitiationBasis', 'tssInitiationBasisReason', 'tssMappedSiteCount',
+    'neighborTssSitesInCds'],
   candidateEvidence: ['pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag',
     'pcc7942MappingStatus'],
   goIeaEssentiality: ['essentialityEvidenceTier', 'goIeaEssentialityContext',
@@ -356,13 +357,24 @@ export function exportBlockedReason(dataset) {
  * @returns {{manifest: object, csv: string, columns: string[], rows: object[],
  *   baseName: string, files: Array<{name: string, type: string, content: string}>}}
  */
+/**
+ * Written in place of a plain `true` in every row's `passesCurrentFilters`
+ * when filters were temporarily off, so a reader of the gene table alone can
+ * see that no filter was applied (owner request, 2026-10-14).
+ */
+export const FILTERS_OFF_PASS_VALUE = 'true (filters turned off at export)';
+export const FILTERS_OFF_EXPORT_NOTE = 'Filters were temporarily turned off when this file was '
+  + 'exported. Every configured filter is recorded here, but none was applied: every gene is '
+  + `included and its passesCurrentFilters cell reads "${FILTERS_OFF_PASS_VALUE}".`;
+
 export function buildExport({
   dataset, registry, ids, schemes, generatedAt = new Date(),
-  filterState = null, filterMask = null, viewState = null,
+  filterState = null, filterMask = null, viewState = null, neighborSiteCounts = null,
   colorSources = undefined, trRosettaRnaHandoffs = [],
 }) {
   const blocked = exportBlockedReason(dataset);
   if (blocked) throw new Error(blocked);
+  const filtersOff = filterState?.bypassed === true;
   const organism = organismOf(dataset);
   const toggles = organism.annotationSources;
   const roleIds = sourceIds(organism);
@@ -466,7 +478,12 @@ export function buildExport({
         tssInitiationBasis: tssBasis.short,
         tssInitiationBasisReason: tssBasis.text,
         tssMappedSiteCount: tssBasis.siteCount ?? '',
-        passesCurrentFilters: filterMask ? String(Boolean(filterMask[index])) : '',
+        // Distinct neighbouring-gene TSS sites inside the CDS, both strands, as
+        // the colour, filter and viewers count them; blank while unavailable.
+        neighborTssSitesInCds: Number.isFinite(neighborSiteCounts?.[index])
+          ? neighborSiteCounts[index] : '',
+        passesCurrentFilters: !filterMask ? ''
+          : filtersOff ? FILTERS_OFF_PASS_VALUE : String(Boolean(filterMask[index])),
         pcc7942Essentiality: pccCall?.status ?? '',
         // The display bucket the essentiality colour and filter group this
         // exact status into; the status itself stays in the column before.
@@ -553,7 +570,9 @@ export function buildExport({
     expressionSource: meta.expressionSource ?? null,
     expressionSources: measurementSources,
     ...(expressionAgreement ? { expressionAgreement } : {}),
-    filterState: filterState ?? null,
+    filterState: filterState
+      ? { ...filterState, ...(filtersOff ? { note: FILTERS_OFF_EXPORT_NOTE } : {}) }
+      : null,
     viewState: viewState ?? null,
     // Which sources were enabled for category colouring when this file was made.
     // An organism with no colour source has no such choice to record.

@@ -240,7 +240,7 @@ test('a fresh view, and a hash this encoder did not write, keep the measured def
 });
 
 test('this encoder writes the migrated version and round-trips its own snapshot', () => {
-  assert.equal(STATE_VERSION, 8);
+  assert.equal(STATE_VERSION, 9);
   assert.ok(STATE_VERSION >= MEASURED_AXES_VERSION);
   const state = defaultState();
   state.panel = 'axes';
@@ -439,11 +439,11 @@ test('the draw direction field remains readable across the later axis-source ver
   // An older link has no `dt`, which means highest — and highest is what every
   // earlier viewer drew, so the two agree and no reader can misread the other's
   // hash. That is the test the version number exists for.
-  assert.equal(STATE_VERSION, 8);
+  assert.equal(STATE_VERSION, 9);
   const older = decodeState('#ver=6&p=native&c=cai');
   assert.equal(applyDecoded(defaultState(), older).drawOnTop, 'highest');
   const newer = decodeState(encodeState({ ...defaultState(), drawOnTop: 'lowest' }));
-  assert.equal(newer.version, 8);
+  assert.equal(newer.version, 9);
 });
 
 test('the export manifest records the direction the picture was drawn in', () => {
@@ -526,7 +526,7 @@ test('a fresh view draws every marker layer everywhere and writes no field for i
   // which is why it did not bump the encoder version.
   assert.deepEqual(defaultState().hiddenMarkers, []);
   assert.doesNotMatch(encodeState(defaultState()), /(^|&)mk=/);
-  assert.equal(STATE_VERSION, 8, 'the hidden marker views did not cause the later version bump');
+  assert.equal(STATE_VERSION, 9, 'the hidden marker views did not cause the later version bump');
 });
 
 test('each view hides its own marks in a shared link, independently of the others', () => {
