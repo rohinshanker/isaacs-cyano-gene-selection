@@ -46,7 +46,7 @@ const INTEGER_KEYS = new Set([
  * a key the pipeline happens to call `rpkmLog2Fc` must not light the filter up.
  */
 const NON_ABUNDANCE_QUANTITY_FAMILIES = new Set([
-  'Fold change', 'Significance', 'Translation efficiency',
+  'Fold change', 'Significance', 'Translation efficiency', 'Temporal profile',
 ]);
 
 /**

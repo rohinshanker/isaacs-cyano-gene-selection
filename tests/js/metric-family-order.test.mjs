@@ -11,7 +11,7 @@ import { dirname, resolve } from 'node:path';
 import {
   orderMetricFamilies, buildMetricRegistry, orderMeasuredFirst, defaultColorMetricKey,
   freshViewColorKey,
-  measurementLimitClauses, isNativeMeasuredMetric, metricsInDisplayOrder,
+  measurementLimitClauses, isNativeMeasuredMetric, metricsInDisplayOrder, isExpressionMetric,
 } from '../../site/js/core/metric-registry.js';
 import { loadDataset } from '../../site/js/core/dataset.js';
 import { fileFetch } from './helpers.mjs';
@@ -152,9 +152,10 @@ test('the production registry leads with measured UTEX evidence, before Translat
   // The ingested PCC 7942 layers follow in manifest order, after the native
   // initiation layers and the original abundance measurement; a fitness screen is its own family, not Expression.
   assert.deepEqual(expression.slice(6), dataset.meta.expressionSources.slice(6)
-    .filter((source) => source.record.dataType !== 'fitness')
+    .filter((source) => source.quantityFamily === 'Expression'
+      || (!source.quantityFamily && source.record.dataType !== 'fitness'))
     .map((source) => source.metricKey));
-  assert.equal(expression.length, 69);
+  assert.equal(expression.length, 89);
   // Nine GSE205443 biofilm fractions plus the Fitness Browser's 90 condition sets.
   assert.equal(registry.metrics.filter((metric) => metric.family === 'Fitness').length, 99);
   assert.equal(defaultColorMetricKey(registry), 'gc3');
@@ -176,4 +177,13 @@ test('the whole-registry display order leads with measurements and keeps every m
   // tables that list every metric.
   assert.equal(order.length, registry.metrics.length);
   assert.equal(new Set(order).size, registry.metrics.length);
+});
+
+
+test('array ratios and within-gene profiles cannot stand in for abundance', () => {
+  for (const family of ['Fold change', 'Temporal profile']) {
+    assert.equal(isExpressionMetric({ key: 'exprArray', family }), false);
+    assert.equal(isExpressionMetric({ key: 'exprArray', provenance: { quantityFamily: family } }), false);
+  }
+  assert.equal(isExpressionMetric({ key: 'exprArray', provenance: { quantityFamily: 'Expression' } }), true);
 });

@@ -55,6 +55,7 @@ def test_sections_and_citations_are_complete():
         "puszynska-2017", "piechura-2017", "russo-2025", "li-2022", "ncbi-pcc-7942", "gene-ontology",
         "adomako-2022-essentiality", "puszynska-2017-ppgpp", "xu-2024", "suban-2024", "bohutskyi-2024", "markson-2013", "johnson-2024", "gse225426-deposit", "gse311172-deposit",
         "price-2018-fitness-browser", "guerreiro-2014", "nakayasu-2017", "wang-2016-limonene",
+        "vijayan-2009-array", "pattanayak-2014-array", "vicente-2019-array",
     } == {item["id"] for item in sections[0]["items"]}
     assert {
         "sharp-li-cai", "dos-reis-tai", "soma-lysidine", "wright-enc",
@@ -138,7 +139,7 @@ def test_upstream_catalogue_has_dated_checks_and_preserves_pinned_identity():
         for item in section["items"]
         for artifact in item.get("upstreamArtifacts", [])
     }
-    assert len(entries) == 4
+    assert len(entries) == 18
     annotation = json.loads((ROOT / "data/manifest/annotation-release-v1.json").read_text())
     for source in annotation["sources"]:
         for file in source.get("files", []):
@@ -149,6 +150,12 @@ def test_upstream_catalogue_has_dated_checks_and_preserves_pinned_identity():
             digest = hashlib.sha256((ROOT / file["localPath"]).read_bytes()).hexdigest()
             assert artifact["pinnedSha256"] == digest
             assert artifact["compression"] == "gzip"
+    catalogue = json.loads((ROOT / "data/expression/ingest/geo_array_sources.json").read_text())
+    for source in catalogue["sources"]:
+        for key in ("soft", "matrix"):
+            pin = source[key]
+            assert entries[pin["url"]]["pinnedSha256"] == pin["sha256"]
+            assert entries[pin["url"]]["filename"] == pin["name"]
     for artifact in entries.values():
         assert urlparse(artifact["url"]).scheme == "https"
         check = artifact["linkCheck"]

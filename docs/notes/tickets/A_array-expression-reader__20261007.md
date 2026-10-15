@@ -2,7 +2,7 @@
 
 - **Scope:** An array reader for `tools/ingest_expression.py` and the separate
   "array" platform listing in Data Sources, for the seven PCC 7942 microarray
-  series that deposit raw files only. Covers `tools/ingest_expression.py`,
+  series with processed GEO sample tables. Covers `tools/ingest_expression.py`,
   `data/expression/ingest/`, `docs/validation/data-contract.md` and the Data
   Sources platform grouping.
 - **Status:** active
@@ -10,6 +10,11 @@
 - **Updated:** 2026-10-14
 
 ## Current state
+
+Owner clarification, 2026-10-14: **show separate deposited samples; disclose
+author averaging**. Initial browser admission does not require selectable raw
+physical probes. Preserve each GSM and its source metadata, explain the
+depositor's probe reduction, and keep new pooling optional and explicit.
 
 Owned by **cyano-lit-unreach** as of 2026-10-14, isolated on
 `work/array-expression-reader-20261014`. Scope is the deposited microarray
@@ -28,34 +33,17 @@ normalisation and probe mapping, and validate it before a pooled layer ships.
 J5's separate array platform remains. No further owner choice of a universal
 pooling method is required to begin that work.
 
-Split out of
-the resolved licence-unblocked-sources ticket (row 6 was split out of it)
-row 6 by the owner's decision of 2026-10-07, so that ticket can close on the
-rows whose deposits already carry a per-gene table. Nothing is built yet.
+The seven deposits provide processed SOFT and series matrices, correcting the
+original raw-only assumption. GSE59112 is Pattanayak 2014, not Markson 2013.
+The source catalogue pins both representations, GPL9534 and the published
+GSE50919 dye-swap summary. Admission comprises 122 individual GSM samples and
+five explicit optional summaries (one dye swap and four within-treatment means).
+No new physical-probe processing occurs. Three declared quantities distinguish
+log-ratios, positive normalized signals and within-gene temporal profiles.
 
-The seven series, all permitted with citation since 2026-10-06 and all raw-only:
-
-| Series | Study | Deposited |
-| --- | --- | --- |
-| GSE50908 | Markson 2013 | `GSE50908_RAW.tar` |
-| GSE50919 | Markson 2013 | `GSE50919_RAW.tar`, plus a log2 ratio table that is not an abundance |
-| GSE50920 | Markson 2013 | `GSE50920_RAW.tar` |
-| GSE52486 | Markson 2013 | `GSE52486_RAW.tar` |
-| GSE59112 | Markson 2013 | `GSE59112_RAW.tar` |
-| GSE18902 | Vijayan 2009 | `GSE18902_RAW.tar` |
-| GSE102914 | Vicente 2019 | `GSE102914_RAW.tar` |
-
-Why this is not the RNA-seq route: these are two-colour arrays, so a value is a
-channel intensity against a co-hybridised reference, not an abundance on its own
-scale. Reading them means deciding, and recording, four things the RNA-seq specs
-never had to: which channel or ratio is the value, whether the deposited
-normalisation is kept or recomputed, how dye-swap pairs combine, and how several
-probes per gene reduce to one per-gene number. Each is a scientific choice, not a
-parsing detail, and each belongs in the data contract before any layer ships.
-
-Owner decision J5 already stands: arrays are listed apart from sequencing in the
-Data Sources platform grouping, so an array layer is never silently pooled with
-an RNA-seq one.
+Reusable source counts, mapping, orientation, processing and pooling rules are
+in [the array contract](../../validation/geo-array-reader.md). All seven retain
+the source-ledger citation permission dated 2026-10-06.
 
 ## Work
 
@@ -72,7 +60,10 @@ an RNA-seq one.
 
 ## Verification
 
-Not started. Per series: the gates (`npm test`, pytest,
+Implementation is under validation and independent review. Initial full gates
+found expected release-count changes, one stale generated meta hash, and a
+missing Temporal profile exclusion in the browser abundance classifier. These
+are being corrected before closure. Per series: the gates (`npm test`, pytest,
 `tools/validate_contract.py`), the join audit counts in its `ingest` block, a
 rendered check of its Data Sources entry under the array platform, and its
 citation row with downloads that resolve.

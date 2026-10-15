@@ -89,7 +89,7 @@ function bucketOccupancy(values, scale) {
  * moves a metric across the 90% line is then seen here, in review, rather than
  * discovered in the picture.
  */
-test('the shipped release opens logarithmic on forty-three metrics, symmetric log on twenty-nine, linear on the rest', async () => {
+test('the shipped release opens logarithmic on sixty-three metrics, symmetric log on twenty-nine, linear on the rest', async () => {
   const { dataset, registry } = await shipped();
   const chosen = new Map();
   for (const metric of metricsInDisplayOrder(registry)) {
@@ -107,7 +107,13 @@ test('the shipped release opens logarithmic on forty-three metrics, symmetric lo
   // windows and PXD005851's two media are spectral counts of at least one match,
   // so none reaches zero; five of the six are skewed enough for the rule, while
   // PXD005851's plain BG-11 layer is not and opens linear with the rest.
+  // Sixteen deposited signals and four explicitly named replicate means share this skew.
+  const arraySignals = [
+    ...Array.from({ length: 16 }, (_, i) => `exprGSE102914GSM${2748217 + i}`),
+    ...[2748217, 2748221, 2748225, 2748229].map((i) => `exprGSE102914${i}`),
+  ];
   assert.deepEqual(keysFor('log10'), [
+    ...arraySignals.sort(),
     'exprGse103462WtDawn', 'exprGse103463RelAPlusDusk', 'exprGse103644RelAPlusInduced',
     'exprGse103704WtDark', 'exprGse103704WtDusk', 'exprGse104203ClearDay',
     'exprGse104203HighLightPulse', 'exprGse104203LowLight', 'exprGse104203ShadePulse',

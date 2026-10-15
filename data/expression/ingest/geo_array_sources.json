@@ -1,0 +1,1179 @@
+{
+  "retrieved": "2026-10-14",
+  "platform": {
+    "id": "GPL9534",
+    "name": "GPL9534_family.soft.gz",
+    "url": "https://ftp.ncbi.nlm.nih.gov/geo/platforms/GPL9nnn/GPL9534/soft/GPL9534_family.soft.gz",
+    "sha256": "35af5c25674726614fb1c7683a161d0827a5c3937ea797d1cf218008b4497195",
+    "bytes": 2974392,
+    "featureColumn": "ID",
+    "locusColumn": "ORF",
+    "featureCount": 2723,
+    "mappedOrfCount": 2715,
+    "unmappedFeatureCount": 8
+  },
+  "sources": [
+    {
+      "studyId": "GSE50908",
+      "matrix": {
+        "name": "GSE50908_series_matrix.txt.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50908/matrix/GSE50908_series_matrix.txt.gz",
+        "sha256": "50315f210a3a7c339d776656110122dcc0d4ec7b6cb9ff2c4044f83a98339f4b",
+        "bytes": 197785
+      },
+      "sampleCount": 13,
+      "featureCount": 2723,
+      "soft": {
+        "name": "GSE50908_family.soft.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50908/soft/GSE50908_family.soft.gz",
+        "sha256": "3393565af8b6389850aaa1c15e9cb2a01a691d41aa34f41186ec17c9bda87f06",
+        "bytes": 488602
+      },
+      "valueDescriptions": [
+        "Lowess and quantile normalized log2(timepoint/background pool). Reported is the average of 4 separate probes per gene."
+      ],
+      "mappingAudit": {
+        "uniqueFeatures": 2723,
+        "platformUnmapped": 8,
+        "mappedUtexGenes": 2551,
+        "crosswalkUnmapped": 164
+      },
+      "sampleAccessions": [
+        "GSM1232268",
+        "GSM1232269",
+        "GSM1232270",
+        "GSM1232271",
+        "GSM1232272",
+        "GSM1232273",
+        "GSM1232274",
+        "GSM1232275",
+        "GSM1232276",
+        "GSM1232277",
+        "GSM1232278",
+        "GSM1232279",
+        "GSM1232280"
+      ],
+      "processingDescriptions": [
+        "Data was processed as described previously (Vijayan et al 2009).  Specifically, the median intensity of the Cy3 and Cy5 florescence at each spot was extracted using GenePix software (Molecular Devices) and loaded into MATLAB (Mathworks). Loess and quantile normalization were performed using the MATLAB bioinformatics toolbox."
+      ],
+      "rawSupplementaryUrls": [
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232268/suppl/GSM1232268_252084610012_B.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232269/suppl/GSM1232269_252084610012_A.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232270/suppl/GSM1232270_252084610012_D.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232271/suppl/GSM1232271_252084610012_C.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232272/suppl/GSM1232272_252084610012_F.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232273/suppl/GSM1232273_252084610012_E.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232274/suppl/GSM1232274_252084610012_H.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232275/suppl/GSM1232275_252084610012_G.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232276/suppl/GSM1232276_252084610015_B_lower_PMT.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232277/suppl/GSM1232277_252084610015_A_lower_PMT.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232278/suppl/GSM1232278_252084610015_D_lower_PMT.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232279/suppl/GSM1232279_252084610015_C_lower_PMT.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232280/suppl/GSM1232280_252084610015_F_lower_PMT.gpr.gz"
+      ],
+      "channelCounts": [
+        2
+      ],
+      "admission": "separate deposited samples authorized 2026-10-14; author probe aggregation disclosed",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30.0,
+          "hi": 30.0,
+          "unit": "°C",
+          "text": "30º C",
+          "quote": "maintained at 30º C",
+          "where": "GEO GSE50908 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 25.0,
+          "hi": 25.0,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~25 µmol photons m-2 s-1 white light",
+          "quote": "Cells were exposed to surface flux of ~25 µmol photons m-2 s-1 white light",
+          "where": "GEO GSE50908 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1.0,
+          "hi": 1.0,
+          "unit": "%",
+          "text": "bubbled with 500 ml min-1 1% CO2 in air",
+          "quote": "bubbled with 500 ml min-1 1% CO2 in air",
+          "where": "GEO GSE50908 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": true,
+          "text": "continuous; white (class not stated)",
+          "quote": "Cells were exposed to two light/dark cycles (12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment prior to release into continuous light",
+          "where": "GEO GSE50908 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "modified BG-11 medium described in Vijayan et al 2009",
+          "quote": "Cells were grown in the modified BG-11 medium described in Vijayan et al 2009.",
+          "where": "GEO GSE50908 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "planktonic liquid",
+          "quote": "grown in a 6 liter cylindrical spinner flask (Corning) at a volume of 4.5 liters",
+          "where": "GEO GSE50908 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.15,
+            0.15
+          ],
+          "odNm": 750,
+          "text": "OD [0.15, 0.15] at 750 nm",
+          "quote": "The initial OD750 (optical density at 750 nm) was 0.06 and was allowed to increase to 0.15, after which it was maintained at a constant level of 0.15.",
+          "where": "GEO GSE50908 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      },
+      "conditionTableRow": 46,
+      "quantity": "array_log2_ratio",
+      "group": "engineered",
+      "sampleGroups": {},
+      "citationId": "markson-2013",
+      "citation": {
+        "text": "Markson JS et al. Circadian control of global gene expression by the cyanobacterial master regulator RpaA (2013).",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "poolingPolicy": "No across-time, genotype, experiment, reference, or study pooling. Separate deposited samples only.",
+      "pools": []
+    },
+    {
+      "studyId": "GSE50919",
+      "matrix": {
+        "name": "GSE50919_series_matrix.txt.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50919/matrix/GSE50919_series_matrix.txt.gz",
+        "sha256": "4b44da2950262190898f48040841c7a975508f56f0342fff6e935f7c5ecc21c9",
+        "bytes": 43131
+      },
+      "sampleCount": 2,
+      "featureCount": 2723,
+      "soft": {
+        "name": "GSE50919_family.soft.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50919/soft/GSE50919_family.soft.gz",
+        "sha256": "2c50d1ad58aed6eda3942019792821c5dc12aa65d66b6492fa2927423cb2c30c",
+        "bytes": 218030
+      },
+      "valueDescriptions": [
+        "Lowess-normalized log2(Cy3 / Cy5). Reported is the average of 4 separate probes per gene."
+      ],
+      "mappingAudit": {
+        "uniqueFeatures": 2723,
+        "platformUnmapped": 8,
+        "mappedUtexGenes": 2551,
+        "crosswalkUnmapped": 164
+      },
+      "sampleAccessions": [
+        "GSM1232426",
+        "GSM1232427"
+      ],
+      "processingDescriptions": [
+        "The median intensity of the Cy3 and Cy5 florescence at each spot was extracted using GenePix software (Molecular Devices) and loaded into MATLAB (Mathworks). Loess normalization were performed using the MATLAB bioinformatics toolbox. Quantile normalization was NOT performed."
+      ],
+      "rawSupplementaryUrls": [
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232426/suppl/GSM1232426_252084610018_array6.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232427/suppl/GSM1232427_252084610018_array7.gpr.gz"
+      ],
+      "channelCounts": [
+        2
+      ],
+      "admission": "separate deposited samples authorized 2026-10-14; author probe aggregation disclosed",
+      "publishedDyeSwapSummary": {
+        "name": "GSE50919_log2_rpaA-_vs_wild-type_by_microarray_for_GEO_deposit.txt.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50919/suppl/GSE50919_log2_rpaA-_vs_wild-type_by_microarray_for_GEO_deposit.txt.gz",
+        "sha256": "9867e6738416b0e5a198dfa87fff48bb7f1101de4b31d40fd2b3d491d217a5b1",
+        "bytes": 18426
+      },
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30.0,
+          "hi": 30.0,
+          "unit": "°C",
+          "text": "30º C",
+          "quote": "maintained at 30º C",
+          "where": "GEO GSE50919 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 25.0,
+          "hi": 25.0,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~25 µmol photons m-2 s-1",
+          "quote": "Cells were exposed to surface flux of ~25 µmol photons m-2 s-1 white light",
+          "where": "GEO GSE50919 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1.0,
+          "hi": 1.0,
+          "unit": "%",
+          "text": "500 ml min-1 1% CO2 in air (bubbled)",
+          "quote": "bubbled with 500 ml min-1 1% CO2 in air",
+          "where": "GEO GSE50919 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": true,
+          "text": "continuous; white (class not stated)",
+          "quote": "Cells were exposed to two light/dark cycles (i.e., cells were exposed to 12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment prior to release into continuous light",
+          "where": "GEO GSE50919 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "modified BG-11 medium (as in Vijayan et al 2009); cells initially inoculated with 5 µg/ml spectinomycin and 5 µg/ml chloramphenicol, then diluted with antibiotic-free modified BG-11",
+          "quote": "Cells were grown in the modified BG-11 medium described in Vijayan et al 2009.",
+          "where": "GEO GSE50919 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "planktonic liquid",
+          "quote": "Either wild-type (AMC408) or kanamycin-resistant ΔrpaA (EOC 66) culture was grown in a 6 liter cylindrical spinner flask (Corning) at a volume of 4.5 liters.",
+          "where": "GEO GSE50919 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.15,
+            0.15
+          ],
+          "odNm": 750,
+          "text": "OD [0.15, 0.15] at 750 nm",
+          "quote": "Opitcal density at 750 nm (OD750) was maintained at a constant level of 0.15.",
+          "where": "GEO GSE50919 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      },
+      "conditionTableRow": 47,
+      "quantity": "array_log2_ratio",
+      "group": "engineered",
+      "sampleGroups": {},
+      "citationId": "markson-2013",
+      "citation": {
+        "text": "Markson JS et al. Circadian control of global gene expression by the cyanobacterial master regulator RpaA (2013).",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "poolingPolicy": "Optional dye-swap summary: (GSM1232426 - GSM1232427) / 2, oriented rpaA-/WT; verified against the separate published summary at its 0.01 precision.",
+      "pools": [
+        {
+          "id": "dye_swap",
+          "label": "Optional dye-swap mean, rpaA-/WT",
+          "sampleIds": [
+            "GSM1232426",
+            "GSM1232427"
+          ],
+          "multipliers": [
+            1,
+            -1
+          ]
+        }
+      ]
+    },
+    {
+      "studyId": "GSE50920",
+      "matrix": {
+        "name": "GSE50920_series_matrix.txt.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50920/matrix/GSE50920_series_matrix.txt.gz",
+        "sha256": "634783da7fdcbd9301295810c5138a2b7993d1a7b2cce39409198fd4d35aa06a",
+        "bytes": 707258
+      },
+      "sampleCount": 49,
+      "featureCount": 2723,
+      "soft": {
+        "name": "GSE50920_family.soft.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50920/soft/GSE50920_family.soft.gz",
+        "sha256": "e4cf804a7442a12213c66a9e516bcf14eee8149f17834c41af4ba53378b3c799",
+        "bytes": 1375790
+      },
+      "valueDescriptions": [
+        "Lowess and quantile normalized log2(timepoint / background pool). Reported is the average of 4 separate probes per gene.",
+        "Lowess-normalized log2(timepoint / background pool). Reported is the average of 4 separate probes per gene."
+      ],
+      "mappingAudit": {
+        "uniqueFeatures": 2723,
+        "platformUnmapped": 8,
+        "mappedUtexGenes": 2551,
+        "crosswalkUnmapped": 164
+      },
+      "sampleAccessions": [
+        "GSM1232428",
+        "GSM1232429",
+        "GSM1232430",
+        "GSM1232431",
+        "GSM1232432",
+        "GSM1232433",
+        "GSM1232434",
+        "GSM1232435",
+        "GSM1232436",
+        "GSM1232437",
+        "GSM1232438",
+        "GSM1232439",
+        "GSM1232440",
+        "GSM1232441",
+        "GSM1232442",
+        "GSM1232443",
+        "GSM1232444",
+        "GSM1232445",
+        "GSM1232446",
+        "GSM1232447",
+        "GSM1232448",
+        "GSM1232449",
+        "GSM1232450",
+        "GSM1232451",
+        "GSM1232452",
+        "GSM1232453",
+        "GSM1232454",
+        "GSM1232455",
+        "GSM1232456",
+        "GSM1232457",
+        "GSM1232458",
+        "GSM1232459",
+        "GSM1232460",
+        "GSM1232461",
+        "GSM1232462",
+        "GSM1232463",
+        "GSM1232464",
+        "GSM1232465",
+        "GSM1232466",
+        "GSM1232467",
+        "GSM1232468",
+        "GSM1232469",
+        "GSM1232470",
+        "GSM1232471",
+        "GSM1232472",
+        "GSM1232473",
+        "GSM1232474",
+        "GSM1232475",
+        "GSM1267085"
+      ],
+      "processingDescriptions": [
+        "Data was processed as described previously (Vijayan et al 2009).  Specifically, the median intensity of the Cy3 and Cy5 florescence at each spot was extracted using GenePix software (Molecular Devices) and loaded into MATLAB (Mathworks). Loess and quantile normalization were performed using the MATLAB bioinformatics toolbox, except for the controlclock_rescue_vs_rpaA-clock_rescue_rep1 array, for which only Loess normalization was performed (no quantile normalization)",
+        "Data was processed as described previously (Vijayan et al 2009).  Specifically, the median intensity of the Cy3 and Cy5 florescence at each spot was extracted using GenePix software (Molecular Devices) and loaded into MATLAB (Mathworks). Loess and quantile normalization were performed using the MATLAB bioinformatics toolbox."
+      ],
+      "rawSupplementaryUrls": [
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232428/suppl/GSM1232428_252084610026_A.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232429/suppl/GSM1232429_252084610026_B.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232430/suppl/GSM1232430_252084610026_C.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232431/suppl/GSM1232431_252084610026_D.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232432/suppl/GSM1232432_252084610026_E.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232433/suppl/GSM1232433_252084610026_F.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232434/suppl/GSM1232434_252084610026_G.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232435/suppl/GSM1232435_252084610026_H.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232436/suppl/GSM1232436_252084610025_E.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232437/suppl/GSM1232437_252084610034_A_good.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232438/suppl/GSM1232438_252084610034_B.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232439/suppl/GSM1232439_252084610034_C.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232440/suppl/GSM1232440_252084610034_D.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232441/suppl/GSM1232441_252084610034_E.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232442/suppl/GSM1232442_252084610028_C.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232443/suppl/GSM1232443_252084610028_D.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232444/suppl/GSM1232444_252084610028_E.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232445/suppl/GSM1232445_252084610028_F.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232446/suppl/GSM1232446_252084610028_G.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232447/suppl/GSM1232447_252084610028_H.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232448/suppl/GSM1232448_252084610029_A.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232449/suppl/GSM1232449_252084610029_B.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232450/suppl/GSM1232450_252084610029_C.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232451/suppl/GSM1232451_252084610029_D.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232452/suppl/GSM1232452_252084610024_A.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232453/suppl/GSM1232453_252084610024_B.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232454/suppl/GSM1232454_252084610024_C.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232455/suppl/GSM1232455_252084610024_D.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232456/suppl/GSM1232456_252084610024_E.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232457/suppl/GSM1232457_252084610024_F.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232458/suppl/GSM1232458_252084610024_G.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232459/suppl/GSM1232459_252084610024_H.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232460/suppl/GSM1232460_252084610025_A.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232461/suppl/GSM1232461_252084610025_B.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232462/suppl/GSM1232462_252084610025_C.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232463/suppl/GSM1232463_252084610025_D.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232464/suppl/GSM1232464_252084610030_A.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232465/suppl/GSM1232465_252084610030_B.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232466/suppl/GSM1232466_252084610030_C.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232467/suppl/GSM1232467_252084610030_D.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232468/suppl/GSM1232468_252084610030_E.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232469/suppl/GSM1232469_252084610030_F.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232470/suppl/GSM1232470_252084610030_G.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232471/suppl/GSM1232471_252084610030_H.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232472/suppl/GSM1232472_252084610029_E.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232473/suppl/GSM1232473_252084610029_F.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232474/suppl/GSM1232474_252084610029_G.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1232nnn/GSM1232475/suppl/GSM1232475_252084610029_H.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1267nnn/GSM1267085/suppl/GSM1267085_252084610027_F.gpr.gz"
+      ],
+      "channelCounts": [
+        2
+      ],
+      "admission": "separate deposited samples authorized 2026-10-14; author probe aggregation disclosed",
+      "conditions": {
+        "temperature": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "°C",
+          "text": "Not reported for the sampling condition",
+          "quote": "",
+          "where": "full text not retrievable in this session: PMC3935230 sits outside the Europe PMC open-access subset (fullTextXML HTTP 500), NCBI efetch returns front matter only, and the PMC PDF endpoint answers with a proof-of-work challenge which was not solved; source-side restriction, not a sandbox block; absence in the archive record is NOT evidence the study does not report it"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 100.0,
+          "hi": 100.0,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "100 µE m-2 s-1 (µmoles photons m-2 s-1)",
+          "quote": "illuminated with 100 µE m-2 s-1 (µmoles photons m-2 s-1) of cool fluorescent light",
+          "where": "GEO GSE50920 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1.0,
+          "hi": 1.0,
+          "unit": "%",
+          "text": "1% CO2 in air",
+          "quote": "bubbled continuously with 1% CO2 in air",
+          "where": "GEO GSE50920 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "continuous (after diel entrainment); cool fluorescent",
+          "quote": "treated with two 12-h dark pulses separated by 12 h of light, and released to constant light concomitant with addition of IPTG to a final concentration of 6 µM",
+          "where": "GEO GSE50920 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "BG-11M media, supplemented with 10 mM HEPES-KOH pH 8.0",
+          "quote": "Cultures were grown in BG-11M media in tissue culture flasks illuminated with 100 µE m-2 s-1",
+          "where": "GEO GSE50920 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "planktonic liquid",
+          "quote": "Cultures were grown in BG-11M media in tissue culture flasks",
+          "where": "GEO GSE50920 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.3,
+            0.3
+          ],
+          "odNm": 750,
+          "text": "OD [0.3, 0.3] at 750 nm",
+          "quote": "with the OD750 maintained near 0.3 by diluting the cultures every four hours with fresh medium",
+          "where": "GEO GSE50920 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      },
+      "conditionTableRow": 48,
+      "quantity": "array_log2_ratio",
+      "group": "engineered",
+      "sampleGroups": {},
+      "citationId": "markson-2013",
+      "citation": {
+        "text": "Markson JS et al. Circadian control of global gene expression by the cyanobacterial master regulator RpaA (2013).",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "poolingPolicy": "Individual sample/reference ratios only. Replicate-specific reference pools and the differently normalized pool-vs-pool contrast are not averaged.",
+      "pools": []
+    },
+    {
+      "studyId": "GSE52486",
+      "matrix": {
+        "name": "GSE52486_series_matrix.txt.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE52nnn/GSE52486/matrix/GSE52486_series_matrix.txt.gz",
+        "sha256": "9580cb98a9bde3ce7f20b1a38cef45134a43d5dd542721215ae3c75bffc2f0fa",
+        "bytes": 116057
+      },
+      "sampleCount": 7,
+      "featureCount": 2723,
+      "soft": {
+        "name": "GSE52486_family.soft.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE52nnn/GSE52486/soft/GSE52486_family.soft.gz",
+        "sha256": "cde9d6558b2d68a07d65f456ae3b75dc8ca7754f4c71978bbb410a5e8cdeb1c3",
+        "bytes": 342795
+      },
+      "valueDescriptions": [
+        "Lowess and quantile normalized log2(timepoint / background pool). Reported is the average of 4 separate probes per gene."
+      ],
+      "mappingAudit": {
+        "uniqueFeatures": 2723,
+        "platformUnmapped": 8,
+        "mappedUtexGenes": 2551,
+        "crosswalkUnmapped": 164
+      },
+      "sampleAccessions": [
+        "GSM1267750",
+        "GSM1267751",
+        "GSM1267752",
+        "GSM1267753",
+        "GSM1267754",
+        "GSM1267755",
+        "GSM1267756"
+      ],
+      "processingDescriptions": [
+        "Data was processed as described previously (Vijayan et al 2009).  Specifically, the median intensity of the Cy3 and Cy5 florescence at each spot was extracted using GenePix software (Molecular Devices) and loaded into MATLAB (Mathworks). Loess and quantile normalization were performed using the MATLAB bioinformatics toolbox."
+      ],
+      "rawSupplementaryUrls": [
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1267nnn/GSM1267750/suppl/GSM1267750_1b.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1267nnn/GSM1267751/suppl/GSM1267751_2b.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1267nnn/GSM1267752/suppl/GSM1267752_3a.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1267nnn/GSM1267753/suppl/GSM1267753_4a.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1267nnn/GSM1267754/suppl/GSM1267754_6a.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1267nnn/GSM1267755/suppl/GSM1267755_7b.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1267nnn/GSM1267756/suppl/GSM1267756_8a.gpr.gz"
+      ],
+      "channelCounts": [
+        2
+      ],
+      "admission": "separate deposited samples authorized 2026-10-14; author probe aggregation disclosed",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30.0,
+          "hi": 30.0,
+          "unit": "°C",
+          "text": "30º C",
+          "quote": "maintained at 30º C, and stirred at 0.5-1 rotation per second",
+          "where": "GEO GSE52486 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 25.0,
+          "hi": 25.0,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~25 µmol photons m-2 s-1",
+          "quote": "Cells were exposed to a surface flux of ~25 µmol photons m-2 s-1 white light",
+          "where": "GEO GSE52486 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1.0,
+          "hi": 1.0,
+          "unit": "%",
+          "text": "1% CO2 in air, bubbled at 500 ml min-1",
+          "quote": "bubbled with 500 ml min-1 1% CO2 in air",
+          "where": "GEO GSE52486 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": true,
+          "text": "continuous; white (class not stated)",
+          "quote": "Cells were exposed to two light/dark cycles (i.e., 12 hours of dark, followed by 12 h of light, followed by 12 h of dark) for entrainment prior to release into continuous light",
+          "where": "GEO GSE52486 !Sample_treatment_protocol_ch1 (group 1); spectrum term \"white light\" from !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "modified BG-11 medium (as described in Vijayan et al 2009)",
+          "quote": "Cells were grown in the modified BG-11 medium described in Vijayan et al 2009.",
+          "where": "GEO GSE52486 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "planktonic liquid",
+          "quote": "grown in a 6 liter cylindrical spinner flask (Corning) at a volume of 3 liters",
+          "where": "GEO GSE52486 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.15,
+            0.15
+          ],
+          "odNm": 750,
+          "text": "OD [0.15, 0.15] at 750 nm",
+          "quote": "OD750 (optical density at 750 nm) was maintained at 0.15.",
+          "where": "GEO GSE52486 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      },
+      "conditionTableRow": 54,
+      "quantity": "array_log2_ratio",
+      "group": "diel",
+      "sampleGroups": {},
+      "citationId": "markson-2013",
+      "citation": {
+        "text": "Markson JS et al. Circadian control of global gene expression by the cyanobacterial master regulator RpaA (2013).",
+        "url": "https://doi.org/10.1016/j.cell.2013.11.005",
+        "pmid": "24315105"
+      },
+      "poolingPolicy": "No across-time, genotype, experiment, reference, or study pooling. Separate deposited samples only.",
+      "pools": []
+    },
+    {
+      "studyId": "GSE59112",
+      "matrix": {
+        "name": "GSE59112_series_matrix.txt.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE59nnn/GSE59112/matrix/GSE59112_series_matrix.txt.gz",
+        "sha256": "ab5251723ecc7405f063af3a2f655f71c1e8d565ca4ebbc186157e4223673c70",
+        "bytes": 120783
+      },
+      "sampleCount": 12,
+      "featureCount": 1739,
+      "soft": {
+        "name": "GSE59112_family.soft.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE59nnn/GSE59112/soft/GSE59112_family.soft.gz",
+        "sha256": "a257c08ab5f458eea98901fa2259df208dd59d7908cbc27ee955b1f5a5a79701",
+        "bytes": 362573
+      },
+      "valueDescriptions": [
+        "Normalized signal intensity"
+      ],
+      "mappingAudit": {
+        "uniqueFeatures": 1739,
+        "platformUnmapped": 0,
+        "mappedUtexGenes": 1673,
+        "crosswalkUnmapped": 66
+      },
+      "sampleAccessions": [
+        "GSM1428798",
+        "GSM1428799",
+        "GSM1428800",
+        "GSM1428801",
+        "GSM1428802",
+        "GSM1428803",
+        "GSM1428804",
+        "GSM1428805",
+        "GSM1428806",
+        "GSM1428807",
+        "GSM1428808",
+        "GSM1428809"
+      ],
+      "processingDescriptions": [
+        "The data was extracted by Agilent Feature Extraction Software v9.5 from the image files.  Log intensity for each probe was subsequently normalized by linear regression against RNA spike-in standards.  Data were further processed by normalizing the median of the probes for each ORF across the time course to give mean = 0 and amplitude = 2 for the WT data."
+      ],
+      "rawSupplementaryUrls": [
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428798/suppl/GSM1428798_10042_GE1-v5_95_Feb07_2_1_4.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428799/suppl/GSM1428799_10042_GE1-v5_95_Feb07_2_1_1.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428800/suppl/GSM1428800_10042_GE1-v5_95_Feb07_2_2_1.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428801/suppl/GSM1428801_10042_GE1-v5_95_Feb07_2_1_3.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428802/suppl/GSM1428802_10043_GE1-v5_95_Feb07_2_1_4.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428803/suppl/GSM1428803_10043_GE1-v5_95_Feb07_2_1_3.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428804/suppl/GSM1428804_10042_GE1-v5_95_Feb07_2_2_3.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428805/suppl/GSM1428805_10042_GE1-v5_95_Feb07_2_2_2.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428806/suppl/GSM1428806_10043_GE1-v5_95_Feb07_2_1_2.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428807/suppl/GSM1428807_10043_GE1-v5_95_Feb07_2_1_1.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428808/suppl/GSM1428808_10042_GE1-v5_95_Feb07_2_1_2.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1428nnn/GSM1428809/suppl/GSM1428809_10043_GE1-v5_95_Feb07_2_2_1.txt.gz"
+      ],
+      "channelCounts": [
+        1
+      ],
+      "admission": "separate deposited samples authorized 2026-10-14; author probe aggregation disclosed",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30.0,
+          "hi": 30.0,
+          "unit": "°C",
+          "text": "30C",
+          "quote": "HEPES pH 8.0 at 30C under continuous illumination",
+          "where": "GEO GSE59112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 50.0,
+          "hi": 55.0,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "50-55 µmol photons m-2 s-1",
+          "quote": "50-55 µmol photons m-2 s-1",
+          "where": "GEO GSE59112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "Not reported for the sampling condition",
+          "quote": "",
+          "where": "checked: GEO GSE59112; PMID 25127221; PMC4477845; doi:10.1016/j.cub.2014.07.022"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": "cool fluorescent",
+          "entrained": true,
+          "text": "continuous (after diel entrainment); cool white fluorescent",
+          "quote": "synchronized with two light-dark (12h:12h) cycle before release into continuous light",
+          "where": "GEO GSE59112 !Series_overall_design; spectrum also stated in !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "modified BG-11M liquid medium supplemented with 20 mM HEPES pH 8.0",
+          "quote": "modified BG-11M liquid medium supplemented with 20 mM HEPES pH 8.0",
+          "where": "GEO GSE59112 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "planktonic liquid",
+          "quote": "Cultures were kept semi-turbidostatically by manual dilution and collected at 4 h intervals for the next 24 h",
+          "where": "paper PMC4477845, Methods — RNA Preparation and Microarray Analysis"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "Starting OD750 approximately 0.2 before synchronization; sampling OD not reported",
+          "quote": "cultures (120 mL, OD 750 ~0.2) were synchronized with two light-dark (12 h:12h) cycles before release into LL",
+          "where": "paper PMC4477845, Methods — RNA Preparation and Microarray Analysis"
+        }
+      },
+      "conditionTableRow": 55,
+      "quantity": "array_temporal_profile",
+      "group": "diel",
+      "sampleGroups": {
+        "GSM1428804": "engineered",
+        "GSM1428805": "engineered",
+        "GSM1428806": "engineered",
+        "GSM1428807": "engineered",
+        "GSM1428808": "engineered",
+        "GSM1428809": "engineered"
+      },
+      "citationId": "pattanayak-2014-array",
+      "citation": {
+        "text": "Pattanayak GK, Phong C, Rust MJ. Rhythms in energy storage control the ability of the cyanobacterial circadian clock to reset. Current Biology 24, 1934–1938 (2014).",
+        "url": "https://doi.org/10.1016/j.cub.2014.07.022",
+        "pmid": "25127221"
+      },
+      "poolingPolicy": "No across-time, genotype, experiment, reference, or study pooling. Separate deposited samples only.",
+      "pools": []
+    },
+    {
+      "studyId": "GSE18902",
+      "matrix": {
+        "name": "GSE18902_series_matrix.txt.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE18nnn/GSE18902/matrix/GSE18902_series_matrix.txt.gz",
+        "sha256": "7d337fc2585861562f1e6d0750e42642f8dd8c3cbc256b3e4d65fd953eab6f0d",
+        "bytes": 346875
+      },
+      "sampleCount": 23,
+      "featureCount": 2723,
+      "soft": {
+        "name": "GSE18902_family.soft.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE18nnn/GSE18902/soft/GSE18902_family.soft.gz",
+        "sha256": "f52dcba6030f666d1085814c59dd3456f6c3eee4357608eaf426a445ddd58f39",
+        "bytes": 740338
+      },
+      "valueDescriptions": [
+        "Lowess and quantile normalized log2(sample/average). Reported is the average of 4 separate probes per predicted ORF."
+      ],
+      "mappingAudit": {
+        "uniqueFeatures": 2723,
+        "platformUnmapped": 8,
+        "mappedUtexGenes": 2551,
+        "crosswalkUnmapped": 164
+      },
+      "sampleAccessions": [
+        "GSM468463",
+        "GSM468464",
+        "GSM468465",
+        "GSM468466",
+        "GSM468467",
+        "GSM468468",
+        "GSM468469",
+        "GSM468470",
+        "GSM468471",
+        "GSM468472",
+        "GSM468473",
+        "GSM468474",
+        "GSM468475",
+        "GSM468476",
+        "GSM468477",
+        "GSM468478",
+        "GSM468479",
+        "GSM468480",
+        "GSM468481",
+        "GSM468482",
+        "GSM468483",
+        "GSM468484",
+        "GSM468485"
+      ],
+      "processingDescriptions": [
+        "The average intensity of the Cy3 and Cy5 florescence at each spot was extracted using the GenePix software (Molecular Devices) and loaded into MATLAB (Mathworks). Loess and quantile normalization were performed using the MATLAB bioinformatics toolbox."
+      ],
+      "rawSupplementaryUrls": [
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468463/suppl/GSM468463.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468464/suppl/GSM468464.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468465/suppl/GSM468465.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468466/suppl/GSM468466.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468467/suppl/GSM468467.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468468/suppl/GSM468468.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468469/suppl/GSM468469.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468470/suppl/GSM468470.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468471/suppl/GSM468471.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468472/suppl/GSM468472.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468473/suppl/GSM468473.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468474/suppl/GSM468474.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468475/suppl/GSM468475.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468476/suppl/GSM468476.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468477/suppl/GSM468477.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468478/suppl/GSM468478.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468479/suppl/GSM468479.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468480/suppl/GSM468480.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468481/suppl/GSM468481.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468482/suppl/GSM468482.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468483/suppl/GSM468483.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468484/suppl/GSM468484.gpr.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM468nnn/GSM468485/suppl/GSM468485.gpr.gz"
+      ],
+      "channelCounts": [
+        2
+      ],
+      "admission": "separate deposited samples authorized 2026-10-14; author probe aggregation disclosed",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 30.0,
+          "hi": 30.0,
+          "unit": "°C",
+          "text": "30º C",
+          "quote": "maintained at 30º C",
+          "where": "GEO GSE18902 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "reported",
+          "lo": 25.0,
+          "hi": 25.0,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "~25 µmol photons m-2 s-1 white light",
+          "quote": "Cells were exposed to surface flux of ~25 µmol photons m-2 s-1 white light",
+          "where": "GEO GSE18902 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "co2": {
+          "status": "reported",
+          "lo": 1.0,
+          "hi": 1.0,
+          "unit": "%",
+          "text": "1% CO2 in air, bubbled at 500 ml/min",
+          "quote": "bubbled with 500 ml min-1 1% CO2 in air",
+          "where": "GEO GSE18902 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": true,
+          "text": "continuous; white (class not stated)",
+          "quote": "For all experiments, cells are exposed to two light/dark cycles for entrainment prior to release into continuous light",
+          "where": "GEO GSE18902 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "BG-11",
+          "modified": true,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "modified BG-11 medium (0.0010 g/liter FeNH4 citrate instead of 0.0012 g/liter, citric acid supplemented at 0.00066 g/liter)",
+          "quote": "Cells were grown in modified BG-11 medium with the following modifications: 0.0010 g/liter of FeNH4 citrate was used instead of 0.0012 g/liter of FeNH4 citrate and citric acid was supplemented at 0.00066 g/liter.",
+          "where": "GEO GSE18902 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "planktonic liquid",
+          "quote": "S. elongatus (strain AMC 408) was grown in a 6 liter cylindrical spinner flask (Corning) at a volume of 4.5 liters.",
+          "where": "GEO GSE18902 !Sample_growth_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "reported",
+          "label": "steady-state",
+          "od": [
+            0.15,
+            0.15
+          ],
+          "odNm": 750,
+          "text": "OD [0.15, 0.15] at 750 nm",
+          "quote": "Constant optical density (OD750 0.15) and volume are achieved via a two state controller.",
+          "where": "GEO GSE18902 !Sample_growth_protocol_ch1 (group 1)"
+        }
+      },
+      "conditionTableRow": 21,
+      "quantity": "array_log2_ratio",
+      "group": "diel",
+      "sampleGroups": {
+        "GSM468479": "stress",
+        "GSM468480": "stress",
+        "GSM468481": "stress",
+        "GSM468482": "stress",
+        "GSM468483": "stress",
+        "GSM468484": "stress",
+        "GSM468485": "stress"
+      },
+      "citationId": "vijayan-2009-array",
+      "citation": {
+        "text": "Vijayan V, Zuzow R, O'Shea EK. Oscillations in supercoiling drive circadian gene expression in cyanobacteria (2009).",
+        "url": "https://doi.org/10.1073/pnas.0912673106",
+        "pmid": "20018699"
+      },
+      "poolingPolicy": "No across-time, genotype, experiment, reference, or study pooling. Separate deposited samples only.",
+      "pools": []
+    },
+    {
+      "studyId": "GSE102914",
+      "matrix": {
+        "name": "GSE102914_series_matrix.txt.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE102nnn/GSE102914/matrix/GSE102914_series_matrix.txt.gz",
+        "sha256": "59b81f70716783fecd3e1895f785682e8f401efa20881600743a9006f1566219",
+        "bytes": 143425
+      },
+      "sampleCount": 16,
+      "featureCount": 2395,
+      "soft": {
+        "name": "GSE102914_family.soft.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE102nnn/GSE102914/soft/GSE102914_family.soft.gz",
+        "sha256": "01aff2e26be6734edb536a1dc8ed0ba38419eecb035ba0070e2ede8f865c8736",
+        "bytes": 445659
+      },
+      "valueDescriptions": [
+        "Normalized signal intensity"
+      ],
+      "mappingAudit": {
+        "uniqueFeatures": 2395,
+        "platformUnmapped": 0,
+        "mappedUtexGenes": 2259,
+        "crosswalkUnmapped": 136
+      },
+      "sampleAccessions": [
+        "GSM2748217",
+        "GSM2748218",
+        "GSM2748219",
+        "GSM2748220",
+        "GSM2748221",
+        "GSM2748222",
+        "GSM2748223",
+        "GSM2748224",
+        "GSM2748225",
+        "GSM2748226",
+        "GSM2748227",
+        "GSM2748228",
+        "GSM2748229",
+        "GSM2748230",
+        "GSM2748231",
+        "GSM2748232"
+      ],
+      "processingDescriptions": [
+        "Image analysis was performed with GenePix Pro 7 software (Molecular Device), background was defined with the “Local features background median” method.  Lowess normalization was applied in R (version 3.3.0) with the LIMMA software package (version 2.16.5). Spots corresponding to Synechococcus elongatus were extracted.  Four probes for each gene were spoted on the array. Mean signal of the four probes were calculated."
+      ],
+      "rawSupplementaryUrls": [
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748217/suppl/GSM2748217_Raw_T1.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748218/suppl/GSM2748218_Raw_T2.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748219/suppl/GSM2748219_Raw_T3.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748220/suppl/GSM2748220_Raw_T4.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748221/suppl/GSM2748221_Raw_H1.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748222/suppl/GSM2748222_Raw_H2.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748223/suppl/GSM2748223_Raw_H3.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748224/suppl/GSM2748224_Raw_H4.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748225/suppl/GSM2748225_Raw_Z1.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748226/suppl/GSM2748226_Raw_Z2.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748227/suppl/GSM2748227_Raw_Z3.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748228/suppl/GSM2748228_Raw_Z4.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748229/suppl/GSM2748229_Raw_I1.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748230/suppl/GSM2748230_Raw_I2.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748231/suppl/GSM2748231_Raw_I3.txt.gz",
+        "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM2748nnn/GSM2748232/suppl/GSM2748232_Raw_I4.txt.gz"
+      ],
+      "channelCounts": [
+        1
+      ],
+      "admission": "separate deposited samples authorized 2026-10-14; author probe aggregation disclosed",
+      "conditions": {
+        "temperature": {
+          "status": "reported",
+          "lo": 20.0,
+          "hi": 20.0,
+          "unit": "°C",
+          "text": "20°C",
+          "quote": "20 °C",
+          "where": "GEO GSE102914 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "lightIntensity": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "µmol photons m⁻² s⁻¹",
+          "text": "Not reported for the sampling condition",
+          "quote": "",
+          "where": "Accepted package BC addendum 2026-10-06, exposure-incubation row; Vicente 2019 Methods"
+        },
+        "co2": {
+          "status": "not reported",
+          "lo": null,
+          "hi": null,
+          "unit": "%",
+          "text": "Not reported for the sampling condition",
+          "quote": "",
+          "where": "Accepted package BC addendum 2026-10-06, exposure-incubation row; Vicente 2019 Methods"
+        },
+        "lightRegime": {
+          "status": "reported",
+          "kind": "continuous",
+          "photoperiod": null,
+          "spectrumClass": null,
+          "entrained": false,
+          "text": "continuous; spectrum not reported",
+          "quote": "continuous light",
+          "where": "GEO GSE102914 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "medium": {
+          "status": "reported",
+          "base": "EPA Very Soft Water",
+          "modified": false,
+          "conditioned": false,
+          "nitrogenAltered": false,
+          "text": "EPA Very Soft Water (pH 6.4 ± 0.3), with 5 mg/L Z-COTE, Z-COTE HP1, or ZnCl2 added, or solvent control",
+          "quote": "incubation medium: EPA Very Soft Water (pH 6.4± 0.3)",
+          "where": "GEO GSE102914 sample characteristics, GSM2748217 (group 1)"
+        },
+        "format": {
+          "status": "reported",
+          "value": "planktonic liquid",
+          "text": "Rotary-agitated exposure aliquots",
+          "quote": "aliquot of 31.5 mL",
+          "where": "GEO GSE102914 !Sample_treatment_protocol_ch1 (group 1)"
+        },
+        "phase": {
+          "status": "not reported",
+          "label": null,
+          "od": null,
+          "odNm": null,
+          "text": "OD730 adjusted to 0.27 at start of exposure; harvest OD not reported",
+          "quote": "The OD730nm was adjusted to 0.27 (3.10E8 cells/mL)",
+          "where": "GEO GSE102914 !Sample_treatment_protocol_ch1 (group 1)"
+        }
+      },
+      "conditionTableRow": 2,
+      "quantity": "array_normalized_signal",
+      "group": "stress",
+      "sampleGroups": {},
+      "citationId": "vicente-2019-array",
+      "citation": {
+        "text": "Vicente A et al. Toxicity mechanisms of ZnO UV-filters used in sunscreens toward the model cyanobacteria Synechococcus elongatus PCC7942 (2019).",
+        "url": "https://doi.org/10.1007/s11356-019-05057-6",
+        "pmid": "31161548"
+      },
+      "poolingPolicy": "Optional arithmetic mean of four deposited normalized signals within the same treatment, retaining every individual GSM; no pooling across treatments. No re-normalization or probe reprocessing.",
+      "pools": [
+        {
+          "id": "2748217",
+          "label": "Optional four-replicate mean, control, 5 h",
+          "sampleIds": [
+            "GSM2748217",
+            "GSM2748218",
+            "GSM2748219",
+            "GSM2748220"
+          ],
+          "multipliers": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "id": "2748221",
+          "label": "Optional four-replicate mean, Z-COTE HP1, 5 h",
+          "sampleIds": [
+            "GSM2748221",
+            "GSM2748222",
+            "GSM2748223",
+            "GSM2748224"
+          ],
+          "multipliers": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "id": "2748225",
+          "label": "Optional four-replicate mean, Z-COTE, 5 h",
+          "sampleIds": [
+            "GSM2748225",
+            "GSM2748226",
+            "GSM2748227",
+            "GSM2748228"
+          ],
+          "multipliers": [
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "id": "2748229",
+          "label": "Optional four-replicate mean, ZnCl2, 5 h",
+          "sampleIds": [
+            "GSM2748229",
+            "GSM2748230",
+            "GSM2748231",
+            "GSM2748232"
+          ],
+          "multipliers": [
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    }
+  ],
+  "crosswalk": {
+    "path": "data/annotation/releases/GCF_000817325.1-RS_2026_05_13/identifier-crosswalk-v1.tsv",
+    "sha256": "97e3022e53cd1e31f5931ead37f425e1d99c032704e5ff8f02c0d75d1755e9ae"
+  }
+}

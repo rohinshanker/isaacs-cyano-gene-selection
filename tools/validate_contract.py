@@ -1539,6 +1539,24 @@ EXPRESSION_QUANTITIES: dict[str, dict[str, Any]] = {
                       "Ribo-seq": ("occupancy", "Ribosome occupancy")},
         "bounds": {"nonnegative": True, "integral": False, "unitInterval": False},
     },
+    "array_log2_ratio": {
+        "column": "log2_fold_change", "family": "Fold change", "pools": False,
+        "signed": True, "logScale": False,
+        "platforms": {"array": ("array-log2-ratio", "Array log2 sample/reference ratio")},
+        "bounds": {"nonnegative": False, "integral": False, "unitInterval": False},
+    },
+    "array_normalized_signal": {
+        "column": "normalized_signal", "family": "Expression", "pools": False,
+        "signed": False, "logScale": False,
+        "platforms": {"array": ("array-signal", "Array normalized signal")},
+        "bounds": {"nonnegative": True, "integral": False, "unitInterval": False},
+    },
+    "array_temporal_profile": {
+        "column": "normalized_profile", "family": "Temporal profile", "pools": False,
+        "signed": True, "logScale": False,
+        "platforms": {"array": ("array-profile", "Array normalized time-course profile")},
+        "bounds": {"nonnegative": False, "integral": False, "unitInterval": False},
+    },
     "read_count": {
         "column": "read_count", "family": "Expression", "pools": True,
         "signed": False, "logScale": False,
@@ -1684,7 +1702,8 @@ def validate_expression_quantities(meta: dict[str, Any], genes: list[Any],
         f"{s.get('id')} ({s.get('quantity')}) is in {s.get('quantityFamily')!r}"
         for s in declared
         if s.get("quantity") in ("log2_fold_change", "edger_log2_fold_change", "p_value",
-                                 "translation_efficiency_log2_fold_change")
+                                 "translation_efficiency_log2_fold_change",
+                                 "array_log2_ratio", "array_temporal_profile")
         and s.get("quantityFamily") in ABUNDANCE_FAMILIES
     ]
     report.check(not misfiled, "no fold change, p-value or ratio is filed as an abundance",

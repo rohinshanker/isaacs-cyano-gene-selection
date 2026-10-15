@@ -40,7 +40,7 @@ def test_generated_documents_follow_contract():
     # three protein, four PXD000510 diel identification windows, two PXD005851
     # acetylation-survey media, nine GSE205443 fitness fractions, 90 Fitness
     # Browser condition sets).
-    assert len(meta["metrics"]) == 35 + 166
+    assert len(meta["metrics"]) == 35 + 166 + 127
     assert all(
         definition["desc"] != definition["label"]
         and definition["scale"] in {"sequential", "diverging"}

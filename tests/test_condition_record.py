@@ -20,7 +20,7 @@ def test_example_record_is_valid():
 def test_the_shipped_sources_carry_valid_records():
     sources = json.loads((ROOT / "data/expression/sources.json").read_text(encoding="utf-8"))
     by_id = {source["id"]: source for source in sources}
-    assert len(by_id) == len(sources) == 168
+    assert len(by_id) == len(sources) == 295
     for source in sources:
         validate_record(source["record"], source["id"])
     assert by_id["GSE205444"]["record"]["basis"] == "transferred"

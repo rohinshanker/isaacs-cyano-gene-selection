@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { dataset } from './data-sources-fixture.mjs';
 import {
   assayKind, buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, defaultInforming,
-  informingDataset, isDatasetOwnKey, isTypeKey, normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
+  informingDataset, nonPoolingReason, isDatasetOwnKey, isTypeKey, normalizeTypeSources, typeGroups, typeKeyFor, typeKeyOf, typeLabelFor,
 } from '../../site/js/core/type-metrics.js';
 import { sortedFinite, percentileRank } from '../../site/js/core/stats.js';
 
@@ -243,4 +243,11 @@ test('a log-scaled and a linear dataset pool safely, because pooling is by rank'
   // And the negative a log scale produces is an ordinary low value, not an edge
   // case: it ranks below the others and nothing else changes.
   assert.ok(percentileRank(rankedLogged, Math.log2(0.5)) < percentileRank(rankedLogged, 0));
+});
+
+
+test('array sample disclosure explains explicit optional summaries without suggesting automatic pooling', () => {
+  const array = dataset({ id: 'ARR', platform: 'array' });
+  assert.match(nonPoolingReason(array), /Deposited array samples remain separate/);
+  assert.match(nonPoolingReason(array), /optional source-specific summary/);
 });

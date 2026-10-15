@@ -139,6 +139,30 @@ QUANTITIES: Mapping[str, Quantity] = {
     quantity.name: quantity
     for quantity in (
         Quantity(
+            name="array_log2_ratio", column=LOG2_FOLD_CHANGE_COLUMN,
+            data_types=("transcriptomics",), family="Fold change",
+            scale="diverging", signed=True, log_scale=False,
+            nonnegative=False, integral=False, unit_interval=False,
+            exact=True, pools=False,
+            by_platform={"array": ("array-log2-ratio", "Array log2 sample/reference ratio")},
+        ),
+        Quantity(
+            name="array_normalized_signal", column="normalized_signal",
+            data_types=("transcriptomics",), family="Expression",
+            scale="sequential", signed=False, log_scale=False,
+            nonnegative=True, integral=False, unit_interval=False,
+            exact=True, pools=False,
+            by_platform={"array": ("array-signal", "Array normalized signal")},
+        ),
+        Quantity(
+            name="array_temporal_profile", column="normalized_profile",
+            data_types=("transcriptomics",), family="Temporal profile",
+            scale="diverging", signed=True, log_scale=False,
+            nonnegative=False, integral=False, unit_interval=False,
+            exact=True, pools=False,
+            by_platform={"array": ("array-profile", "Array normalized time-course profile")},
+        ),
+        Quantity(
             name="rpkm",
             column=ABUNDANCE_COLUMN,
             data_types=("transcriptomics",),
