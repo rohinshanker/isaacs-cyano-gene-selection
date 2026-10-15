@@ -4,7 +4,7 @@ Reusable contracts and runbooks for this repository.
 
 | Document | Covers |
 | --- | --- |
-| [pxd036717-enrichment.md](pxd036717-enrichment.md) | Pinned APEX2 supplement preservation, non-imputed LFQ enrichment reconstruction, complete per-bait means, missing-intensity diagnostics and browser-admission boundary |
+| [pxd036717-enrichment.md](pxd036717-enrichment.md) | Pinned APEX2 supplement preservation, non-imputed LFQ reconstruction, detection states, exact protein-to-gene mapping with group/RefSeq ambiguity preserved, and browser-admission boundary |
 | [geo-array-reader.md](geo-array-reader.md) | Lossless GEO processed-sample reader, pinned SOFT/matrix equality, exact GPL9534 gene mapping, distinct array quantities, source-specific optional summaries and author probe-averaging disclosure |
 | [neighbor-regulatory-sites.md](neighbor-regulatory-sites.md) | Native source-associated TSS points inside actual CDS segments, mapped-owner and deduplication rules, shared filtering/colouring/viewers, purple lines and exact-base underlines with visible active focus, missing RBS evidence, the distinct-site count shared by the numeric colour, the inclusive count filter and the export, source and visibility state, and rendered regression checks |
 | [overlap-length.md](overlap-length.md) | Strand-aware 5′/3′ overlap lengths, union and gap rules, inclusive range filtering, numeric colours in Genomic context, unavailable values, saved views, exports and independent geometry/rendered checks |
