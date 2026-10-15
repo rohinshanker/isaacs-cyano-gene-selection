@@ -1,15 +1,21 @@
-# O_array-expression-reader__20261007 — Open (reviewed by rohin)
+# A_array-expression-reader__20261007 — Active (reviewed by rohin)
 
 - **Scope:** An array reader for `tools/ingest_expression.py` and the separate
   "array" platform listing in Data Sources, for the seven PCC 7942 microarray
   series that deposit raw files only. Covers `tools/ingest_expression.py`,
   `data/expression/ingest/`, `docs/validation/data-contract.md` and the Data
   Sources platform grouping.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-07
 - **Updated:** 2026-10-14
 
 ## Current state
+
+Owned by **cyano-lit-unreach** as of 2026-10-14, isolated on
+`work/array-expression-reader-20261014`. Scope is the deposited microarray
+reader, source-specific measurement/pooling contracts and admission. The
+filter/TSS UI work owned by cyano-unblocked-tix and comparability work owned
+by cyano-regulatory-sites remain separate.
 
 Owner decision, 2026-10-14: keep microarray measurements separate by default,
 but allow optional pooling. The owner explicitly clarified that the answer

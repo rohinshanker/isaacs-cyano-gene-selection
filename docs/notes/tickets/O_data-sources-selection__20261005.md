@@ -262,7 +262,7 @@ contract](../../validation/fitness-screen-data.md) rather than fetched.
 **No RNA-seq candidate remains.** Every row of the package B/C register that
 deposits a per-gene table is ingested. The unshipped rows are each accounted
 for, and none is waiting on this ticket: the seven raw-only microarray series
-belong to the [array reader ticket](O_array-expression-reader__20261007.md);
+belong to the [array reader ticket](A_array-expression-reader__20261007.md);
 GSE122841 is the [raw-read pilot](A_raw-read-pilot-execution__20261007.md);
 GSE140121, GSE205445, GSE227397 and GSE50922 deposit raw files only;
 GSE103606 is a SuperSeries container whose five RNA SubSeries all ship;
