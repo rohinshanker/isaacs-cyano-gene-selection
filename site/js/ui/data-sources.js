@@ -162,7 +162,7 @@ function mediumCell(dataset) {
   const medium = dataset.record.conditions.medium;
   if (!medium.base) return missingCell(medium);
   const node = el('span');
-  node.append(chip(medium.base, 'ds-chip', medium.text));
+  node.append(chip(medium.base, 'ds-chip ds-chip-wrap', medium.text));
   if (medium.nitrogenAltered) node.append(chip('nitrogen altered'));
   if (medium.conditioned) node.append(chip('conditioned'));
   return node;

@@ -99,7 +99,37 @@ def fetch(url: str, expected_sha256: str, target: Path, *, manual: bool = False)
     return data
 
 
-def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[list[str]]]:
+def read_geo_soft_table(
+    data: bytes, reader: Mapping[str, Any], *, platform_data: bytes | None = None,
+    platform_source_id: str | None = None,
+) -> tuple[list[str], list[list[str]], dict[str, Any]]:
+    """Project GEO processed samples through an explicitly selected GPL field.
+
+    Required reader keys: ``sourceId``, ``platformId`` and ``idColumn``.
+    ``sampleIds`` selects and orders samples; omission selects this platform's
+    samples. ``mappingPattern`` optionally constrains the entire mapped ID.
+    Use ``geo_array.read_geo_soft`` directly to retain the lossless document.
+    A separate GPL input is passed as bytes; ingestion fetches ``platformFile``
+    through the ordinary checksum-verifying path.
+    """
+    if __package__:
+        from .geo_array import project_geo_table, read_geo_soft
+    else:
+        from geo_array import project_geo_table, read_geo_soft
+
+    for key in ("sourceId", "platformId", "idColumn"):
+        if not isinstance(reader.get(key), str) or not reader[key].strip():
+            raise ValueError(f"geo-soft reader requires explicit {key}")
+    document = read_geo_soft(data, source_id=reader["sourceId"], platform_data=platform_data,
+                             platform_source_id=platform_source_id)
+    return project_geo_table(document, platform_id=reader["platformId"], id_column=reader["idColumn"],
+                             sample_ids=reader.get("sampleIds"), identifier_pattern=reader.get("mappingPattern"))
+
+
+def read_table(
+    data: bytes, reader: Mapping[str, Any], *, platform_data: bytes | None = None,
+    platform_source_id: str | None = None,
+) -> tuple[list[str], list[list[str]]]:
     """Read a deposited table into a header and string rows.
 
     The header is the first row holding a cell equal to ``reader['idColumn']``;
@@ -118,8 +148,14 @@ def read_table(data: bytes, reader: Mapping[str, Any]) -> tuple[list[str], list[
     ``<block> :: <header> :: <sheet>``. A search-engine deposit of DTASelect
     reports (``format: dtaselect``) is read by ``read_dtaselect`` instead, an
     mzTab protein table (``format: mztab``) by ``read_mztab``, and an mzIdentML
-    search result (``format: mzidentml``) by ``read_mzidentml``.
+    search result (``format: mzidentml``) by ``read_mzidentml``. Explicit
+    ``format: geo-soft`` uses ``read_geo_soft_table`` for a unique platform
+    mapping, without changing any deposited sample value.
     """
+    if reader["format"] == "geo-soft":
+        header, rows, _ = read_geo_soft_table(data, reader, platform_data=platform_data,
+                                             platform_source_id=platform_source_id)
+        return header, rows
     if data[:2] == b"\x1f\x8b":
         data = gzip.decompress(data)
     if reader["format"] == "dtaselect":
@@ -654,11 +690,42 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
            uniprot_table: Path = DEFAULT_UNIPROT_TABLE) -> list[dict[str, Any]]:
     """Run the whole ingestion for one spec and return the manifest entries written."""
     sources = spec.get("files") or [spec["file"]]
+    is_geo = spec["reader"]["format"] == "geo-soft"
+    platform_data = None
+    platform_source_id = None
+    geo_audits = []
+    if is_geo:
+        # Source-specific transformations and pooling require a separate
+        # contract. This route exposes one deposited sample per layer only.
+        if spec["normalization"] != "as-deposited":
+            raise ValueError("geo-soft ingestion requires as-deposited normalization")
+        if any(len(layer["columns"]) != 1 for layer in spec["layers"]):
+            raise ValueError("geo-soft ingestion requires exactly one sample column per layer; pooling is not supported")
+        platform_file = spec["reader"].get("platformFile")
+        if platform_file:
+            platform_data = fetch(platform_file["url"], platform_file["sha256"], interim / platform_file["name"],
+                                  manual=bool(platform_file.get("manual")))
+            platform_source_id = platform_file["url"]
     parts = []
     for source in sources:
         data = fetch(source["url"], source["sha256"], interim / source["name"],
                      manual=bool(source.get("manual")))
-        header, body = read_table(data, spec["reader"])
+        if is_geo:
+            reader = {**spec["reader"], "sourceId": source["url"]}
+            header, body, audit = read_geo_soft_table(data, reader, platform_data=platform_data,
+                                                     platform_source_id=platform_source_id)
+            audit["sourceFile"] = source["name"]
+            audit["sourceSha256"] = source["sha256"]
+            label = source.get("label") or Path(source["name"]).stem
+            audit["sampleColumns"] = {
+                sample: f"{sample} :: {label}" if len(sources) > 1 else sample
+                for sample in audit["sampleIds"]
+            }
+            if platform_data is not None:
+                audit["platformFile"] = dict(platform_file)
+            geo_audits.append(audit)
+        else:
+            header, body = read_table(data, spec["reader"])
         parts.append((source.get("label") or Path(source["name"]).stem, header, body))
     header, rows = parts[0][1:] if len(parts) == 1 else join_tables(parts)
     rows, outside_pattern = select_identifiers(rows, spec["reader"].get("idPattern"))
@@ -680,6 +747,12 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
             means, no_locus = through_uniprot(means, orf_names)
         mapped, unmapped = map_to_utex(means, crosswalk)
         unmapped += no_locus + outside_pattern
+        if is_geo:
+            unmapped += sum(
+                len(audit["unmappedProbeIdsBySample"][sample])
+                for audit in geo_audits for sample, column in audit["sampleColumns"].items()
+                if column == layer["columns"][0]
+            )
         if not mapped:
             raise ValueError(f"layer {layer['id']} maps no gene; check idKind and the columns")
         table_name = f"{layer['id']}.tsv"
@@ -713,6 +786,8 @@ def ingest(spec: Mapping[str, Any], *, manifest_path: Path, crosswalk_path: Path
                 + f"{relationship} in {crosswalk_path.name}, one-to-one rows only",
             },
         }
+        if is_geo:
+            entry["ingest"]["geoSoft"] = geo_audits
         if layer["id"] in by_id:
             manifest[by_id[layer["id"]]] = entry
         else:

@@ -41,8 +41,10 @@ test('clear all filters resets numeric and categorical channels together', () =>
     exceptionFilter: 'any',
     expressionFilter: 'any',
     trafficKey: null,
+    trafficSources: null,
     proteinFilter: 'any',
     neighborSiteFilter: 'any',
+    neighborSiteCountFilter: null,
     // The overlapping-gene class selection is one of those channels: the OG
     // filter's three options and the OG colour key's class rows both write it,
     // so Clear all filters has to clear it too.
@@ -51,6 +53,7 @@ test('clear all filters resets numeric and categorical channels together', () =>
     // So is the PCC 7942 essentiality selection, which the Filters panel and
     // the essentiality colour key both write.
     pccEssentialityFilter: [],
+    filtersBypassed: false,
   });
 });
 

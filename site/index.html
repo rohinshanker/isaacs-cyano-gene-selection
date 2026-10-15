@@ -30,6 +30,7 @@
 <link rel="modulepreload" href="js/core/early-data.js">
 <link rel="modulepreload" href="js/core/export-manifest.js">
 <link rel="modulepreload" href="js/core/expression-agreement.js">
+<link rel="modulepreload" href="js/core/filter-bypass.js">
 <link rel="modulepreload" href="js/core/folding-client.js">
 <link rel="modulepreload" href="js/core/folding-sequences.js">
 <link rel="modulepreload" href="js/core/function-categories.js">
@@ -93,6 +94,7 @@
 <link rel="modulepreload" href="js/ui/dataset-color-progress.js">
 <link rel="modulepreload" href="js/ui/disclosures.js">
 <link rel="modulepreload" href="js/ui/draw-direction.js">
+<link rel="modulepreload" href="js/ui/filter-status.js">
 <link rel="modulepreload" href="js/ui/filters.js">
 <link rel="modulepreload" href="js/ui/folding-panel.js">
 <link rel="modulepreload" href="js/ui/format.js">
@@ -160,7 +162,7 @@
       <button type="button" class="chip-button header-link map-jump" aria-controls="map-section">Jump to map</button>
       <button type="button" id="reset-panel-widths" class="chip-button" hidden>Reset panel widths</button>
       <button type="button" id="reset-panel-layout" class="chip-button"
-              title="Restore the controls column to its original order, with the gene visualizer collapsed">Reset panel layout</button>
+              title="Restore the controls column to its original order, with the gene visualizer and Custom filters collapsed">Reset panel layout</button>
       <button type="button" id="help-toggle" class="chip-button" aria-expanded="false" aria-controls="help">
         How to read this
         <svg class="help-toggle-caret" viewBox="0 0 12 8" aria-hidden="true" focusable="false">
@@ -442,6 +444,12 @@ if (window.location.protocol === 'file:') {
           Choose the codons to remove. Each gets a synonymous replacement you can change.
         </p>
         <div id="scheme-editor"></div>
+      </div>
+    </section>
+    <section class="card panel-card" data-panel-id="custom-filters">
+      <h2>Custom filters</h2>
+      <div class="panel-body" id="panel-body-custom-filters" data-panel-body>
+        <div id="custom-filters"></div>
       </div>
     </section>
     <section class="card panel-card" data-panel-id="filters">

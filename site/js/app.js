@@ -1,4 +1,7 @@
-import { neighborSiteModel, neighborSiteFilterSummary, passesNeighborSiteFilter, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_COLORS } from './core/neighbor-sites.js';
+import {
+  neighborSiteModel, neighborSiteFilterSummary, passesNeighborSiteFilter, passesNeighborSiteCountFilter,
+  neighborSiteCountMetric, neighborSiteSourcesSelected, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL,
+} from './core/neighbor-sites.js';
 import { renderNeighborSiteLegend } from './ui/neighbor-sites.js';
 import { GO_TERM_COLOR_KEY, goTermEvidenceModel, passesGoTermFilter } from './core/go-term-evidence.js';
 import { GoTermControls, GO_EVIDENCE_COLORS, renderGoTermLegend } from './ui/go-term-controls.js';
@@ -101,7 +104,8 @@ import { colorAnnouncement, installColorControls } from './ui/color-controls.js'
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
 import {
-  FilterPanel, clearedFilterState, followColourTrafficState, orderTrafficCandidates,
+  FilterPanel, clearedFilterState, defaultTrafficCandidate, followColourTrafficState,
+  orderTrafficCandidates, trafficScale, trafficScaleKind,
 } from './ui/filters.js';
 import { SidePanel } from './ui/side-panel.js';
 import { ShortlistPanel } from './ui/shortlist.js';
@@ -123,7 +127,7 @@ import { createSourceSelectionResolver } from './core/source-selection.js';
 import {
   availableAxisDatasets, axisDatasetSelectionLabel, defaultAxisDatasetSelection,
   legacyAxisDatasetSelection, normalizeAxisDatasetSelection, requestedAxisFileKeys,
-  createAxisContributorResolver,
+  createAxisContributorResolver, resolveAxisContributors,
 } from './core/axis-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
@@ -132,6 +136,11 @@ import {
 import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
 import { axisPairsNote, axisTitlesNote, filterBannerText } from './ui/axis-copy.js';
+import {
+  filterCriteriaSignature, reconcileFilterBypass, effectiveFilterMask, filterStatusVisible,
+  bypassedStatusText, chromosomeFilterStatusText,
+} from './core/filter-bypass.js';
+import { FilterStatus } from './ui/filter-status.js';
 import {
   annotationSourceLabel, isAllSources, normalizeAnnotationSources,
 } from './core/annotation-source.js';
@@ -256,8 +265,6 @@ let pendingLoadSnapshot = null;
 let loadProgressFrame = 0;
 
 const context = {
-  // The filters' threshold follows the colouring metric until the reader says otherwise.
-  trafficFollowsColor: true,
   dataset: null,
   registry: null,
   live: null,
@@ -272,6 +279,9 @@ const context = {
   projections: new Map(),
   percentiles: new Map(),
   axisTypeMetrics: { x: null, y: null },
+  // The low-traffic threshold's own pooled type metrics, read only while it
+  // has its own dataset selection; see `metricForTraffic`.
+  trafficTypeMetrics: null,
   // A colour scale defaulted while its metric's file was loading, re-chosen on landing.
   scaleAwaitsFile: null,
   timings: { scheme: NaN, projection: NaN, codons: 0 },
@@ -516,7 +526,9 @@ function computeMask() {
   const mask = new Uint8Array(count).fill(1);
   const missingHidden = new Map();
   const entries = Object.entries(state.filters)
-    .map(([key, range]) => ({ key, metric: registry.byKey.get(key), range }))
+    .map(([key, range]) => ({
+      key, range, metric: key === state.trafficKey ? metricForTraffic(key) : registry.byKey.get(key),
+    }))
     .filter((entry) => entry.metric);
 
   for (const { key, metric, range } of entries) {
@@ -588,7 +600,8 @@ function computeMask() {
       Boolean(dataset.geneOverlaps))) mask[i] = 0;
   }
   for (let i = 0; i < count; i += 1) {
-    if (mask[i] && !passesNeighborSiteFilter(context.neighborSites, i, state.neighborSiteFilter)) mask[i] = 0;
+    if (mask[i] && !(passesNeighborSiteFilter(context.neighborSites, i, state.neighborSiteFilter)
+      && passesNeighborSiteCountFilter(context.neighborSites, i, state.neighborSiteCountFilter))) mask[i] = 0;
   }
   context.baseMask = mask;
   if (organism.functionalAnnotations && state.goTerm && state.goEvidenceFilter !== 'any') {
@@ -613,9 +626,122 @@ function computeMask() {
 
   let passing = 0;
   for (let i = 0; i < count; i += 1) passing += finalMask[i];
-  context.mask = finalMask;
-  context.passing = passing;
+  // Turn filters off keeps every criterion and its configured result, and
+  // includes every gene. Any criterion the reader changes ends the bypass.
+  const bypass = reconcileFilterBypass(
+    { bypassed: state.filtersBypassed === true, recorded: context.bypassSignature },
+    state.filtersBypassed === true ? criteriaSignature() : null,
+  );
+  state.filtersBypassed = bypass.bypassed;
+  context.bypassSignature = bypass.recorded;
+  if (bypass.reactivated) queueNote('Filters turned back on because a filter changed.');
+  context.configuredMask = finalMask;
+  context.configuredPassing = passing;
+  context.mask = effectiveFilterMask(finalMask, bypass.bypassed);
+  if (bypass.bypassed) context.baseMask = effectiveFilterMask(mask, true);
+  context.passing = bypass.bypassed ? count : passing;
   context.missingHidden = missingHidden;
+}
+
+/**
+ * The criteria a bypass is held against, with the datasets each filtered type
+ * reads as the reader requested them, so changing a filter's source or pool
+ * switches filters back on while a file landing does not.
+ */
+function criteriaSignature() {
+  const neighborActive = (state.neighborSiteFilter ?? 'any') !== 'any' || Boolean(state.neighborSiteCountFilter);
+  return filterCriteriaSignature(state, {
+    dependencies: {
+      // The enabled annotation sources decide which genes a category keeps.
+      categorySources: state.categoryFilter?.length ? [...(state.colorSources ?? [])].sort() : null,
+      // Whether a Tan source is selected decides whether the site filters apply.
+      neighborSources: neighborActive && context.datasets?.length
+        ? neighborSiteSourcesSelected(sourceSelection()) : null,
+    },
+    contributorsOf: (key) => {
+      if (!isTypeKey(key) || !context.datasets?.length) return null;
+      if (key === state.trafficKey) return trafficContributorState(key).requested.map((d) => d.id);
+      return contributingDatasets(key, state.typeSources, context.datasets, sourceSelection())
+        .map((dataset) => dataset.id);
+    },
+  });
+}
+
+/** Turn every configured filter off or back on, keeping each criterion. */
+function setFiltersBypassed(bypassed) {
+  if ((state.filtersBypassed === true) === bypassed) return;
+  state.filtersBypassed = bypassed;
+  context.bypassSignature = bypassed ? criteriaSignature() : null;
+  renderAll();
+  const total = context.dataset.genes.length;
+  announce(bypassed
+    ? `Filters temporarily off. All ${formatCount(total)} genes are included; every filter is kept.`
+    : `Filters back on. ${formatCount(context.passing)} of ${formatCount(total)} genes pass.`);
+}
+
+/** A consequence of a redraw the reader should hear, such as a bypass ending. */
+function queueNote(text) {
+  context.pendingNotes = [...(context.pendingNotes ?? []), text];
+}
+
+/**
+ * Say the queued notes once, after the redraw that caused them. The control
+ * that changed usually announces its own change after the redraw; waiting one
+ * microtask lets both be heard, the notes first.
+ */
+function announceQueuedNotes() {
+  if (!context.pendingNotes?.length) return;
+  const lead = context.pendingNotes.join(' ');
+  context.pendingNotes = [];
+  const before = element('announcer').textContent;
+  queueMicrotask(() => {
+    const after = element('announcer').textContent;
+    announce(after !== before && after
+      ? `${lead} ${after}`
+      : `${lead} ${formatCount(context.passing)} of ${formatCount(context.dataset.genes.length)} genes pass.`);
+  });
+}
+
+/** The traffic metric a threshold is stored under, the panel's default when none is named. */
+function effectiveTrafficKey() {
+  return state.trafficKey ?? defaultTrafficCandidate(orderTrafficCandidates(scopedRegistry()))?.key ?? null;
+}
+
+/**
+ * Clear a low-traffic threshold whose scale kind changed under it, whatever
+ * changed it: its own datasets, Use same source as colouring, or the Data
+ * Sources selection colouring reads. A number set on one deposit's units is
+ * never reapplied to a pooled percentile or back. A pooled percentile is the
+ * same scale whatever the pool size, so resizing a pool keeps the threshold.
+ */
+function reconcileTrafficScale() {
+  const key = effectiveTrafficKey();
+  const kind = key && context.registry?.byKey.has(key) ? trafficScaleKind(metricForTraffic(key)) : null;
+  const previous = context.trafficScale;
+  context.trafficScale = { key, kind };
+  if (!previous || previous.key !== key || previous.kind === kind || !state.filters[key]) return;
+  const filters = { ...state.filters };
+  delete filters[key];
+  state.filters = filters;
+  queueNote('The low-traffic threshold was cleared because its scale changed.');
+}
+
+/** Both Filter status sections, from the one bypass state. */
+function filterStatusModel(viewText) {
+  const total = context.dataset.genes.length;
+  const configuredHidden = total - (context.configuredPassing ?? context.passing);
+  const bypassed = state.filtersBypassed === true;
+  return {
+    visible: filterStatusVisible({ configuredHidden, bypassed }),
+    bypassed,
+    text: bypassed ? bypassedStatusText({ total, configuredHidden }) : viewText(configuredHidden, total),
+  };
+}
+
+function syncChromosomeFilterStatus() {
+  chromosomeFilterStatus?.update(filterStatusModel((hidden, total) => chromosomeFilterStatusText({
+    hidden, total, showHidden: state.showHidden,
+  })));
 }
 
 /** Whether a function-category selection is in force on a resolved model. */
@@ -663,7 +789,7 @@ function previewCategory(id) {
   const preview = new Uint8Array(base.length);
   for (let i = 0; i < base.length; i += 1) {
     preview[i] = base[i] && channel.bucketAt(i) === id
-      && passesOtherChannels(i, channel.skip) ? 1 : 0;
+      && (state.filtersBypassed === true || passesOtherChannels(i, channel.skip)) ? 1 : 0;
   }
   apply(preview);
 }
@@ -818,10 +944,13 @@ function persist() {
 let plot = null;
 let schemeEditor = null;
 let filterPanel = null;
+let scatterFilterStatus = null;
+let chromosomeFilterStatus = null;
 let goTermControls = null;
 let dataSourcesPanel = null;
 let chromosomeDataSourcesPanel = null;
 const axisDataSourcesPanels = { x: null, y: null };
+let trafficDataSourcesPanel = null;
 let sidePanel = null;
 let shortlistPanel = null;
 let searchResults = null;
@@ -955,11 +1084,6 @@ function resolveColorScale() {
     const model = goTermEvidenceModel(context.dataset, state.goTerm);
     return { categorical: true, goTerm: model, metric: null, values: model.values, scale: null, availability: null };
   }
-  if (state.colorBy === NEIGHBOR_SITE_COLOR_KEY) {
-    state.colorScale = null;
-    return { categorical: true, neighborSites: true, metric: null,
-      values: (context.neighborSites ?? resolveNeighborSiteModel()).values, scale: null, availability: null };
-  }
   if (state.colorBy === OVERLAP_COLOR_KEY) {
     // No ramp is in effect, so the link and the export manifest say so rather
     // than carrying a scale nothing is drawing.
@@ -986,7 +1110,10 @@ function resolveColorScale() {
       categorical: true, metric: null, values: categories.values, scale: null, availability: null,
     };
   }
-  const metric = context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
+  // The neighbouring-gene TSS count is drawn on the same numeric ramps as any
+  // registry metric, from the site model the filters and viewers read.
+  const metric = state.colorBy === NEIGHBOR_SITE_COLOR_KEY ? neighborSiteColorMetric()
+    : context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
   state.colorBy = metric.key;
   const values = metricValues(metric, context.dataset.genes.length);
   const options = {
@@ -1030,12 +1157,6 @@ function colorModel() {
       scaleControl: { ...shared.scaleControl, reason: 'GO evidence states have no numeric scale. Each colour names an annotation evidence state, not a broad function category.' },
       metric: { label: resolved.goTerm.label }, values: resolved.goTerm.values,
       scale: buildCategoricalScale(GO_EVIDENCE_COLORS), valueScale: null, derived: null, label: resolved.goTerm.label };
-  }
-  if (resolved.neighborSites) {
-    const model = context.neighborSites ?? resolveNeighborSiteModel();
-    return { ...shared, categories: null, neighborSites: model, categorical: true,
-      metric: { label: NEIGHBOR_SITE_LABEL }, values: model.values,
-      scale: buildCategoricalScale(NEIGHBOR_SITE_COLORS), valueScale: null, derived: null, label: NEIGHBOR_SITE_LABEL };
   }
   if (resolved.overlap) {
     const overlaps = overlapModel();
@@ -1099,7 +1220,14 @@ function colorModel() {
     valueScale: resolved.scale,
     derived: resolved.categorical ? categories.derived : null,
     label: metric.label,
+    ...(metric.key === NEIGHBOR_SITE_COLOR_KEY ? { neighborSites: context.neighborSites ?? resolveNeighborSiteModel() } : {}),
   };
+}
+
+/** The count colour metric, naming a site file still loading so its scale is re-chosen on arrival. */
+function neighborSiteColorMetric() {
+  const loading = ['tssEvidence', 'regulatoryTss'].find((key) => isLoading(context.dataset, key)) ?? null;
+  return neighborSiteCountMetric(context.neighborSites ?? resolveNeighborSiteModel(), loading);
 }
 
 /**
@@ -1181,7 +1309,7 @@ function renderColorLegend(host, colors, { markerConventions = true, controlsHos
   if (colors.goTerm) { renderGoTermLegend(host, colors.goTerm); return; }
   const { categorical, categories, metric, values, scale } = colors;
   if (colors.neighborSites) {
-    renderNeighborSiteLegend(host, colors.neighborSites, { markerConventions, showHidden: state.showHidden, hiddenCount: context.dataset.genes.length - context.passing });
+    renderNeighborSiteLegend(host, colors.neighborSites, { scale, markerConventions, showHidden: state.showHidden, hiddenCount: context.dataset.genes.length - context.passing });
     return;
   }
   if (colors.overlap) {
@@ -1516,20 +1644,17 @@ function renderMap() {
       : `${panelName(panel, organism)}: ${projection.message}`,
   );
 
-  const hidden = context.dataset.genes.length - context.passing;
-  const banner = element('filter-banner');
-  const bannerContent = element('filter-banner-content');
-  banner.hidden = hidden <= 0;
-  if (hidden <= 0) banner.open = false;
-  bannerContent.textContent = filterBannerText({
+  // Kept so the live-drag path can refresh the section without a full render.
+  context.scatterStatusText = (hidden, total) => filterBannerText({
     hidden,
-    total: context.dataset.genes.length,
+    total,
     showHidden: state.showHidden,
     projectionAvailable: projection.available,
     projectionMessage: projection.message,
     colorBy: state.colorBy,
     functionColorKey: FUNCTION_COLOR_KEY,
   });
+  scatterFilterStatus?.update(filterStatusModel(context.scatterStatusText));
   scheduleTiming();
 }
 
@@ -1566,6 +1691,7 @@ function renderChromosomeView() {
     verified,
     genes: context.dataset.genes,
     mask: context.mask,
+    filtersBypassed: state.filtersBypassed === true,
     showHidden: state.showHidden,
     colors,
     colorLabel: colors.label,
@@ -1601,6 +1727,10 @@ function renderChromosomeView() {
   });
   // After `update`, which is what builds this view's own hosts on first use.
   renderColorHelp(chromosomeView.colourHelpElement());
+  chromosomeFilterStatus ??= new FilterStatus(chromosomeView.filterStatusElement(), {
+    idPrefix: 'chromosome-filter-status', onBypassChange: setFiltersBypassed,
+  });
+  syncChromosomeFilterStatus();
   if (verified) {
     renderColorLegend(chromosomeView.legendElement(), colors, {
       markerConventions: false, controlsHost: chromosomeView.legendInstructionsElement(),
@@ -1809,7 +1939,8 @@ function cancelLiveFilters() {
 function renderLiveFilters() {
   computeMask();
   if (state.panel === CHROMOSOME_TAB.id) {
-    chromosomeView.setFilterMask(context.mask, context.passing);
+    chromosomeView.setFilterMask(context.mask, context.passing, state.filtersBypassed === true);
+    syncChromosomeFilterStatus();
   } else if (state.panel === LENGTH_TAB.id) {
     lengthExplorer.update({
       inventory: context.dataset.lengthCohorts,
@@ -1822,12 +1953,24 @@ function renderLiveFilters() {
   } else if (![CITATIONS_TAB.id, REGULATORY_TAB.id, STRAIN_FITNESS_TAB.id].includes(state.panel)) {
     plot.setMask(context.mask);
   }
-  filterPanel.renderSummary(context.dataset.genes.length, context.passing);
+  filterPanel.renderSummary(context.dataset.genes.length, context.passing, {
+    bypassed: state.filtersBypassed === true, configuredPassing: context.configuredPassing,
+  });
+  if (context.scatterStatusText && MAP_PANELS.some((panel) => panel.id === state.panel)) {
+    scatterFilterStatus?.update(filterStatusModel(context.scatterStatusText));
+  }
+  announceQueuedNotes();
 }
 
 function renderAll({ schemeErrors = [] } = {}) {
   element('reset-selections').disabled = !state.pinnedId && state.shortlist.length === 0;
+  // Criteria are settled before the mask: following the colour metric can move
+  // or drop the threshold, and a threshold whose scale changed is cleared, so the
+  // bypass check and the mask both see the final criteria.
+  followColourForTraffic();
+  reconcileTrafficScale();
   computeMask();
+  announceQueuedNotes();
   goTermControls?.update(context.dataset, state, goTermEvidenceModel(context.dataset, state.goTerm));
   renderCurrentView();
   renderDetail();
@@ -1840,16 +1983,19 @@ function renderAll({ schemeErrors = [] } = {}) {
     verification: context.verification,
     genesWithoutTerminalStop: context.dataset.provenance.genesWithoutTerminalStop,
   });
-  followColourForTraffic();
   filterPanel.update({
     registry: scopedRegistry(),
     colorMetricKey: state.colorBy,
-    followColor: context.trafficFollowsColor,
+    followColor: (state.trafficFollowsColor !== false),
     filters: state.filters,
     categoryFilter: state.categoryFilter,
     goEvidenceFilter: state.goTerm ? state.goEvidenceFilter : 'any',
     count: context.dataset.genes.length,
     passing: context.passing,
+    filtersBypassed: state.filtersBypassed === true,
+    configuredPassing: context.configuredPassing,
+    trafficMetricFor: (key) => metricForTraffic(key),
+    trafficSelectionFor: (key) => trafficSelectionFor(key),
     missingHidden: context.missingHidden,
     exceptionFilter: state.exceptionFilter,
     exceptionCount: context.exceptionCount,
@@ -1865,6 +2011,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
     neighborSites: context.neighborSites,
     neighborSiteFilter: state.neighborSiteFilter,
+    neighborSiteCountFilter: state.neighborSiteCountFilter,
     overlapClassFilter: state.overlapClassFilter,
     overlapLengthFilter: state.overlapLengthFilter,
     overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
@@ -1889,7 +2036,8 @@ function renderAll({ schemeErrors = [] } = {}) {
       ranges: state.filters,
       overlapLength: state.overlapLengthFilter,
       neighborSiteFilter: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter).effective,
-      neighborSiteFilterStatus: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter),
+      neighborSiteFilterStatus: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter,
+        state.neighborSiteCountFilter),
       overlapClasses: state.overlapClassFilter,
       categoryFilter: state.categoryFilter,
       ...(organism.functionalAnnotations ? { goTerm: state.goTerm, goEvidenceFilter: state.goEvidenceFilter } : {}),
@@ -1897,8 +2045,14 @@ function renderAll({ schemeErrors = [] } = {}) {
       proteinEvidence: state.proteinFilter,
       expression: state.expressionFilter,
       translationalException: state.exceptionFilter,
+      // Which datasets the low-traffic threshold read, when one is set.
+      lowTraffic: state.trafficKey && state.filters[state.trafficKey] ? trafficManifest() : null,
+      // Every criterion above is kept while filters are temporarily off; the
+      // per-gene pass column then says so for every gene.
+      bypassed: state.filtersBypassed === true,
     },
     filterMask: context.mask,
+    neighborSiteCounts: context.neighborSites?.available ? context.neighborSites.siteCounts : null,
     viewState: () => ({
       ...viewStateOf(state, organism), dataSources: sourceSelection(), typeSources: state.typeSources,
       axisContributors: {
@@ -1954,7 +2108,7 @@ function renderAll({ schemeErrors = [] } = {}) {
 function followColourForTraffic() {
   const candidates = orderTrafficCandidates(scopedRegistry());
   const followed = followColourTrafficState({
-    enabled: context.trafficFollowsColor,
+    enabled: (state.trafficFollowsColor !== false),
     colorKey: state.colorBy,
     trafficKey: state.trafficKey,
     filters: state.filters,
@@ -2361,6 +2515,129 @@ function axisContributorState(axis, key = state[axisMetricField(axis)]) {
     resourceStateOf: (metric) => (metric.fileKey
       ? pendingState(context.dataset, metric.fileKey) : null),
   });
+}
+
+const resolveTrafficMembership = createAxisContributorResolver();
+
+/** How a contributor's values are read and whether its file has settled. */
+function contributorReaders() {
+  return {
+    metricOf: (dataset) => context.registry.byKey.get(dataset.metricKey) ?? null,
+    resourceStateOf: (metric) => (metric.fileKey ? pendingState(context.dataset, metric.fileKey) : null),
+  };
+}
+
+/**
+ * Whether the threshold reads its own datasets: only for a data type, only
+ * when it is not following the colour metric, and only once some are chosen.
+ * Otherwise it reads the registry's type metric, which is the very object the
+ * colouring reads, so the two pool identically.
+ */
+function trafficOwnSelectionActive(key = state.trafficKey) {
+  if (!isTypeKey(key) || !context.datasets?.length || !Array.isArray(state.trafficSources)) return false;
+  if ((state.trafficFollowsColor !== false) && key === state.colorBy) return false;
+  return (normalizeAxisDatasetSelection(key, state.trafficSources, context.datasets) ?? []).length > 0;
+}
+
+/** The metric the low-traffic threshold judges activity by. */
+function metricForTraffic(key) {
+  return trafficOwnSelectionActive(key)
+    ? context.trafficTypeMetrics?.get(key) ?? context.registry.byKey.get(key)
+    : context.registry.byKey.get(key);
+}
+
+/** Requested and readable contributors for the threshold, its own or the Data Sources ones. */
+function trafficContributorState(key = state.trafficKey) {
+  if (trafficOwnSelectionActive(key)) {
+    return resolveTrafficMembership(key, state.trafficSources, context.datasets, contributorReaders());
+  }
+  const ids = contributingDatasets(key, state.typeSources, context.datasets, sourceSelection())
+    .map((dataset) => dataset.id);
+  return resolveAxisContributors(key, ids, context.datasets, contributorReaders());
+}
+
+/** What the threshold section says about its datasets, or null for a metric with none. */
+function trafficSelectionFor(key) {
+  if (!isTypeKey(key) || !context.datasets?.length) return null;
+  const group = typeGroups(context.datasets).get(key);
+  if (!group) return null;
+  const resolved = trafficContributorState(key);
+  const own = trafficOwnSelectionActive(key);
+  const pools = typePools(key, context.datasets);
+  const ids = resolved.selected.length ? resolved.selected : resolved.requested.map((d) => d.id);
+  const following = (state.trafficFollowsColor !== false) && key === state.colorBy;
+  const loading = resolved.affected.filter((entry) => entry.state === 'loading').length;
+  const failed = resolved.affected.filter((entry) => entry.state === 'failed').length;
+  const notice = loading || failed
+    ? `${[loading ? `${formatCount(loading)} still loading` : '', failed ? `${formatCount(failed)} failed to load` : '']
+      .filter(Boolean).join(' and ')} of the ${formatCount(resolved.requested.length)} datasets; `
+      + 'until then each gene\'s value comes from the datasets that have loaded.'
+    : null;
+  return {
+    label: axisDatasetSelectionLabel(key, ids, context.datasets, pools),
+    choosable: group.datasets.length > 1,
+    notice,
+    explanation: following
+      ? 'Use same source as colouring is on, so the threshold reads the colouring metric itself: '
+        + 'the same datasets, pooled the same way.'
+      : own
+        ? `These datasets were chosen for this threshold alone; colouring keeps its own selection. ${pools
+          ? 'Several are pooled the way colouring pools them; choose just one to read its own values.'
+          : 'This quantity does not pool, so one is read.'}`
+        : 'The threshold reads the datasets the Data Sources selection gives this type, as colouring '
+          + 'does. Choose datasets to give the threshold its own.',
+  };
+}
+
+/** The threshold's datasets as an export records them. */
+function trafficManifest() {
+  const key = state.trafficKey;
+  const metric = metricForTraffic(key);
+  const resolved = isTypeKey(key) && context.datasets?.length ? trafficContributorState(key) : null;
+  return {
+    metric: key,
+    followsColour: Boolean((state.trafficFollowsColor !== false) && key === state.colorBy),
+    ownSelection: trafficOwnSelectionActive(key) ? [...state.trafficSources] : null,
+    requestedContributors: resolved ? resolved.requested.map((d) => d.id) : [],
+    contributors: resolved ? resolved.available.map((d) => d.id) : [],
+    unavailableContributors: resolved ? resolved.affected.map(({ dataset }) => dataset.id) : [],
+    pooled: Boolean(metric?.pooled),
+    scale: trafficScale(metric),
+    provenanceId: metric?.provenance?.id ?? null,
+  };
+}
+
+/**
+ * Choose the threshold's own datasets. Colouring and its informing choice are
+ * untouched. A threshold whose scale changes with the choice, from one
+ * deposit's units to a pooled percentile or back, is cleared rather than
+ * reapplied as a number on a scale it was never set on.
+ */
+async function openTrafficDatasetSelection(key, opener) {
+  const group = typeGroups(context.datasets).get(key);
+  if (!group || group.datasets.length < 2) return;
+  trafficDataSourcesPanel ??= new DataSourcesPanel(document.createElement('div'), {
+    datasets: context.datasets,
+    judgements: context.dataset.meta.pairJudgements ?? [],
+    section: false,
+  });
+  const result = await trafficDataSourcesPanel.open({
+    mode: 'subset',
+    dataType: group.datasets[0].record.dataType,
+    candidateIds: group.datasets.map((dataset) => dataset.id),
+    current: trafficContributorState(key).selected,
+    opener,
+    title: `Low-traffic threshold — ${group.label}: choose datasets`,
+  });
+  if (result === null) return;
+  state.trafficSources = normalizeAxisDatasetSelection(key, result, context.datasets);
+  renderAll();
+  // The section was rebuilt, so the window's opener is gone; its replacement
+  // takes focus back.
+  element('filters').querySelector('.traffic-choose-datasets')?.focus({ preventScroll: true });
+  announce(`Low-traffic threshold, ${group.label}: ${axisDatasetSelectionLabel(
+    key, state.trafficSources, context.datasets, typePools(key, context.datasets),
+  )}.`);
 }
 
 /** Loading state and counts used by the axis copy and scale controls. */
@@ -2912,6 +3189,10 @@ function renderProvenance() {
  */
 function normalizeAndApply(decoded) {
   applyDecoded(state, decoded, organism);
+  // A bypass read from a link adopts that link's criteria on the next mask, and
+  // the link's threshold is taken on its own scale, not compared with the last.
+  context.bypassSignature = null;
+  context.trafficScale = null;
   filterPanel?.overlapLength.reset(state.overlapLengthFilter);
   // The shortlist is the one field with a second, local source of truth: a
   // hash that never mentions it (a bare initial load, or a partial/legacy
@@ -3022,6 +3303,20 @@ function installTypeMetrics() {
     },
     geneCount: context.dataset.genes.length,
   });
+  context.trafficTypeMetrics ??= new Map(buildTypeMetrics(context.datasets, {
+    // Every requested dataset, as colouring pools them: one still loading or
+    // failed contributes no value yet, but the pool and its scale stay the same,
+    // so a threshold's units never flip as files arrive.
+    contributing: (typeKey) => resolveTrafficMembership(typeKey, state.trafficSources, context.datasets,
+      contributorReaders()).requested.filter((dataset) => registry.byKey.has(dataset.metricKey)),
+    metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
+    selected: (typeKey) => {
+      const chosen = new Set(state.trafficSources ?? []);
+      return (typeGroups(context.datasets).get(typeKey)?.datasets ?? [])
+        .filter((dataset) => chosen.has(dataset.id));
+    },
+    geneCount: context.dataset.genes.length,
+  }).map((metric) => [metric.key, metric]));
   for (const axis of ['x', 'y']) {
     if (!context.axisTypeMetrics[axis]) {
       context.axisTypeMetrics[axis] = new Map(
@@ -3164,7 +3459,7 @@ function refreshProteinRecords() {
 function promotedFileKeys(view) {
   const keys = new Set();
   if (view.goTerm || view.colorBy === GO_TERM_COLOR_KEY) { keys.add('annotations'); keys.add('goTerms'); }
-  if (view.colorBy === NEIGHBOR_SITE_COLOR_KEY || view.neighborSiteFilter !== 'any' || view.pinnedId || view.panel === 'chromosome') { keys.add('tssEvidence'); keys.add('regulatoryTss'); }
+  if (view.colorBy === NEIGHBOR_SITE_COLOR_KEY || view.neighborSiteFilter !== 'any' || Boolean(view.neighborSiteCountFilter) || view.pinnedId || view.panel === 'chromosome') { keys.add('tssEvidence'); keys.add('regulatoryTss'); }
   if (overlapLengthFilterActive(view.overlapLengthFilter) || view.overlapClassFilter?.length > 0) keys.add('geneOverlaps');
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   // The essentiality colour and filter read the candidate evidence alone.
@@ -3192,6 +3487,14 @@ function promotedMetricFileKeys(view, registry) {
   for (const key of named) {
     const fileKey = registry.byKey.get(key)?.fileKey;
     if (fileKey) keys.add(fileKey);
+  }
+  if (isTypeKey(view.trafficKey) && Array.isArray(view.trafficSources) && context.datasets?.length) {
+    for (const fileKey of requestedAxisFileKeys(
+      resolveAxisContributors(view.trafficKey, view.trafficSources, context.datasets, {
+        metricOf: (dataset) => registry.byKey.get(dataset.metricKey), resourceStateOf: () => null,
+      }),
+      (dataset) => registry.byKey.get(dataset.metricKey),
+    )) keys.add(fileKey);
   }
   for (const [axis, key] of [['x', view.axisX], ['y', view.axisY]]) {
     const metric = registry.metricForAxis?.(axis, key) ?? registry.byKey.get(key);
@@ -3775,6 +4078,14 @@ async function boot() {
       announce(`All filters cleared. Showing all ${formatCount(context.dataset.genes.length)} genes.`);
     },
     onNeighborSiteFilterChange: (mode) => { state.neighborSiteFilter = mode; renderAll(); persist(); },
+    onNeighborSiteCountFilterChange: (range) => {
+      state.neighborSiteCountFilter = range;
+      renderAll();
+      announce(range
+        ? `Neighbouring-gene TSS sites in CDS: keeping ${range.min ?? 0} to ${range.max ?? 'any number of'} sites. `
+          + `${formatCount(context.passing)} of ${formatCount(context.dataset.genes.length)} genes pass.`
+        : 'Neighbouring-gene TSS count range cleared.');
+    },
     onOverlapFilterChange: (mode) => {
       setOverlapSelection(overlapSelectionFor(mode));
     },
@@ -3802,37 +4113,24 @@ async function boot() {
     onTrafficKeyChange: (key, filters) => {
       state.trafficKey = key;
       state.filters = filters;
+      // A dataset selection belongs to the type it was made for.
+      state.trafficSources = null;
       ensureTypeSelected(key);
       renderAll();
     },
     onTrafficFollowChange: (follow) => {
-      context.trafficFollowsColor = follow;
+      state.trafficFollowsColor = follow;
       renderAll();
       announce(follow
         ? 'The low-traffic threshold now judges activity by the colouring metric.'
         : 'The low-traffic threshold now keeps its own source.');
     },
-    onSelectSource: async (dataType, current, opener) => {
-      const key = await dataSourcesPanel.open({
-        mode: 'single', dataType, current, opener, title: 'Select the source the filter judges activity by',
-      });
-      if (!key) return;
-      const dataset = context.datasets.find((d) => d.metricKey === key);
-      if (!dataset) return;
-      const typeKey = typeKeyFor(dataset);
-      if (state.trafficKey !== typeKey) {
-        const filters = { ...state.filters };
-        if (state.trafficKey) delete filters[state.trafficKey];
-        state.trafficKey = typeKey;
-        state.filters = filters;
-      }
-      setInforming(typeKey, dataset.id);
-    },
+    onChooseTrafficDatasets: (typeKey, opener) => openTrafficDatasetSelection(typeKey, opener),
     onProteinFilterChange: (mode) => {
       state.proteinFilter = mode;
       renderAll();
     },
-  });
+  }, { customHost: element('custom-filters') });
 
   lengthExplorer = new LengthExplorer(element('length-view'), {
     onCohortChange: (cohort) => {
@@ -3905,6 +4203,10 @@ async function boot() {
     onShowOnChromosome: (locus) => showTrnaOnChromosome(locus),
     onRetry: () => retryFile('trnaLoci'),
     onAnnounce: announce,
+  });
+
+  scatterFilterStatus = new FilterStatus(element('filter-banner'), {
+    idPrefix: 'filter-banner', onBypassChange: setFiltersBypassed,
   });
 
   regulatorySitesPanel = new RegulatorySitesPanel(element('regulatory-view'), {
@@ -4061,7 +4363,7 @@ async function boot() {
   confirmedReset(element('reset-panel-layout'), {
     title: 'Reset panel layout?',
     body: 'The controls column returns to its original order, with the gene visualizer '
-      + 'collapsed and the other panels open.',
+      + 'and Custom filters collapsed and the other panels open.',
     confirmLabel: 'Reset layout',
     action: () => {
       resetPanelLayout(state);

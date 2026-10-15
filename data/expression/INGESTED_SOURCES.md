@@ -1,6 +1,6 @@
 # Ingested expression layers
 
-Each layer listed in `sources.json` with an `ingest` block was produced by
+Except for the separate GEO array route below, each layer listed in `sources.json` with an `ingest` block was produced by
 `tools/ingest_expression.py` from the spec of the same study under
 `data/expression/ingest/`. The spec pins the deposited file's URL and SHA-256,
 names the sample columns of each layer, and carries the structured condition
@@ -75,7 +75,22 @@ GSE51112's four layers do.
 Regenerate:
 
 ```sh
-for spec in data/expression/ingest/*.json; do ./.venv/bin/python tools/ingest_expression.py "$spec"; done
+for spec in data/expression/ingest/*.json; do
+  [ "${spec##*/}" = geo_array_sources.json ] && continue
+  ./.venv/bin/python tools/ingest_expression.py "$spec"
+done
+./.venv/bin/python tools/ingest_geo_arrays.py
 ./.venv/bin/python scripts/build_features.py
 ./.venv/bin/python tools/build_data_manifest.py build
 ```
+
+## GEO processed microarrays
+
+The seven array series in `ingest/geo_array_sources.json` use
+`tools/ingest_geo_arrays.py`: 122 separate deposited samples and five explicitly
+labelled optional summaries. Author probe reduction is retained and disclosed;
+no new raw-probe normalization is performed. These include engineered strains
+and separate time points. Log-ratios, normalized signals and temporal profiles
+are distinct quantities, and array datasets never pool automatically. Source
+pins, exact mapping, orientation and validated summary rules are in the
+[GEO array contract](../../docs/validation/geo-array-reader.md).

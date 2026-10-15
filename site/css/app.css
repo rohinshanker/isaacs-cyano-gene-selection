@@ -1438,6 +1438,8 @@ input[type="range"] { width: 100%; }
 .tan-disclosure > :not(summary) > :first-child { margin-top: 0; }
 .tan-disclosure > :not(summary) > :last-child { margin-bottom: 0; }
 .filter-disclosure[hidden] { display: none; }
+.filter-disclosure > .filter-bypass-row { margin-top: 0.45rem; }
+.filter-disclosure > .filter-bypass-row label { color: inherit; font-weight: 600; }
 .candidate-tier { margin: 0.35rem 0 0.2rem; font-size: 0.8rem; }
 .candidate-go-context { margin: 0.55rem 0 0; padding: 0.4rem 0.5rem; border: 1px dashed #9aa3b5; border-radius: var(--radius); background: #f4f6fa; font-size: 0.8rem; }
 .candidate-go-context p { margin: 0 0 0.3rem; }

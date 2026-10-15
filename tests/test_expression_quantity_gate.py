@@ -26,8 +26,9 @@ from validate_contract import (  # noqa: E402
 GENES = [{"id": "g1"}, {"id": "g2"}]
 
 
-def source(quantity, platform="RNA-seq", metric_key="mQ", **overrides):
+def source(quantity, platform=None, metric_key="mQ", **overrides):
     """A meta.expressionSources entry as the pipeline publishes it."""
+    platform = platform or ("array" if quantity.startswith("array_") else "RNA-seq")
     facts = expression_table.quantity_facts("transcriptomics", platform, quantity, metric_key)
     flags = expression_table.declared_flags(quantity)
     return {
@@ -118,7 +119,7 @@ def test_an_unknown_or_misplaced_quantity_fails():
 def test_a_fold_change_a_p_value_or_a_ratio_filed_as_an_abundance_fails():
     """The family is the field that decides, so the gate checks it twice over."""
     for quantity in ("log2_fold_change", "edger_log2_fold_change", "p_value",
-                     "translation_efficiency_log2_fold_change"):
+                     "translation_efficiency_log2_fold_change", "array_log2_ratio", "array_temporal_profile"):
         report = run([source(quantity) | {"quantityFamily": "Expression"}])
         assert any("filed as an abundance" in f for f in report.failures), quantity
     # An RPKM and a read count are abundances and may say so.
@@ -169,3 +170,17 @@ def test_a_quantity_layer_is_checked_against_its_own_bounds(tmp_path):
     assert any("outside [0, 1]" in f for f in layers([1.2, 0.5], "p_value").failures)
     assert layers([-0.75, None], "translation_efficiency_log2_fold_change",
                   "Ribo-seq").failures == []
+
+
+def test_array_quantities_fail_closed_on_platform_pooling_and_values(tmp_path):
+    for quantity in ("array_log2_ratio", "array_normalized_signal", "array_temporal_profile"):
+        array = source(quantity)
+        assert run([array]).failures == []
+        assert any("quantityPools" in f for f in run([array | {"quantityPools": True}]).failures)
+        wrong = array | {"record": {"dataType": "transcriptomics", "platform": "RNA-seq"}}
+        assert any("not defined" in f for f in run([wrong]).failures)
+        for bad in (float("nan"), float("inf"), True, "4"):
+            assert quantity_value_problem(quantity, bad)
+    assert quantity_value_problem("array_normalized_signal", -1)
+    assert quantity_value_problem("array_log2_ratio", -1) is None
+    assert quantity_value_problem("array_temporal_profile", -1) is None

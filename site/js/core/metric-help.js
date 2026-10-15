@@ -130,6 +130,24 @@ function ingestedMethod(provenance) {
   }
   const ingest = provenance?.ingest;
   if (!ingest) return null;
+  if (ingest.array) {
+    const { summary, metadata = {}, processing = [] } = ingest.array;
+    const calculation = summary
+      ? `Explicit optional summary (${summary.sampleIds.map((id, i) => `${summary.multipliers[i]} × ${id}`).join(' + ')}) / ${summary.sampleIds.length}; only genes present in every constituent are included.`
+      : `One deposited sample (${ingest.columns[0]}) read as deposited; no new sample averaging.`;
+    const channels = Object.entries(metadata).map(([id, fields]) => {
+      const assignments = [1, 2].flatMap((channel) => {
+        const source = fields[`Sample_source_name_ch${channel}`]?.join('; ');
+        const dye = fields[`Sample_label_ch${channel}`]?.join('; ');
+        return source ? [`channel ${channel}${dye ? ` (${dye})` : ''}: ${source}`] : [];
+      });
+      return assignments.length ? `${id}: ${assignments.join('; ')}.` : '';
+    }).filter(Boolean).join(' ');
+    return `${calculation} Authors’ probe reduction and normalization are retained. `
+      + `Depositor’s processing description: ${processing.join(' ')} ${channels} `
+      + 'Mapped from GPL9534 feature ID to ORF, then from PCC 7942 to UTEX 2973 through the pinned '
+      + 'one-to-one identifier crosswalk; no value is imputed for an unmatched locus.';
+  }
   const columns = ingest.columns?.length ?? 0;
   const samples = `${columns} deposited sample ${columns === 1 ? 'column' : 'columns'}`;
   const scaling = ingest.normalization === 'cpm'

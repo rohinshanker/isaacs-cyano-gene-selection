@@ -57,7 +57,7 @@ def test_check_header_accepts_the_declared_header_and_names_a_mismatch():
 
 
 MANIFESTS = {
-    "data/expression/sources.json": {"fitness": 99, "abundance": 68, "ratio": 1},
+    "data/expression/sources.json": {"fitness": 99, "abundance": 68, "ratio": 1, "log2_fold_change": 95, "normalized_signal": 20, "normalized_profile": 12},
     "data/expression/organisms/ecoli-k12-mg1655/sources.json": {"abundance": 78},
     "data/expression/organisms/ecoli-syn61-delta3-ev5/sources.json": {
         "abundance": 6, "read_count": 3, "log2_fold_change": 4, "p_value": 2,
@@ -120,6 +120,9 @@ def test_the_shipped_fitness_tables_keep_their_negative_and_zero_values():
 # every consequence of that declaration.
 
 QUANTITY_COLUMNS = {
+    "array_log2_ratio": "log2_fold_change",
+    "array_normalized_signal": "normalized_signal",
+    "array_temporal_profile": "normalized_profile",
     "rpkm": "abundance",
     "read_count": "read_count",
     "log2_fold_change": "log2_fold_change",
@@ -177,7 +180,7 @@ def test_the_platform_distinguishes_rna_from_ribosome_in_every_kind_and_label():
     an occupancy to read as an abundance. Transcription initiation is a dRNA-seq
     start-site count and has no Ribo-seq meaning, so it is defined on RNA-seq only.
     """
-    both = {q: spec for q, spec in table.QUANTITIES.items() if q != "tss_initiation"}
+    both = {q: spec for q, spec in table.QUANTITIES.items() if "RNA-seq" in spec.platforms and "Ribo-seq" in spec.platforms}
     assert table.QUANTITIES["tss_initiation"].platforms == ("RNA-seq",)
     assert table.QUANTITIES["tss_initiation"].kind("RNA-seq") == "initiation"
     assert table.QUANTITIES["tss_initiation"].label("RNA-seq") == (
@@ -225,7 +228,7 @@ def test_no_two_quantities_collapse_into_one_type_metric():
     change, or a raw count into an RPKM that had already divided library depth
     out.
     """
-    for platform in ("RNA-seq", "Ribo-seq"):
+    for platform in ("RNA-seq", "Ribo-seq", "array"):
         kinds = [spec.kind(platform) for spec in table.QUANTITIES.values()
                  if platform in spec.platforms]
         assert len(kinds) == len(set(kinds)), platform
@@ -250,6 +253,9 @@ def test_a_fold_change_a_p_value_and_a_ratio_are_not_abundance_families():
     """
     families = {q: spec.family for q, spec in table.QUANTITIES.items()}
     assert families == {
+        "array_log2_ratio": "Fold change",
+        "array_normalized_signal": "Expression",
+        "array_temporal_profile": "Temporal profile",
         "rpkm": "Expression",
         "read_count": "Expression",
         "log2_fold_change": "Fold change",
@@ -260,6 +266,9 @@ def test_a_fold_change_a_p_value_and_a_ratio_are_not_abundance_families():
     }
     scales = {q: spec.scale for q, spec in table.QUANTITIES.items()}
     assert scales == {
+        "array_log2_ratio": "diverging",
+        "array_normalized_signal": "sequential",
+        "array_temporal_profile": "diverging",
         "rpkm": "sequential",
         "read_count": "sequential",
         "log2_fold_change": "diverging",
@@ -274,6 +283,9 @@ def test_only_an_abundance_or_a_count_pools_across_selected_datasets():
     """An initiation layer is one condition, so ranking several together would re-pool them."""
     pools = {q: spec.pools for q, spec in table.QUANTITIES.items()}
     assert pools == {
+        "array_log2_ratio": False,
+        "array_normalized_signal": False,
+        "array_temporal_profile": False,
         "rpkm": True,
         "read_count": True,
         "log2_fold_change": False,

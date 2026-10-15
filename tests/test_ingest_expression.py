@@ -111,6 +111,139 @@ def run(tmp_path, spec, crosswalk_rows, conditions=None):
     return written, manifest, out
 
 
+def geo_soft_fixture(*, embedded=True):
+    platform = (
+        "^PLATFORM = GPL1\n!Platform_title = explicit mapping\n"
+        "!platform_table_begin\nID\tORF\np1\tS1\np2\tS2\ncontrol\t\n!platform_table_end\n"
+    ).encode()
+    samples = (
+        "^SAMPLE = GSM1\n!Sample_platform_id = GPL1\n!Sample_label_ch1 = Cy3\n"
+        "!Sample_characteristics_ch1 = condition: first\n!Sample_characteristics_ch1 = time: 0\n"
+        "!sample_table_begin\nID_REF\tVALUE\np2\tNA\np1\t1.2500\ncontrol\t999\n!sample_table_end\n"
+        "^SAMPLE = GSM2\n!Sample_platform_id = GPL1\n!Sample_label_ch1 = Cy5\n"
+        "!sample_table_begin\nID_REF\tVALUE\np1\t-2.7500\np2\t0\n!sample_table_end\n"
+    ).encode()
+    return (platform + samples if embedded else samples), platform
+
+
+def geo_spec(tmp_path, *, embedded=True):
+    data, platform = geo_soft_fixture(embedded=embedded)
+    layers = [
+        {"id": f"GSE1_sample{i}", "metricKey": f"exprGse1Sample{i}", "label": f"sample {i}",
+         "conditionSet": f"sample {i}", "samples": f"GSM{i}", "columns": [f"GSM{i}"],
+         "treatments": [], "group": "standard"}
+        for i in (1, 2)
+    ]
+    reader = {"format": "geo-soft", "platformId": "GPL1", "idColumn": "ORF", "idKind": "pcc7942_old"}
+    spec = spec_for(tmp_path, data, reader, layers, normalization="as-deposited", signed=True,
+                    platform="array", assay="deposited processed measurement", units="as deposited")
+    if not embedded:
+        (tmp_path / "GPL1.soft").write_bytes(platform)
+        reader["platformFile"] = {"name": "GPL1.soft", "url": "https://example.org/GPL1.soft",
+                                  "sha256": ingest.sha256_of(platform), "manual": True}
+    return spec
+
+
+@pytest.mark.parametrize("compressed", [False, True])
+def test_read_table_requires_explicit_geo_configuration_and_preserves_values(compressed):
+    data, _ = geo_soft_fixture()
+    if compressed:
+        data = gzip.compress(data, mtime=0)
+    reader = {"format": "geo-soft", "sourceId": "source pin", "platformId": "GPL1", "idColumn": "ORF"}
+    header, rows = ingest.read_table(data, reader)
+    assert header == ["ORF", "GSM1", "GSM2"]
+    assert rows == [["S2", "NA", "0"], ["S1", "1.2500", "-2.7500"]]
+    for key in ("sourceId", "platformId", "idColumn"):
+        bad = {k: v for k, v in reader.items() if k != key}
+        with pytest.raises(ValueError, match=f"explicit {key}"):
+            ingest.read_table(data, bad)
+    # The table wrapper never guesses SOFT from its contents.
+    old_header, _ = ingest.read_table(data, {"format": "tsv", "idColumn": "ORF"})
+    assert old_header == ["ORF", "ID"], "the TSV reader still exposes the platform table, not sample columns"
+
+
+def test_geo_reader_works_through_package_import():
+    from tools import ingest_expression as packaged_ingest
+    data, _ = geo_soft_fixture()
+    header, rows = packaged_ingest.read_table(
+        data, {"format": "geo-soft", "sourceId": "family", "platformId": "GPL1", "idColumn": "ORF"})
+    assert header == ["ORF", "GSM1", "GSM2"] and rows[1] == ["S1", "1.2500", "-2.7500"]
+
+
+def test_read_table_can_use_pinned_external_gpl_bytes():
+    data, gpl = geo_soft_fixture(embedded=False)
+    header, rows = ingest.read_table(
+        data, {"format": "geo-soft", "sourceId": "series", "platformId": "GPL1", "idColumn": "ORF",
+               "sampleIds": ["GSM2"], "mappingPattern": r"S\d+"},
+        platform_data=gpl, platform_source_id="GPL1 pin",
+    )
+    assert header == ["ORF", "GSM2"] and rows == [["S1", "-2.7500"], ["S2", "0"]]
+
+
+@pytest.mark.parametrize("embedded", [False, True])
+def test_geo_ingestion_keeps_samples_separate_and_audits_blank_orfs(tmp_path, embedded):
+    spec = geo_spec(tmp_path, embedded=embedded)
+    original = copy.deepcopy(spec)
+    written, manifest, out = run(tmp_path, spec, [
+        ("U1", "pcc7942_old_locus_tag", "S1", ""), ("U2", "pcc7942_old_locus_tag", "S2", ""),
+    ], conditions_file(tmp_path))
+    assert spec == original
+    assert (out / "GSE1_sample1.tsv").read_text().splitlines()[1:] == ["U1\t1.2500\tS1"]
+    assert (out / "GSE1_sample2.tsv").read_text().splitlines()[1:] == ["U1\t-2.7500\tS1", "U2\t0.0000\tS2"]
+    assert [entry["ingest"]["unmappedIdentifiers"] for entry in written] == [1, 0]
+    assert [entry["ingest"]["mappedGenes"] for entry in written] == [1, 2]
+    assert [entry["ingest"]["columns"] for entry in written] == [["GSM1"], ["GSM2"]]
+    audit = written[0]["ingest"]["geoSoft"][0]
+    assert audit["platformId"] == "GPL1" and audit["idColumn"] == "ORF"
+    assert audit["unmappedProbeIds"] == ["control"]
+    assert audit["sourceSha256"] == spec["file"]["sha256"]
+    assert audit["sampleColumns"] == {"GSM1": "GSM1", "GSM2": "GSM2"}
+    if not embedded:
+        assert audit["platformFile"] == spec["reader"]["platformFile"]
+    assert len(json.loads(manifest.read_text())) == 2
+
+
+@pytest.mark.parametrize("change, message", [
+    ({"normalization": "cpm"}, "as-deposited normalization"),
+    ({"columns": ["GSM1", "GSM2"]}, "exactly one sample column"),
+    ({"columns": []}, "exactly one sample column"),
+])
+def test_geo_ingestion_rejects_pooling_or_normalization_before_fetch(tmp_path, monkeypatch, change, message):
+    spec = geo_spec(tmp_path)
+    if "columns" in change:
+        spec["layers"][0]["columns"] = change["columns"]
+    else:
+        spec.update(change)
+    def forbidden_fetch(*args, **kwargs):
+        pytest.fail("invalid spec must be rejected before fetching or writing")
+    monkeypatch.setattr(ingest, "fetch", forbidden_fetch)
+    with pytest.raises(ValueError, match=message):
+        run(tmp_path, spec, [])
+    assert not (tmp_path / "sources.json").exists()
+
+
+def test_geo_ingestion_rejects_external_platform_checksum_mismatch(tmp_path):
+    spec = geo_spec(tmp_path, embedded=False)
+    spec["reader"]["platformFile"]["sha256"] = "0" * 64
+    with pytest.raises(ValueError, match="checksum mismatch for GPL1.soft"):
+        run(tmp_path, spec, [])
+    assert (tmp_path / "GPL1.soft").read_bytes() == geo_soft_fixture()[1]
+    assert not (tmp_path / "sources.json").exists()
+
+
+def test_geo_ingestion_audits_the_selected_sample_across_multiple_files(tmp_path):
+    spec = geo_spec(tmp_path)
+    data = (tmp_path / spec["file"]["name"]).read_bytes()
+    (tmp_path / "second.soft").write_bytes(data)
+    spec["files"] = [spec.pop("file"),
+                     {"name": "second.soft", "url": "https://example.org/second.soft", "sha256": ingest.sha256_of(data)}]
+    spec["layers"] = [spec["layers"][0]]
+    spec["layers"][0]["columns"] = ["GSM1 :: second"]
+    written, _, _ = run(tmp_path, spec, [("U1", "pcc7942_old_locus_tag", "S1", "")], conditions_file(tmp_path))
+    assert written[0]["ingest"]["unmappedIdentifiers"] == 1
+    assert len(written[0]["ingest"]["geoSoft"]) == 2
+
+
 def test_fetch_reads_a_cached_file_and_refuses_a_checksum_mismatch(tmp_path):
     target = tmp_path / "cached.bin"
     target.write_bytes(b"hello")

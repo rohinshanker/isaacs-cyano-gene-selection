@@ -134,6 +134,9 @@ export const TAN_CONTROL_SOURCE = 'TAN2018_TSS_CONTROL';
 
 /** Why a non-pooling type reads one explicitly identified dataset. */
 export function nonPoolingReason(dataset) {
+  if (dataset?.record?.platform === 'array') {
+    return 'Deposited array samples remain separate. Any optional source-specific summary is explicitly labelled and selected as its own dataset; samples, references and processing methods are not pooled automatically.';
+  }
   return assayKind(dataset) === 'initiation'
     ? 'Initiation counts from different growth conditions are kept separate; choose one condition at a time. The labelled legacy pooled score remains available explicitly.'
     : 'A fold change, a p-value and a translation-efficiency ratio each belong to one contrast evaluated by one method, so they are never averaged across contrasts.';

@@ -37,6 +37,7 @@ import { syncScaleSelect } from './scale-select.js';
 import { renderDrawDirection } from './draw-direction.js';
 import { formatCount } from './format.js';
 import { InfoPopover } from './disclosures.js';
+import { filterStatusElement } from './filter-status.js';
 import { DEFAULT_ORGANISM, layerOf } from '../core/organisms.js';
 import {
   OVERLAP_TAG_EXPANSION, OVERLAP_TAG_LABEL, OVERLAP_UNAVAILABLE, biotypeLabel,
@@ -600,9 +601,9 @@ export class ChromosomeView {
    * count change, so the brackets, start sites, lanes and controls are kept
    * and the tracks are simply repainted. `update` still runs on release.
    */
-  setFilterMask(mask, passing) {
+  setFilterMask(mask, passing, filtersBypassed = this.model?.filtersBypassed) {
     if (!this.model?.verified) return;
-    this.model = { ...this.model, mask, passing };
+    this.model = { ...this.model, mask, passing, filtersBypassed };
     this.renderSummaries();
     this.draw();
   }
@@ -769,6 +770,10 @@ export class ChromosomeView {
     this.dataSourcesHost = document.createElement('div');
     this.dataSourcesHost.className = 'map-toolbar-row data-sources-row';
     this.dataSourcesHost.id = 'chromosome-data-sources';
+    // The same collapsed Filter status section the map shows, directly under
+    // the window readout that states the passing count; app.js fills it. The
+    // readout stays the view's first status region.
+    this.filterStatus = filterStatusElement('chromosome-filter-status');
     toolbar.append(fieldsRow, this.scaleNotice, this.colourHelp, this.dataSourcesHost, viewRow);
 
     this.windowReadout = document.createElement('p');
@@ -882,7 +887,7 @@ export class ChromosomeView {
     this.sequenceHost = document.createElement('div');
     this.sequenceHost.className = 'chromosome-sequence';
 
-    this.figure.append(toolbar, this.windowReadout, this.overlapRow, this.canvasHost,
+    this.figure.append(toolbar, this.windowReadout, this.filterStatus, this.overlapRow, this.canvasHost,
       this.controls, this.detailJump, this.legendHost, this.viewerInfo,
       this.rfamPanel.element, this.siteInstruction, this.neighborSitePanel.element, this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
@@ -921,6 +926,12 @@ export class ChromosomeView {
   /** The host for the shared colour-metric explanation disclosure. */
   colourHelpElement() {
     return this.colourHelp;
+  }
+
+  /** The Filter status disclosure; app.js renders the shared section into it. */
+  filterStatusElement() {
+    if (!this.built) this.build();
+    return this.filterStatus;
   }
 
   /** The host for the chromosome tab's Data Sources section, under the colour explanation. */
@@ -1111,8 +1122,10 @@ export class ChromosomeView {
     this.windowReadout.textContent = `${primary.accession} ${formatCoordinate(window.from)}–`
       + `${formatCoordinate(window.to)} of ${formatCoordinate(primary.lengthBp)} bp `
       + `(${formatBasePairs(window.to - window.from + 1)} in view) · `
-      + `${formatCount(this.model.passing)} of ${formatCount(this.model.total)} plotted CDSs pass `
-      + 'all filters.';
+      + (this.model.filtersBypassed
+        ? `all ${formatCount(this.model.total)} plotted CDSs included; filters are temporarily off.`
+        : `${formatCount(this.model.passing)} of ${formatCount(this.model.total)} plotted CDSs pass `
+          + 'all filters.');
 
     if (this.activeOverlap) this.overlapHintAnchor = this.overlapAnchor(this.activeOverlap);
     this.writeOverlapReadout();
@@ -1129,7 +1142,9 @@ export class ChromosomeView {
       const whole = view.from === 1 && view.to === track.lengthBp;
       facts.textContent = ` — ${formatCoordinate(track.lengthBp)} bp, `
         + `${formatCount(track.cdsCount)} plotted CDS${track.cdsCount === 1 ? '' : 's'}, `
-        + `${formatCount(passing)} passing the current filters`
+        + (this.model.filtersBypassed
+          ? `${formatCount(passing)} included while filters are temporarily off`
+          : `${formatCount(passing)} passing the current filters`)
         + (track.wrapCount > 0
           ? `, ${formatCount(track.wrapCount)} crossing the circular origin`
           : '')

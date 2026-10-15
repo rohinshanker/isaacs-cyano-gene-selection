@@ -51,17 +51,25 @@ test('Syn57 pipeline, proxy and live origins use a readable design source phrase
   }
 });
 
-test('all 222 selectable metrics have a calculation, origin, missingness and real citations', () => {
-  assert.equal(registry.metrics.length, 222);
+test('all 349 selectable metrics have a calculation, origin, missingness and real citations', () => {
+  assert.equal(registry.metrics.length, 349);
   // Hand-written method lines cover every metric except the layers the
   // ingestion tool made, whose method is derived from their provenance.
   const ingested = registry.metrics.filter((metric) => metric.provenance?.ingest);
-  assert.equal(ingested.length, 162);
+  assert.equal(ingested.length, 289);
   assert.deepEqual(new Set(methodKeys()), new Set(registry.metrics
     .filter((metric) => !metric.provenance?.ingest).map((metric) => metric.key)));
   for (const metric of ingested) {
     const explanation = metricHelp(metric, dataset);
-    assert.match(explanation.method, /Arithmetic mean of \d+ deposited sample columns? from \S+/);
+    if (metric.provenance.ingest.array) {
+      assert.match(explanation.method, /Authors’ probe reduction and normalization are retained/);
+      assert.match(explanation.method, metric.provenance.ingest.array.summary
+        ? /Explicit optional summary.*only genes present in every constituent/
+        : /One deposited sample.*no new sample averaging/);
+      assert.match(explanation.method, /channel 1 \(Cy3\)/);
+    } else {
+      assert.match(explanation.method, /Arithmetic mean of \d+ deposited sample columns? from \S+/);
+    }
     assert.match(explanation.method, /one-to-one identifier crosswalk/);
     assert.deepEqual(explanation.citations, [metric.provenance.citationId]);
   }

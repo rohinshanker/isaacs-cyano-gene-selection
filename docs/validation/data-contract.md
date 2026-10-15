@@ -155,6 +155,12 @@ mass-spectrometry datasets by default, the RNA-seq selection offers an option to
 include them, and an array dataset always says that it is an array and how many
 targets it covers.
 
+The admitted array reader preserves 122 individual deposited samples and offers
+five explicitly labelled, source-specific optional summaries. Array log ratios,
+normalized signal and normalized temporal profiles are distinct non-pooling
+quantities. Author probe averaging is disclosed; physical probes are not
+reconstructed from processed values. See [the array contract](geo-array-reader.md).
+
 Everything else keeps the rules it already has. Genome sequence, coordinates,
 codon content, GC, CAI, tAI, folding windows, and every other sequence-derived
 metric stay UTEX 2973 only, because they are computed from this assembly. PCC 7942

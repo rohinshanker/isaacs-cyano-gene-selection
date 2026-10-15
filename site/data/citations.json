@@ -3,7 +3,7 @@
     {
       "id": "primary-data",
       "title": "Primary data",
-      "description": "These records supplied the sequences, annotations, models, and measured values used by this release. A download marked ‘project-derived’ is a processed table, not an unmodified publisher file. The full genome inputs fetched during the build are not committed to this repository.",
+      "description": "These records supplied the sequences, annotations, and measured values used by this release. A download marked ‘project-derived’ is a processed table, not an unmodified publisher file. The full genome inputs fetched during the build are not committed to this repository.",
       "items": [
         {
           "id": "yu-2015",
@@ -582,7 +582,7 @@
           "id": "markson-2013",
           "citation": "Markson JS, Piechura JR, Puszynska AM, O'Shea EK. Circadian control of global gene expression by the cyanobacterial master regulator RpaA. Cell 155, 1396–1408 (2013). doi:10.1016/j.cell.2013.11.005; GEO GSE51112.",
           "url": "https://doi.org/10.1016/j.cell.2013.11.005",
-          "contribution": "Four optional RNA-abundance layers, each the mean of its time points as deposited (median-normalised and ORF-length-normalised values): the wild type across six circadian time points in continuous light, and three layers from the clock-deleted RpaA phosphomimetic strains, which are listed as engineered strains — OX-D53E with and without IPTG and the empty-vector control. One sample per time point, so no replicate band exists. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article © 2013 Elsevier Inc., permitted with citation by the owner's decision of 2026-10-06. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md.",
+          "contribution": "Four optional RNA-abundance layers, each the mean of its time points as deposited (median-normalised and ORF-length-normalised values): the wild type across six circadian time points in continuous light, and three layers from the clock-deleted RpaA phosphomimetic strains, which are listed as engineered strains — OX-D53E with and without IPTG and the empty-vector control. One sample per time point, so no replicate band exists. The measured organism is PCC 7942, not UTEX 2973; values are per-layer means over sample columns, mapped to UTEX 2973 through the one-to-one identifier crosswalk. Deposit terms: GEO/NCBI public repository; article © 2013 Elsevier Inc., permitted with citation by the owner's decision of 2026-10-06. Reader, columns, normalisation and condition records are in data/expression/ingest/ and data/expression/INGESTED_SOURCES.md. Separate microarray samples from GSE50908, GSE50919, GSE50920 and GSE52486 also ship, preserving deposited normalized log2 sample/reference ratios and author four-probe means. GSE50919 additionally has an explicit optional dye-swap mean verified against its published summary.",
           "downloads": [
             {
               "filename": "GSE51112_wt_ll.tsv",
@@ -607,6 +607,575 @@
               "repoPath": "data/expression/GSE51112_oxempty_iptg.tsv",
               "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE51112_oxempty_iptg.tsv",
               "kind": "Project-derived mapped table"
+            },
+            {
+              "filename": "GSE50908_GSM1232268.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232268.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232268.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232269.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232269.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232269.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232270.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232270.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232270.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232271.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232271.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232271.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232272.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232272.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232272.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232273.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232273.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232273.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232274.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232274.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232274.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232275.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232275.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232275.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232276.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232276.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232276.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232277.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232277.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232277.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232278.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232278.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232278.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232279.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232279.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232279.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50908_GSM1232280.tsv",
+              "repoPath": "data/expression/GSE50908_GSM1232280.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50908_GSM1232280.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50919_GSM1232426.tsv",
+              "repoPath": "data/expression/GSE50919_GSM1232426.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50919_GSM1232426.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50919_GSM1232427.tsv",
+              "repoPath": "data/expression/GSE50919_GSM1232427.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50919_GSM1232427.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50919_dye_swap.tsv",
+              "repoPath": "data/expression/GSE50919_dye_swap.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50919_dye_swap.tsv",
+              "kind": "Project-derived mapped array table; optional summary"
+            },
+            {
+              "filename": "GSE50920_GSM1232428.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232428.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232428.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232429.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232429.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232429.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232430.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232430.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232430.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232431.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232431.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232431.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232432.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232432.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232432.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232433.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232433.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232433.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232434.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232434.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232434.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232435.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232435.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232435.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232436.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232436.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232436.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232437.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232437.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232437.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232438.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232438.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232438.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232439.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232439.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232439.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232440.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232440.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232440.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232441.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232441.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232441.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232442.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232442.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232442.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232443.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232443.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232443.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232444.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232444.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232444.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232445.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232445.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232445.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232446.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232446.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232446.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232447.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232447.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232447.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232448.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232448.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232448.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232449.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232449.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232449.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232450.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232450.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232450.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232451.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232451.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232451.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232452.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232452.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232452.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232453.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232453.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232453.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232454.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232454.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232454.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232455.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232455.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232455.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232456.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232456.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232456.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232457.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232457.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232457.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232458.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232458.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232458.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232459.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232459.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232459.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232460.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232460.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232460.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232461.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232461.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232461.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232462.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232462.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232462.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232463.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232463.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232463.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232464.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232464.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232464.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232465.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232465.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232465.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232466.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232466.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232466.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232467.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232467.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232467.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232468.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232468.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232468.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232469.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232469.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232469.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232470.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232470.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232470.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232471.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232471.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232471.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232472.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232472.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232472.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232473.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232473.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232473.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232474.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232474.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232474.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1232475.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1232475.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1232475.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE50920_GSM1267085.tsv",
+              "repoPath": "data/expression/GSE50920_GSM1267085.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE50920_GSM1267085.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE52486_GSM1267750.tsv",
+              "repoPath": "data/expression/GSE52486_GSM1267750.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE52486_GSM1267750.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE52486_GSM1267751.tsv",
+              "repoPath": "data/expression/GSE52486_GSM1267751.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE52486_GSM1267751.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE52486_GSM1267752.tsv",
+              "repoPath": "data/expression/GSE52486_GSM1267752.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE52486_GSM1267752.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE52486_GSM1267753.tsv",
+              "repoPath": "data/expression/GSE52486_GSM1267753.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE52486_GSM1267753.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE52486_GSM1267754.tsv",
+              "repoPath": "data/expression/GSE52486_GSM1267754.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE52486_GSM1267754.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE52486_GSM1267755.tsv",
+              "repoPath": "data/expression/GSE52486_GSM1267755.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE52486_GSM1267755.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE52486_GSM1267756.tsv",
+              "repoPath": "data/expression/GSE52486_GSM1267756.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE52486_GSM1267756.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            }
+          ],
+          "upstreamArtifacts": [
+            {
+              "filename": "GSE50908_series_matrix.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50908/matrix/GSE50908_series_matrix.txt.gz",
+              "version": "GSE50908",
+              "compression": "gzip",
+              "pinnedSha256": "50315f210a3a7c339d776656110122dcc0d4ec7b6cb9ff2c4044f83a98339f4b",
+              "bytes": 197785,
+              "sha256": "50315f210a3a7c339d776656110122dcc0d4ec7b6cb9ff2c4044f83a98339f4b",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE50908_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50908/soft/GSE50908_family.soft.gz",
+              "version": "GSE50908",
+              "compression": "gzip",
+              "pinnedSha256": "3393565af8b6389850aaa1c15e9cb2a01a691d41aa34f41186ec17c9bda87f06",
+              "bytes": 488602,
+              "sha256": "3393565af8b6389850aaa1c15e9cb2a01a691d41aa34f41186ec17c9bda87f06",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE50919_series_matrix.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50919/matrix/GSE50919_series_matrix.txt.gz",
+              "version": "GSE50919",
+              "compression": "gzip",
+              "pinnedSha256": "4b44da2950262190898f48040841c7a975508f56f0342fff6e935f7c5ecc21c9",
+              "bytes": 43131,
+              "sha256": "4b44da2950262190898f48040841c7a975508f56f0342fff6e935f7c5ecc21c9",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE50919_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50919/soft/GSE50919_family.soft.gz",
+              "version": "GSE50919",
+              "compression": "gzip",
+              "pinnedSha256": "2c50d1ad58aed6eda3942019792821c5dc12aa65d66b6492fa2927423cb2c30c",
+              "bytes": 218030,
+              "sha256": "2c50d1ad58aed6eda3942019792821c5dc12aa65d66b6492fa2927423cb2c30c",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE50920_series_matrix.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50920/matrix/GSE50920_series_matrix.txt.gz",
+              "version": "GSE50920",
+              "compression": "gzip",
+              "pinnedSha256": "634783da7fdcbd9301295810c5138a2b7993d1a7b2cce39409198fd4d35aa06a",
+              "bytes": 707258,
+              "sha256": "634783da7fdcbd9301295810c5138a2b7993d1a7b2cce39409198fd4d35aa06a",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE50920_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50920/soft/GSE50920_family.soft.gz",
+              "version": "GSE50920",
+              "compression": "gzip",
+              "pinnedSha256": "e4cf804a7442a12213c66a9e516bcf14eee8149f17834c41af4ba53378b3c799",
+              "bytes": 1375790,
+              "sha256": "e4cf804a7442a12213c66a9e516bcf14eee8149f17834c41af4ba53378b3c799",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE52486_series_matrix.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE52nnn/GSE52486/matrix/GSE52486_series_matrix.txt.gz",
+              "version": "GSE52486",
+              "compression": "gzip",
+              "pinnedSha256": "9580cb98a9bde3ce7f20b1a38cef45134a43d5dd542721215ae3c75bffc2f0fa",
+              "bytes": 116057,
+              "sha256": "9580cb98a9bde3ce7f20b1a38cef45134a43d5dd542721215ae3c75bffc2f0fa",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE52486_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE52nnn/GSE52486/soft/GSE52486_family.soft.gz",
+              "version": "GSE52486",
+              "compression": "gzip",
+              "pinnedSha256": "cde9d6558b2d68a07d65f456ae3b75dc8ca7754f4c71978bbb410a5e8cdeb1c3",
+              "bytes": 342795,
+              "sha256": "cde9d6558b2d68a07d65f456ae3b75dc8ca7754f4c71978bbb410a5e8cdeb1c3",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE50919_log2_rpaA-_vs_wild-type_by_microarray_for_GEO_deposit.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50919/suppl/GSE50919_log2_rpaA-_vs_wild-type_by_microarray_for_GEO_deposit.txt.gz",
+              "version": "GSE50919",
+              "compression": "gzip",
+              "pinnedSha256": "9867e6738416b0e5a198dfa87fff48bb7f1101de4b31d40fd2b3d491d217a5b1",
+              "bytes": 18426,
+              "sha256": "9867e6738416b0e5a198dfa87fff48bb7f1101de4b31d40fd2b3d491d217a5b1",
+              "note": "Independent published two-decimal dye-swap summary, joined by JGI feature ID for validation.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:31:02.910864Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved; cached compressed bytes SHA-256 verified."
+              }
             }
           ]
         },
@@ -1358,6 +1927,471 @@
               "repoPath": "data/expression/FitnessBrowser_SynE_sodium_fluoride_at_25_mM.tsv",
               "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/FitnessBrowser_SynE_sodium_fluoride_at_25_mM.tsv",
               "kind": "Project-derived mapped fitness table"
+            }
+          ]
+        },
+        {
+          "id": "pattanayak-2014-array",
+          "citation": "Pattanayak GK, Phong C, Rust MJ. Rhythms in energy storage control the ability of the cyanobacterial circadian clock to reset. Current Biology 24, 1934–1938 (2014).",
+          "url": "https://doi.org/10.1016/j.cub.2014.07.022",
+          "contribution": "PCC 7942 microarray measurements mapped to UTEX 2973 through the exact one-to-one gene crosswalk. Deposited processed samples remain separately selectable; author probe averaging and source-specific normalization are retained. Optional summaries are explicitly labelled. GEO/NCBI deposit, reused with citation under the owner decision of 2026-10-06.",
+          "downloads": [
+            {
+              "filename": "GSE59112_GSM1428798.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428798.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428798.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428799.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428799.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428799.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428800.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428800.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428800.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428801.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428801.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428801.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428802.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428802.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428802.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428803.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428803.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428803.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428804.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428804.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428804.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428805.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428805.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428805.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428806.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428806.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428806.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428807.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428807.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428807.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428808.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428808.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428808.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE59112_GSM1428809.tsv",
+              "repoPath": "data/expression/GSE59112_GSM1428809.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE59112_GSM1428809.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            }
+          ],
+          "upstreamArtifacts": [
+            {
+              "filename": "GSE59112_series_matrix.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE59nnn/GSE59112/matrix/GSE59112_series_matrix.txt.gz",
+              "version": "GSE59112",
+              "compression": "gzip",
+              "pinnedSha256": "ab5251723ecc7405f063af3a2f655f71c1e8d565ca4ebbc186157e4223673c70",
+              "bytes": 120783,
+              "sha256": "ab5251723ecc7405f063af3a2f655f71c1e8d565ca4ebbc186157e4223673c70",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE59112_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE59nnn/GSE59112/soft/GSE59112_family.soft.gz",
+              "version": "GSE59112",
+              "compression": "gzip",
+              "pinnedSha256": "a257c08ab5f458eea98901fa2259df208dd59d7908cbc27ee955b1f5a5a79701",
+              "bytes": 362573,
+              "sha256": "a257c08ab5f458eea98901fa2259df208dd59d7908cbc27ee955b1f5a5a79701",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            }
+          ]
+        },
+        {
+          "id": "vijayan-2009-array",
+          "citation": "Vijayan V, Zuzow R, O'Shea EK. Oscillations in supercoiling drive circadian gene expression in cyanobacteria (2009).",
+          "url": "https://doi.org/10.1073/pnas.0912673106",
+          "contribution": "PCC 7942 microarray measurements mapped to UTEX 2973 through the exact one-to-one gene crosswalk. Deposited processed samples remain separately selectable; author probe averaging and source-specific normalization are retained. Optional summaries are explicitly labelled. GEO/NCBI deposit, reused with citation under the owner decision of 2026-10-06.",
+          "downloads": [
+            {
+              "filename": "GSE18902_GSM468463.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468463.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468463.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468464.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468464.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468464.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468465.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468465.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468465.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468466.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468466.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468466.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468467.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468467.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468467.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468468.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468468.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468468.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468469.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468469.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468469.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468470.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468470.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468470.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468471.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468471.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468471.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468472.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468472.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468472.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468473.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468473.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468473.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468474.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468474.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468474.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468475.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468475.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468475.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468476.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468476.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468476.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468477.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468477.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468477.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468478.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468478.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468478.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468479.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468479.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468479.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468480.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468480.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468480.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468481.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468481.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468481.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468482.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468482.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468482.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468483.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468483.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468483.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468484.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468484.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468484.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE18902_GSM468485.tsv",
+              "repoPath": "data/expression/GSE18902_GSM468485.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE18902_GSM468485.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            }
+          ],
+          "upstreamArtifacts": [
+            {
+              "filename": "GSE18902_series_matrix.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE18nnn/GSE18902/matrix/GSE18902_series_matrix.txt.gz",
+              "version": "GSE18902",
+              "compression": "gzip",
+              "pinnedSha256": "7d337fc2585861562f1e6d0750e42642f8dd8c3cbc256b3e4d65fd953eab6f0d",
+              "bytes": 346875,
+              "sha256": "7d337fc2585861562f1e6d0750e42642f8dd8c3cbc256b3e4d65fd953eab6f0d",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE18902_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE18nnn/GSE18902/soft/GSE18902_family.soft.gz",
+              "version": "GSE18902",
+              "compression": "gzip",
+              "pinnedSha256": "f52dcba6030f666d1085814c59dd3456f6c3eee4357608eaf426a445ddd58f39",
+              "bytes": 740338,
+              "sha256": "f52dcba6030f666d1085814c59dd3456f6c3eee4357608eaf426a445ddd58f39",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GPL9534_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/platforms/GPL9nnn/GPL9534/soft/GPL9534_family.soft.gz",
+              "version": "GPL9534",
+              "compression": "gzip",
+              "pinnedSha256": "35af5c25674726614fb1c7683a161d0827a5c3937ea797d1cf218008b4497195",
+              "bytes": 2974392,
+              "sha256": "35af5c25674726614fb1c7683a161d0827a5c3937ea797d1cf218008b4497195",
+              "note": "Platform feature-to-ORF mapping; original duplicate annotation columns retained.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:31:02.909996Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved; cached compressed bytes SHA-256 verified."
+              }
+            }
+          ]
+        },
+        {
+          "id": "vicente-2019-array",
+          "citation": "Vicente A et al. Toxicity mechanisms of ZnO UV-filters used in sunscreens toward the model cyanobacteria Synechococcus elongatus PCC7942 (2019).",
+          "url": "https://doi.org/10.1007/s11356-019-05057-6",
+          "contribution": "PCC 7942 microarray measurements mapped to UTEX 2973 through the exact one-to-one gene crosswalk. Deposited processed samples remain separately selectable; author probe averaging and source-specific normalization are retained. Optional summaries are explicitly labelled. GEO/NCBI deposit, reused with citation under the owner decision of 2026-10-06.",
+          "downloads": [
+            {
+              "filename": "GSE102914_GSM2748217.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748217.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748217.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748218.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748218.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748218.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748219.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748219.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748219.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748220.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748220.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748220.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748221.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748221.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748221.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748222.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748222.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748222.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748223.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748223.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748223.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748224.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748224.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748224.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748225.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748225.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748225.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748226.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748226.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748226.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748227.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748227.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748227.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748228.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748228.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748228.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748229.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748229.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748229.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748230.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748230.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748230.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748231.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748231.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748231.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_GSM2748232.tsv",
+              "repoPath": "data/expression/GSE102914_GSM2748232.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_GSM2748232.tsv",
+              "kind": "Project-derived mapped array table; one deposited sample"
+            },
+            {
+              "filename": "GSE102914_2748217.tsv",
+              "repoPath": "data/expression/GSE102914_2748217.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_2748217.tsv",
+              "kind": "Project-derived mapped array table; optional summary"
+            },
+            {
+              "filename": "GSE102914_2748221.tsv",
+              "repoPath": "data/expression/GSE102914_2748221.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_2748221.tsv",
+              "kind": "Project-derived mapped array table; optional summary"
+            },
+            {
+              "filename": "GSE102914_2748225.tsv",
+              "repoPath": "data/expression/GSE102914_2748225.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_2748225.tsv",
+              "kind": "Project-derived mapped array table; optional summary"
+            },
+            {
+              "filename": "GSE102914_2748229.tsv",
+              "repoPath": "data/expression/GSE102914_2748229.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/data/expression/GSE102914_2748229.tsv",
+              "kind": "Project-derived mapped array table; optional summary"
+            }
+          ],
+          "upstreamArtifacts": [
+            {
+              "filename": "GSE102914_series_matrix.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE102nnn/GSE102914/matrix/GSE102914_series_matrix.txt.gz",
+              "version": "GSE102914",
+              "compression": "gzip",
+              "pinnedSha256": "59b81f70716783fecd3e1895f785682e8f401efa20881600743a9006f1566219",
+              "bytes": 143425,
+              "sha256": "59b81f70716783fecd3e1895f785682e8f401efa20881600743a9006f1566219",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GSE102914_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE102nnn/GSE102914/soft/GSE102914_family.soft.gz",
+              "version": "GSE102914",
+              "compression": "gzip",
+              "pinnedSha256": "01aff2e26be6734edb536a1dc8ed0ba38419eecb035ba0070e2ede8f865c8736",
+              "bytes": 445659,
+              "sha256": "01aff2e26be6734edb536a1dc8ed0ba38419eecb035ba0070e2ede8f865c8736",
+              "note": "Deposited processed array measurements; physical probes were combined by the authors.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:12:49.720450Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
             }
           ]
         },

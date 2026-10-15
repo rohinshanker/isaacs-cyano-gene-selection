@@ -42,7 +42,7 @@ source uncertainty and separately tracked implementation remain explicit.
 | MET-04 | J3 answered: OD730/A730 accepted alongside OD750 | [Condition comparability](../../validation/data-contract.md#condition-comparability) |
 | MET-05 | J1 answered: shared spectrum class by owner judgement; lamp identity still unknown | Source absence is preserved in the literature dispositions above |
 | MET-06 | J4 answered: no fixed narrow-miss boundary | Human pair review and the deterministic default screen remain distinct |
-| MET-07 | J5 answered: arrays separate by default, optional inclusion | [Source-specific array pooling/reader](../tickets/O_array-expression-reader__20261007.md) remains open |
+| MET-07 | J5 answered: arrays separate by default, optional inclusion | [Source-specific array reader and optional summaries](../../validation/geo-array-reader.md) implemented with separate deposited samples and disclosed author averaging |
 | MET-11 | J9 answered and fitness type implemented | [Fitness-screen contract](../../validation/fitness-screen-data.md); proposed P4 sweep remains separate under OWN-13 below |
 | OWN-11 | Default selection/conflict display settled; D10 retains PCA and authorizes annotation search/open | [Cross-strain implementation](../tickets/O_cross-strain-data-scan__20260927.md) remains open |
 | OWN-12 | Default-screen versus lab-decision contract reconciled | [Pair-decision intake](../../validation/pair-review-intake.md#applying-an-explicit-owner-decision); pairs 7/8 separate, 26/27 undecided, J2 conditional |
