@@ -47,6 +47,22 @@ layers retain the same admitted positions. Replacing a payload, switching the
 scheme or changing organisms must invalidate the appropriate cached comparison.
 Visibility controls affect drawing, not the numerical result.
 
+## Browser and export
+
+The numeric metric **Edited TSS sites in CDS** uses key
+`editedTssSitesInCds`. **Evaluated recorded TSS in CDS** provides its denominator
+as `evaluatedTssSitesInCds`. The ordinary numeric registry supplies coloring,
+axes and custom filters. Saved color/filter state uses those keys and the usual
+scheme state. The sequence-edit inspection disclosure in both compact viewers
+and the expanded sequence view lists each original site, edit state and base
+pair; the expanded view can center a selected site for exact-base inspection.
+Keep start-site visibility controls effective while preserving the counts/list.
+
+Exports recompute both counts for each exported scheme, rather than copying the
+currently displayed scheme's values. Undefined counts are blank. The row's
+`tssRecodingStatus` and `tssRecodingReason` explain evaluation, and the manifest
+retains the source and sequence-edit definition alongside each scheme identity.
+
 ## Verification
 
 `tests/js/tss-recoding-oracle.test.mjs` independently enumerates the shipped
@@ -68,3 +84,16 @@ exact-base inspection, saved state and exports. Use the repository's UI skill at
 mobile, tablet and desktop widths, including breakpoint neighbours; inspect the
 actual renders and keyboard/focus behavior. Run the repository's three required
 gates after integration.
+
+Serve the repository root on an unused port. In a uniquely named Playwright CLI
+session, open `/site/?uiArtifacts=/absolute/ignored/artifact/directory` and run:
+
+```sh
+node --test tests/js/tss-recoding.test.mjs tests/js/tss-recoding-oracle.test.mjs
+playwright-cli -s=YOUR_SESSION run-code --filename=tools/ui/check_tss_recoding.js
+```
+
+The browser harness uses real release records and controlled loading/failure
+states. Inspect its screenshots and semantic snapshots; a CLI `### Error` is a
+failure even if the command exits zero. Keep failure fixtures consistent with
+published integrity requirements and do not bypass the data loader.

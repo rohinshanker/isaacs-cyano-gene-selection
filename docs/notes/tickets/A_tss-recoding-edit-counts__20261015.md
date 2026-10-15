@@ -43,6 +43,13 @@ and other site types remain separate in the parent ticket.
   changes and stale state with appropriate tests and independent release-data
   enumeration. Render real mobile/tablet/desktop views and relevant states.
 
+## Review Findings
+
+- **TSS-UI-1 — open.** The shared purple-line legend and expanded sequence
+  explanation still say neighbouring-gene sites while the new edit comparison
+  draws all contained Tan sites, including self/unassigned. The legend/explanation
+  must describe the actual set, preserving the existing neighbour-only count.
+
 ## Verification
 
 Pending implementation, focused tests, rendered checks and independent review.
