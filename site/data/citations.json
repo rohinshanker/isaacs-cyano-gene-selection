@@ -1161,6 +1161,21 @@
                 "result": "verified",
                 "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
               }
+            },
+            {
+              "filename": "GSE50919_log2_rpaA-_vs_wild-type_by_microarray_for_GEO_deposit.txt.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50919/suppl/GSE50919_log2_rpaA-_vs_wild-type_by_microarray_for_GEO_deposit.txt.gz",
+              "version": "GSE50919",
+              "compression": "gzip",
+              "pinnedSha256": "9867e6738416b0e5a198dfa87fff48bb7f1101de4b31d40fd2b3d491d217a5b1",
+              "bytes": 18426,
+              "sha256": "9867e6738416b0e5a198dfa87fff48bb7f1101de4b31d40fd2b3d491d217a5b1",
+              "note": "Independent published two-decimal dye-swap summary, joined by JGI feature ID for validation.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:31:02.910864Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved; cached compressed bytes SHA-256 verified."
+              }
             }
           ]
         },
@@ -2201,6 +2216,21 @@
                 "checkedAt": "2026-10-15T01:12:49.720450Z",
                 "result": "verified",
                 "detail": "Full public NCBI download retrieved and cached bytes SHA-256 verified."
+              }
+            },
+            {
+              "filename": "GPL9534_family.soft.gz",
+              "url": "https://ftp.ncbi.nlm.nih.gov/geo/platforms/GPL9nnn/GPL9534/soft/GPL9534_family.soft.gz",
+              "version": "GPL9534",
+              "compression": "gzip",
+              "pinnedSha256": "35af5c25674726614fb1c7683a161d0827a5c3937ea797d1cf218008b4497195",
+              "bytes": 2974392,
+              "sha256": "35af5c25674726614fb1c7683a161d0827a5c3937ea797d1cf218008b4497195",
+              "note": "Platform feature-to-ORF mapping; original duplicate annotation columns retained.",
+              "linkCheck": {
+                "checkedAt": "2026-10-15T01:31:02.909996Z",
+                "result": "verified",
+                "detail": "Full public NCBI download retrieved; cached compressed bytes SHA-256 verified."
               }
             }
           ]

@@ -139,7 +139,7 @@ def test_upstream_catalogue_has_dated_checks_and_preserves_pinned_identity():
         for item in section["items"]
         for artifact in item.get("upstreamArtifacts", [])
     }
-    assert len(entries) == 18
+    assert len(entries) == 20
     annotation = json.loads((ROOT / "data/manifest/annotation-release-v1.json").read_text())
     for source in annotation["sources"]:
         for file in source.get("files", []):
@@ -151,11 +151,14 @@ def test_upstream_catalogue_has_dated_checks_and_preserves_pinned_identity():
             assert artifact["pinnedSha256"] == digest
             assert artifact["compression"] == "gzip"
     catalogue = json.loads((ROOT / "data/expression/ingest/geo_array_sources.json").read_text())
+    pins = [catalogue["platform"]]
     for source in catalogue["sources"]:
-        for key in ("soft", "matrix"):
-            pin = source[key]
-            assert entries[pin["url"]]["pinnedSha256"] == pin["sha256"]
-            assert entries[pin["url"]]["filename"] == pin["name"]
+        pins.extend([source["soft"], source["matrix"]])
+        if "publishedDyeSwapSummary" in source:
+            pins.append(source["publishedDyeSwapSummary"])
+    for pin in pins:
+        assert entries[pin["url"]]["pinnedSha256"] == pin["sha256"]
+        assert entries[pin["url"]]["filename"] == pin["name"]
     for artifact in entries.values():
         assert urlparse(artifact["url"]).scheme == "https"
         check = artifact["linkCheck"]

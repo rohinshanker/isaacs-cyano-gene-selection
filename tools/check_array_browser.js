@@ -30,8 +30,11 @@ async (page) => {
       const sources = page.locator('details').filter({has:sourceSummary});
       const radios = sources.getByRole('radio');
       check(await radios.count() === count, `${type} count`);
-      const first = await radios.first().getAttribute('aria-label');
+      const selected = await radios.evaluateAll(rs => rs.filter(r => r.checked).map(r => r.getAttribute('aria-label')));
+      check(selected.length === 1, `${type} must read exactly one initial dataset`);
+      const first = selected[0];
       check(!/Optional/.test(first), `${type} default is an individual sample`);
+      check(await radios.first().isChecked(), `${type} initially reads the first deposited sample`);
       await radios.nth(1).check();
       check(await radios.nth(1).isChecked(), `${type} switching`);
       await radios.nth(1).focus();
@@ -70,6 +73,24 @@ async (page) => {
       await provenanceSummary.scrollIntoViewIfNeeded();
       await page.screenshot({path:`${artifacts}/${type}-provenance.png`});
     }
+    if (!await sourceSummary.evaluate(el => el.parentElement.open)) await sourceSummary.click();
+    await page.getByRole('button', {name:'Change Data Selection',exact:true}).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('checkbox', {name:'Include array datasets (127)',exact:true}).check();
+    await dialog.getByLabel('Add a filter',{exact:true}).selectOption('study');
+    await dialog.getByLabel('Study or label contains',{exact:true}).fill('GSE102914');
+    for (const [width,height] of [[375,812],[768,1024],[1280,800],[1440,900]]) {
+      await page.setViewportSize({width,height});
+      const medium = dialog.locator('tr[data-id^="GSE102914"] .ds-chip').filter({hasText:/^EPA Very Soft Water$/});
+      check(await medium.count() === 20, 'all signal samples and optional summaries appear in the array table');
+      check(await medium.evaluateAll(es => es.every(e => {
+        const a=e.getBoundingClientRect(), b=e.closest('td').getBoundingClientRect();
+        return a.left >= b.left && a.right <= b.right;
+      })), `medium chips stay inside their column at ${width}`);
+      check(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth), `dialog overflow at ${width}`);
+      await page.screenshot({path:`${artifacts}/array-selection-${width}.png`});
+    }
+    await dialog.getByRole('button',{name:'Close',exact:true}).click();
     check(errors.length===0, JSON.stringify(errors));
     return {results,errors};
   } finally {

@@ -126,6 +126,20 @@ def verify_pool_metadata(source: dict, pool: dict, samples: dict[str, dict]) -> 
         raise ValueError("no validated pooling rule for this study")
 
 
+def verify_temporal_profile(samples: dict[str, dict[str, float]]) -> None:
+    """Verify the deposited WT normalization, independently of its prose claim."""
+    wild_type = [samples[f"GSM{i}"] for i in range(1428798, 1428804)]
+    genes = set(wild_type[0])
+    if not genes or any(set(sample) != genes for sample in wild_type):
+        raise ValueError("WT profile sample membership differs")
+    # Deposited scientific-notation values have fewer significant figures;
+    # their rounding permits a WT mean residual up to 1e-8.
+    for gene in genes:
+        values = [sample[gene] for sample in wild_type]
+        if abs(math.fsum(values) / len(values)) > 1e-8 or abs(max(values) - min(values) - 1) > 1e-9:
+            raise ValueError("deposited WT profile is not mean zero and peak-to-trough one")
+
+
 def build(catalogue: dict, *, interim: Path, out_dir: Path,
           crosswalk_path: Path = DEFAULT_CROSSWALK) -> list[dict]:
     """Verify source files, preserve evidence, and build 122 samples plus five opt-in summaries."""
@@ -164,6 +178,8 @@ def build(catalogue: dict, *, interim: Path, out_dir: Path,
                 row[0]: check_value(source["quantity"], float(row[position]), f"{study}/{sample}/{row[0]}")
                 for row in rows if row[position].strip().lower() not in ("", "null", "na", "nan")
             }
+        if source["quantity"] == "array_temporal_profile":
+            verify_temporal_profile(sample_values)
         layers = [{"id": sample, "label": metadata(sample_entities[sample])["Sample_title"][0],
                    "sampleIds": [sample], "multipliers": [1]} for sample in header[1:]]
         layers.extend(source["pools"])
@@ -189,11 +205,23 @@ def build(catalogue: dict, *, interim: Path, out_dir: Path,
             descriptions = sorted({v["value"] for sample in selected
                                    for v in sample_entities[sample]["columnDescriptions"] if v["key"] == "VALUE"})
             processing = sorted({value for m in metadata_by_sample.values() for value in m.get("Sample_data_processing", [])})
+            override = source.get("sampleOverrides", {}).get(selected[0], {}) if not pooled else layer
+            value_note = override.get("valueNote") or " ".join(text.rstrip(". ") + "." for text in descriptions)
+            selection_note = ("This layer is an explicit optional summary. " + source["poolingPolicy"]
+                              if pooled else "This layer is one deposited sample; optional summaries, where available, are separate datasets.")
             caveat = ("Measured in PCC 7942 and mapped onto UTEX 2973, not measured in UTEX. "
                       "Deposited processed per-gene values; physical probe measurements were combined by the authors. "
-                      + " ".join(descriptions) + " " + source["poolingPolicy"])
+                      + value_note + " " + selection_note + " No automatic pooling with other samples or studies.")
             if source["quantity"] == "array_temporal_profile":
-                caveat += " Per-ORF time-course normalization fixes WT mean 0 and amplitude 2; this is not absolute RNA abundance or a between-gene expression scale."
+                caveat += (" The depositor describes WT mean 0 and amplitude 2, but the deposited WT values "
+                           "have per-ORF mean approximately 0 (within 1e-8) and peak-to-trough 1 across six time points. Values are preserved "
+                           "without rescaling; mutant profiles are relative to WT and are not re-centred. "
+                           "This is not absolute RNA abundance or a between-gene expression scale.")
+            units = override.get("units") or {
+                "array_log2_ratio": "normalized log2 sample/reference ratio",
+                "array_normalized_signal": "normalized signal as deposited",
+                "array_temporal_profile": "as-deposited within-gene profile (WT mean ≈0, peak-to-trough 1)",
+            }[source["quantity"]]
             record = {"studyId": study, "dataType": "transcriptomics", "platform": "array",
                       "strain": "PCC 7942", "basis": "transferred", "conditionSet": layer["label"],
                       "samples": ", ".join(selected), "archiveUrl": f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={study}",
@@ -206,10 +234,9 @@ def build(catalogue: dict, *, interim: Path, out_dir: Path,
             entries.append({"id": ident, "file": file_name, "metricKey": "expr" + ident.replace("_", ""),
                             "label": f"{study}: {layer['label']} (PCC 7942 array)", "record": record,
                             "organism": "Synechococcus elongatus PCC 7942", "isTargetOrganism": False,
-                            "assay": "Microarray deposited " + source["quantity"].removeprefix("array_").replace("_", " "),
-                            "units": {"array_log2_ratio": "normalized log2 sample/reference ratio",
-                                      "array_normalized_signal": "normalized signal as deposited",
-                                      "array_temporal_profile": "normalized time-course profile (WT mean 0, amplitude 2)"}[source["quantity"]],
+                            "assay": ("Microarray computed optional summary of " if pooled else "Microarray deposited ")
+                                     + source["quantity"].removeprefix("array_").replace("_", " "),
+                            "units": units,
                             "quantity": source["quantity"], **declared_flags(source["quantity"]),
                             "condition": layer["label"], "sha256": digest,
                             "licence": "GEO/NCBI deposit; reuse with article/deposit citation authorized by owner 2026-10-06 (source ledger)",

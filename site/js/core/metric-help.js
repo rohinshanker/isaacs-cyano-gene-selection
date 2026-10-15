@@ -144,7 +144,7 @@ function ingestedMethod(provenance) {
       return assignments.length ? `${id}: ${assignments.join('; ')}.` : '';
     }).filter(Boolean).join(' ');
     return `${calculation} Authors’ probe reduction and normalization are retained. `
-      + `${processing.join(' ')} ${channels} `
+      + `Depositor’s processing description: ${processing.join(' ')} ${channels} `
       + 'Mapped from GPL9534 feature ID to ORF, then from PCC 7942 to UTEX 2973 through the pinned '
       + 'one-to-one identifier crosswalk; no value is imputed for an unmatched locus.';
   }

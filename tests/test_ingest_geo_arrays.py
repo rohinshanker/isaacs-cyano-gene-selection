@@ -5,6 +5,7 @@ import csv
 import gzip
 import hashlib
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -140,13 +141,72 @@ def test_pinned_real_sources_rebuild_every_published_array_value(tmp_path):
             pins.append(source["publishedDyeSwapSummary"])
     if not all((cache / pin["name"]).exists() for pin in pins):
         pytest.skip("optional pinned GEO input cache; run ingest_geo_arrays.py to populate")
-    rebuilt = arrays.build(catalogue, interim=cache, out_dir=tmp_path)
+    isolated_cache = tmp_path / "cache"
+    isolated_cache.mkdir()
+    for pin in pins:
+        shutil.copyfile(cache / pin["name"], isolated_cache / pin["name"])
+    rebuilt = arrays.build(catalogue, interim=isolated_cache, out_dir=tmp_path / "output")
     manifest = json.loads((ROOT / "data/expression/sources.json").read_text())
     published = {source["id"]: source for source in manifest}
     for source in rebuilt:
         assert source == published[source["id"]]
-        assert (tmp_path / source["file"]).read_bytes() == (ROOT / "data/expression" / source["file"]).read_bytes()
+        assert (tmp_path / "output" / source["file"]).read_bytes() == (ROOT / "data/expression" / source["file"]).read_bytes()
     broken = copy.deepcopy(catalogue)
     broken["crosswalk"]["sha256"] = "0" * 64
     with pytest.raises(ValueError, match="crosswalk checksum"):
         arrays.build(broken, interim=cache, out_dir=tmp_path)
+
+
+def test_temporal_profile_verifies_observed_values_not_the_depositor_prose():
+    samples = {f"GSM{i}": {"g": value} for i, value in zip(range(1428798, 1428804), [-0.5, -0.2, 0, 0, 0.2, 0.5])}
+    arrays.verify_temporal_profile(samples)
+    bad = copy.deepcopy(samples); bad["GSM1428798"]["g"] = -1
+    with pytest.raises(ValueError, match="mean zero"):
+        arrays.verify_temporal_profile(bad)
+    bad = copy.deepcopy(samples); bad["GSM1428798"]["extra"] = 0
+    with pytest.raises(ValueError, match="membership"):
+        arrays.verify_temporal_profile(bad)
+    empty = {key: {} for key in samples}
+    with pytest.raises(ValueError, match="membership"):
+        arrays.verify_temporal_profile(empty)
+
+
+def test_main_replaces_only_owned_studies_and_creates_a_missing_manifest(tmp_path, monkeypatch):
+    catalogue = tmp_path / "catalogue.json"
+    catalogue.write_text(json.dumps({"sources": [{"studyId": "owned"}]}))
+    manifest = tmp_path / "sources.json"
+    retained = {"id": "other", "record": {"studyId": "other"}, "nested": {"value": 42}}
+    manifest.write_text(json.dumps([retained, {"id": "old", "record": {"studyId": "owned"}}]))
+    replacement = {"id": "new", "record": {"studyId": "owned"}}
+    calls = []
+    def build(catalogue, **kwargs):
+        calls.append((catalogue, kwargs))
+        return [replacement]
+    monkeypatch.setattr(arrays, "build", build)
+    args = ["--catalogue", str(catalogue), "--manifest", str(manifest),
+            "--interim", str(tmp_path / "cache"), "--out-dir", str(tmp_path / "out")]
+    assert arrays.main(args) == 0
+    assert json.loads(manifest.read_text()) == [retained, replacement]
+    assert calls[0][1] == {"interim": tmp_path / "cache", "out_dir": tmp_path / "out"}
+    manifest.unlink()
+    assert arrays.main(args) == 0
+    assert json.loads(manifest.read_text()) == [replacement]
+
+
+def test_layer_specific_labels_disclose_orientation_processing_and_source_discrepancy():
+    entries = {s["id"]: s for s in json.loads((ROOT / "data/expression/sources.json").read_text())}
+    pool = entries["GSE50920_GSM1267085"]
+    assert "control clock-rescue pool / ΔrpaA clock-rescue pool" in pool["units"]
+    assert "Only Loess normalization" in pool["caveat"]
+    assert "VALUE header instead repeats" in pool["caveat"]
+    reverse = entries["GSE50919_GSM1232427"]
+    assert "WT pool / rpaA− pool" in reverse["units"]
+    assert "This individual sample retains its deposited orientation" in reverse["caveat"]
+    assert "oriented rpaA-/WT" not in reverse["caveat"]
+    assert "computed optional summary" in entries["GSE50919_dye_swap"]["assay"]
+    profile = entries["GSE59112_GSM1428798"]
+    assert "peak-to-trough 1" in profile["units"]
+    assert "depositor describes WT mean 0 and amplitude 2, but" in profile["caveat"]
+    single = entries["GSE102914_GSM2748217"]
+    assert "Normalized signal intensity. This layer is one deposited sample" in single["caveat"]
+    assert "Optional arithmetic mean" not in single["caveat"]

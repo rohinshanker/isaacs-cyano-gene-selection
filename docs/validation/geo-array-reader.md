@@ -53,7 +53,12 @@ array admission command rather than weakening this generic preservation rule.
 
 The first five preserve the authors' four-probe averages. GSE102914 also
 publishes means of four probes per gene. GSE59112 normalizes log intensities
-against spike-ins and then per-ORF profiles to WT mean zero and amplitude two.
+against spike-ins. Its processing description says WT mean zero and amplitude
+two, but the deposited WT values have per-ORF mean approximately zero (within 1e-8, allowing for deposited
+rounding) and peak-to-trough one
+across six time points. The build verifies those observed properties and retains
+the values without rescaling. Mutant profiles remain relative to WT and are not
+re-centred.
 Its profile is neither absolute RNA abundance nor a between-gene abundance
 scale, so it belongs to the separate **Temporal profile** metric family.
 
@@ -116,3 +121,10 @@ Playwright session; run `playwright-cli -s=SESSION run-code
 keyboard switching, explicit summaries, transfer/probe-processing disclosures,
 abundance exclusion, overflow at eight widths, and runtime/network diagnostics.
 Inspect its screenshots as well as the returned report.
+
+GSM1267085 is explicitly labelled log2(control clock-rescue pool / ΔrpaA
+clock-rescue pool), Cy3/Cy5, using its channel metadata and Loess-only exception.
+The deposit's VALUE header repeats the time-course wording; it remains in the
+lossless evidence, with the discrepancy disclosed in the browser. Each GSE50919
+individual sample also states its own numerator/denominator; only the optional
+dye-swap mean changes orientation.

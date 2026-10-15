@@ -292,9 +292,20 @@
           "multipliers": [
             1,
             -1
-          ]
+          ],
+          "units": "log2(rpaA− pool / WT pool), oriented dye-swap mean"
         }
-      ]
+      ],
+      "sampleOverrides": {
+        "GSM1232426": {
+          "units": "log2(rpaA− pool / WT pool), Cy3/Cy5",
+          "valueNote": "Loess-normalized log2(rpaA− pool / WT pool), Cy3/Cy5; author mean of four probes per gene. No quantile normalization."
+        },
+        "GSM1232427": {
+          "units": "log2(WT pool / rpaA− pool), Cy3/Cy5",
+          "valueNote": "Loess-normalized log2(WT pool / rpaA− pool), Cy3/Cy5; author mean of four probes per gene. No quantile normalization. This individual sample retains its deposited orientation."
+        }
+      }
     },
     {
       "studyId": "GSE50920",
@@ -511,7 +522,13 @@
         "pmid": "24315105"
       },
       "poolingPolicy": "Individual sample/reference ratios only. Replicate-specific reference pools and the differently normalized pool-vs-pool contrast are not averaged.",
-      "pools": []
+      "pools": [],
+      "sampleOverrides": {
+        "GSM1267085": {
+          "units": "log2(control clock-rescue pool / ΔrpaA clock-rescue pool), Cy3/Cy5",
+          "valueNote": "Channel metadata identifies log2(control clock-rescue pool / ΔrpaA clock-rescue pool), Cy3/Cy5. Only Loess normalization was performed. The deposited VALUE header instead repeats the time-course log2(timepoint/background pool) wording; channel identities and the sample-specific processing exception determine this label."
+        }
+      }
     },
     {
       "studyId": "GSE52486",

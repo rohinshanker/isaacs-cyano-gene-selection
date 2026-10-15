@@ -72,3 +72,20 @@ citation row with downloads that resolve.
 
 On resolution, distil the array rules into `docs/validation/data-contract.md`,
 update `validation/INDEX.md`, then delete this ticket and its index row.
+
+## Independent review findings
+
+Claude reviewer DEM-415 reviewed `86d8512..da2b2bf` and the `31b9f4f` delta.
+All 122 deposited sample tables and five summaries independently recomputed;
+all 307,601 array payload cells, prior measurements and genes match.
+
+| Finding | State | Resolution required |
+| --- | --- | --- |
+| AR-01 | `31b9f4f` | Commit release-count fixes and preserve exact validation tolerance/error in metadata. |
+| AR-02 | open | Label GSM1267085 from its pool-versus-pool channels, disclosing the copied VALUE-header discrepancy. |
+| AR-03 | open | Attribute the amplitude-2 prose to the depositor; disclose and verify actual WT mean approximately zero and peak-to-trough one. |
+| AR-04 | open | Use layer-specific individual/summary caveats, correct individual dye orientation and punctuation, and label computed summaries. |
+| AR-05 | open | Add GPL9534 and the independent dye-swap summary to dated upstream citation artifacts. |
+| AR-06 | open | Isolate cache writes in rebuild tests, test CLI replacement/preservation, assert the initially checked browser dataset. |
+
+| AR-07 | open | Rendered array-table check found the long medium chip crossing into the phase column; use the existing wrapping chip style and verify cell geometry. |
