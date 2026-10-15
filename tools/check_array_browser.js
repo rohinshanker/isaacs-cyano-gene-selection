@@ -90,7 +90,7 @@ async (page) => {
       check(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth), `dialog overflow at ${width}`);
       await page.screenshot({path:`${artifacts}/array-selection-${width}.png`});
     }
-    await dialog.getByRole('button',{name:'Close',exact:true}).click();
+    await dialog.getByRole('button',{name:'Close data selection',exact:true}).click();
     check(errors.length===0, JSON.stringify(errors));
     return {results,errors};
   } finally {
