@@ -103,8 +103,38 @@ readable source/method cards, working keyboard focus and no horizontal overflow.
 All eight screenshots and the semantic snapshot were inspected; console errors
 and warnings were zero. Browser download-byte verification awaits publication.
 
-Browser integration/render review and aggregate repository gates remain pending.
-Do not close this ticket before they pass.
+Integrated UI commit `c01ef97` (worker `d495854`) passes `npm test`: 1,606
+passed, none skipped. Full Python gate: 2,125 passed, 13 skipped, 51 subtests
+passed. `tools/validate_contract.py`: 130 passed, zero failed, one declared
+spliced-CDS exemption. Working tree and whitespace checks are clean.
+
+DEM-413 rendered both gene viewers, chromosome and sequence on native/chromosome
+routes at all four required sizes plus 599/601 and 1239/1241 px. Checks cover
+exact native bases, independent toggles, hover/keyboard focus, caller rebuilds,
+expanded evidence, full JSON export, no-match, unevaluated E. coli, loading and
+failed-layer states. The failure fixture's deliberate 503 is the only expected
+resource error. No normal-runtime errors or accidental overflow; manual semantic
+and keyboard checks passed. No Playwright Test/axe installation or screen-reader
+session is claimed. Coordinator integration smoke check confirms all four views
+with the final payload and no runtime errors.
+
+Independent final UI review DEM-417 found RV-1–RV-4 on `c01ef97`:
+- **RV-1 — fixed in `0ffe9e9`, confirmation pending:** Inspect now refreshes
+  coordinates, pan controls, accessible summaries and the linked tRNA viewport.
+- **RV-2 — fixed in `0ffe9e9`, confirmation pending:** computed intervals use
+  teal bars/triangular heads and visible per-view legends, distinct from purple
+  measured TSS marks. Hidden/loading/failed Tan copy no longer calls the shared
+  marker lane empty.
+- **RV-3 — fixed in `0ffe9e9`, confirmation pending:** RF01116-only sequence
+  rows retain geometry and focus when hidden, including Tan loading/failure.
+- **RV-4 — fixed in `0ffe9e9`, confirmation pending:** upstream context is
+  labelled as a minimum and the disclosure shows each limitation once; full
+  raw search coverage remains in the JSON download.
+
+Reviewer rerenders replaced inaccurate worker loading-state evidence and
+confirmed the desktop disclosure/whole-chromosome view. Coordinator rerenders
+cover the corrected patch and mobile disclosure. Final confirmation and public
+raw-download verification remain pending. Do not close before they pass.
 
 ## Cleanup
 
