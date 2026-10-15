@@ -47,6 +47,15 @@ source uncertainty and separately tracked implementation remain explicit.
 | OWN-11 | Default selection/conflict display settled; D10 retains PCA and authorizes annotation search/open | [Cross-strain implementation](../tickets/O_cross-strain-data-scan__20260927.md) remains open |
 | OWN-12 | Default-screen versus lab-decision contract reconciled | [Pair-decision intake](../../validation/pair-review-intake.md#applying-an-explicit-owner-decision); pairs 7/8 separate, 26/27 undecided, J2 conditional |
 
+## Access intake dispositions
+
+The original access rows below remain dated observations. ACC-02 is resolved
+as of 2026-10-15 UTC: the public rendered PRIDE policy and the Markdown it loads
+were read, checksummed and quote-matched without an account or challenge. See
+[the reproducible receipt](../../validation/pride-policy-access.md). This changes
+only the retrieval finding; other access findings and dataset decisions remain
+separate. The TSV's intake columns carry the same disposition.
+
 ## Sources read
 
 Every file in `docs/notes/handoff/` (four RET files, the SEND file, package A/B/C/D tables, the audit .md/.tsv, the crosswalk second-check .md/.tsv; the 2,716-line ortholog table only for its header and intake notes); `docs/notes/tickets/INDEX.md`; the offload, scan and audit tickets; `O_data-use-audit-fixes__20261004.md`; the six `O_biocyc-*` tickets; the tRNA, RBS, folding, recoding and topology tickets where a queue row points to them; `docs/validation/claude-science-handoff.md`; `docs/validation/source-ledger.md`. Package B `not retrieved` cells and package D undecidable-axis counts were computed from the TSVs on 2026-10-05. The three DOIs with no deposit (LIT-01, LIT-06, LIT-07) were re-probed on 2026-10-05; all three remain unreadable for the same reasons.

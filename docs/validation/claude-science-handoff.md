@@ -95,9 +95,11 @@ probes run from a session with this repository mounted:
   Europe PMC per-file legend route works but rarely finds anything: 6 of 154
   `<supplementary-material>` legends across 29 PMC records carried licence text,
   all from one ASM article. `ncbi.nlm.nih.gov/geo/info/*.html` sits behind a
-  reCAPTCHA check and `ebi.ac.uk/pride/markdownpage/*` is client-rendered; point
-  licence questions at `ncbi.nlm.nih.gov/home/about/policies/`, the EMBL-EBI
-  Terms of Use, and the REST record.
+  reCAPTCHA check and `ebi.ac.uk/pride/markdownpage/*` is client-rendered. The PRIDE data-policy
+  page and its public Markdown were read directly on 2026-10-15 UTC; the
+  [access receipt](pride-policy-access.md) preserves the route, exact quote and
+  hashes. For GEO licence questions, use `ncbi.nlm.nih.gov/home/about/policies/`;
+  keep PRIDE project REST records and EMBL-EBI terms alongside its policy.
 - **bioRxiv has no keyword search.** The connector filters by date, category, and
   server only and rejects a free-text query outright. Preprint discovery runs
   through OpenAlex or PubMed.
