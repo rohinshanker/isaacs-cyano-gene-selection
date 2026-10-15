@@ -1,11 +1,11 @@
-# A_regulatory-layer-admission__20261014 — Active
+# R_regulatory-layer-admission__20261014 — Resolved
 
 Scope: Select and admit browser-facing exploratory regulatory predictions from the evaluated local methods, with method-specific coverage, native coordinates and honest evidence labels.
-Status: active
+Status: resolved
 Opened: 2026-10-14
 Updated: 2026-10-14
 
-## Current State
+## Outcome
 
 Owned by **cyano-regulatory-sites** (2026-10-14), isolated branch
 `work/rfam-admission-20261014` from `7dedca7`. Selected release: exactly the
@@ -101,7 +101,7 @@ Producer DEM-414 findings are retained explicitly:
 Coordinator citation renders at 375×812, 768×1024, 1280×800 and 1440×900 show
 readable source/method cards, working keyboard focus and no horizontal overflow.
 All eight screenshots and the semantic snapshot were inspected; console errors
-and warnings were zero. Browser download-byte verification awaits publication.
+and warnings were zero. Public download-byte verification passed after publication.
 
 Integrated UI commit `c01ef97` (worker `d495854`) passes `npm test`: 1,606
 passed, none skipped. Full Python gate: 2,125 passed, 13 skipped, 51 subtests
@@ -144,8 +144,9 @@ declared spliced-CDS exemption. Four-size merged browser renders, independent
 visibility/focus, Inspect readout/controls, Tan-failed row geometry, and RF01116
 loading/failure all pass. Normal runtime has zero page/console errors and no
 horizontal overflow; deliberately failed requests use 503 fixtures. No automated
-axe or screen-reader test is claimed. Public raw-download verification remains
-pending after the authorized push.
+axe or screen-reader test is claimed. Public downloads passed after push `8c6f893`: both citation buttons downloaded
+the exact committed bytes and filenames (JSON 19,617 bytes; TSV 905 bytes),
+with zero browser errors. The full JSON retains provenance and search coverage.
 
 ## Cleanup
 
@@ -154,3 +155,20 @@ complete, name the closing session and every finding/resolution, distill reusabl
 admission/validation rules, resolve by R-rename, remove the queue row and delete
 the resolved ticket last. Further unselected methods remain optional, not an
 unbounded completion obligation.
+
+## Closure
+
+Closed by **cyano-regulatory-sites** on **2026-10-14**. RF01116-only admission is
+complete and published on main. No implementation or review finding remains
+open against the admitted family layer. RFAM-1/RFAM-2 resolved in `de8c0ec`;
+RFAM-3 is informational, no defect. RV-1/RV-2/RV-3/RV-4 resolved in `0ffe9e9`,
+with the exact merged result independently accepted by DEM-417 on `844bcb6`.
+**I-SCI-1 remains open** in its explicitly linked Yfr1 evidence ticket. This
+closure neither resolves that dependency nor admits transcript/target claims.
+
+Reusable pins, source receipts, rebuild/export rules, coverage boundaries and
+rendered regression contracts live in `docs/validation/regulatory-rfam.md`,
+`regulatory-methods.md` and `source-ledger.md`, linked by the validation index.
+The separate evidence ticket links to that durable contract. No required
+information exists only in this closing ticket. Its queue row is removed;
+deleting the resolved ticket is the final cleanup step.
