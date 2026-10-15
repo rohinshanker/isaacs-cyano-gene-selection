@@ -46,7 +46,8 @@ rules remain the folding contract above.
 The [ViennaRNA structure-metrics documentation](https://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/html/utils/struct/metrics.html),
 `vrna_bp_distance()` / `vrna_bp_distance_pt()`, defines the distance as:
 “dist = number of base pairs in one structure but not in the other”. The source
-also requires structures of equal length. Retrieved directly and mechanically
+also says pair tables should have the same length; this comparison rejects unequal
+window lengths. Retrieved directly and mechanically
 matched by `cyano-regulatory-sites`, 2026-10-15 UTC (2026-10-14 local); HTML
 29,846 bytes, SHA-256
 `a0c43163f9fe076d5f1dbc3c32d69b5c641be6f89d2b1df76260cb143f39454d`.
@@ -141,6 +142,22 @@ PLAYWRIGHT_MCP_OUTPUT_DIR="$PWD/.playwright-cli/rna-folding" \
   "http://127.0.0.1:8863/site/?rnaArtifacts=$PWD/.playwright-cli/rna-folding"
 playwright-cli -s=rna-folding-8863 run-code --filename=tools/rna_wasm/check_browser.js
 ```
+
+For the structure comparison's focused UI check, reopen that same URL (the checks
+navigate away from its artifact-directory query) and run:
+
+```bash
+playwright-cli -s=rna-folding-8863 goto \
+  "http://127.0.0.1:8863/site/?rnaArtifacts=$PWD/.playwright-cli/rna-folding"
+playwright-cli -s=rna-folding-8863 run-code --filename=tools/rna_wasm/check_comparison_browser.js
+```
+
+This checks changed and identity results from the real worker, missing/invalid
+output, collapsed and expanded details, input invalidation, keyboard navigation,
+and bounded scrolling at ten widths including both sides of layout breakpoints.
+Alignment rows are created on expansion; scrolling retains the complete row labels.
+Pairing changes use both a highlight and a `^` marker; sequence edits use an
+underline and `*`. Exact changed-position lists also provide a textual reading.
 
 Inspect the emitted whole-page and folding-region PNGs, the semantic snapshot,
 and the returned parity/responsiveness/diagnostic report. The check asserts
