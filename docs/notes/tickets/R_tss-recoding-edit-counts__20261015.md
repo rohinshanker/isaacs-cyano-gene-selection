@@ -1,18 +1,18 @@
-# A_tss-recoding-edit-counts__20261015 — Active
+# R_tss-recoding-edit-counts__20261015 — Resolved
 
 Scope: Count edits to admitted native Tan TSS bases under the active recoding scheme, with per-gene coloring, exact-base inspection in both gene visualizers, and reproducible export semantics.
-Status: active
+Status: resolved
 Opened: 2026-10-15
 Updated: 2026-10-15
 
-## Current State
+## Outcome
 
-Owner: `cyano-regulatory-sites` (AgentDeck `e6e54b6e-1791581192`). Isolated
-worktree `worktrees/tss-recoding-changes-20261015`, baseline `cccd4a8`.
-Other sessions' unknown-function work, source admissions and model work are outside
-this scope. Multica DEM-421 completed the read-only integration map; DEM-423 owns the
-implementation in its separate worktree. The coordinator owns independent
-release-data enumeration, integration documentation, review and closure.
+Closed by `cyano-regulatory-sites` (AgentDeck `e6e54b6e-1791581192`),
+2026-10-15. The first TSS sequence-edit slice is implemented and independently
+reviewed. All findings against this scope are resolved below; none remain open.
+Other sessions' source/model work was preserved through isolated worktrees and
+fast-forward-compatible integration. The broader regulatory prediction ticket
+and the separately recorded pre-existing panel source-state issue stay open.
 
 Owner confirmed 2026-10-15: **ship the TSS edit counts first**. This is the
 first slice of [regulatory-site changes](O_recoding-regulatory-site-change__20260930.md).
@@ -58,27 +58,44 @@ and other site types remain separate in the parent ticket.
 - **TSS-R3 — resolved by `f894e1a` (DEM-425 verified).** Readiness/promotion/default-scale selection must
   include both TSS payloads for colors, axes and numeric filters.
 
-- **TSS-R4 — open (DEM-425).** Scheme changes must invalidate the detail card's
+- **TSS-R4 — resolved by `b541817` (DEM-425 verified).** Scheme changes must invalidate the detail card's
   cached cohort for the edited-count percentile.
-- **TSS-R5 — open (DEM-425).** The panel-designer export must carry selected Tan
+- **TSS-R5 — resolved by `b541817` (DEM-425 verified).** The panel-designer export must carry selected Tan
   evidence through to both count columns and its manifest, just like shortlist exports.
-- **TSS-R6 — open (coordinator; DEM-425 confirmed).** Exclude the evaluated
+- **TSS-R6 — resolved by `b541817` (DEM-425 verified).** Exclude the evaluated
   denominator from fixed constraints too: Tan source selection changes its
   availability without participating in the panel input identity. Ordinary filters stay.
 
 ## Verification
 
-Pending implementation, focused tests, rendered checks and independent review.
-Required completion gates: `npm test`, canonical `.venv/bin/python -m pytest -q`,
-and canonical `.venv/bin/python tools/validate_contract.py` from the isolated
-worktree. Browser dependencies use existing machine-wide Playwright CLI; no new
-project dependency is planned. No new source is admitted.
+Final integrated production code reviewed at `b541817`; peer mapping changes
+merged at `34ae7de` without browser changes. DEM-425 verified all six findings
+and the earlier legend repair; its final 96 focused tests pass.
+
+- `npm test`: 1,668 passed, no skips or failures.
+- Canonical `.venv/bin/python -m pytest -q` from the isolated integration
+  worktree: 2,383 passed, 16 expected skips, 51 subtests passed.
+- Annotation input verification/reproduction and readiness checks pass.
+  Contract, manifest and live-metric checks pass for all six published organisms.
+- Independent reference checks all 2,715 CDSs across four schemes, including
+  every physical site's exact native coordinate and oriented base changes.
+- Real UI: 53 viewer/source/scheme/loading/failure states, delayed dependencies
+  for colors/axes/filters, explicit scales, fixed constraint exclusions, real
+  panel CSV/manifest with Tan selected/deselected, and percentile cohort changes.
+  Mobile 375, tablet 768, desktop 1280/wide 1440 and breakpoint neighbours were
+  rendered and inspected. No unexpected console, page or request errors or
+  page-level overflow. Keyboard, focus and semantic checks pass; no axe or
+  screen-reader session was run and no visual baselines changed.
+- RNA browser gate: all 32 numerical cases match, lifecycle/search/exports and
+  source coverage pass, no diagnostics. Preload graph and diff checks pass.
 
 ## Cleanup
 
-Close only this owned slice after every review finding has a resolution. Distill
-reusable coordinate/count/availability and rendering contracts into
-`docs/validation/`, update its index, rename/H1 to resolved with final validation,
-remove the live queue row, then delete the resolved ticket in a final cleanup
-commit. The broader regulatory-site changes ticket stays open for new predictions
-and other site types.
+Reusable rules and commands live in
+[the TSS comparison contract](../../validation/tss-recoding-edits.md), linked in
+`docs/validation/INDEX.md`. No ticket-only decision is needed after deletion.
+The broader [prediction work](O_recoding-regulatory-site-change__20260930.md)
+remains open for new promoters and other site types. Pre-existing panel
+source-selection and neighboring-count export work is retained in
+[its separate ticket](O_panel-source-constraint-state__20261015.md).
+Remove this queue row now and delete this resolved file in the last cleanup commit.

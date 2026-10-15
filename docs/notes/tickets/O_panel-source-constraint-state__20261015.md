@@ -14,6 +14,11 @@ A source change can therefore change a constraint's values or missingness
 without marking an existing panel stale. The panel export also does not record
 the selected source IDs. No numerical source data is disputed.
 
+The same review confirmed that panel exports omit the existing
+`neighborSiteCounts` input to `buildExport`, so `neighborTssSitesInCds` stays
+blank even when evidence is available. This predates the TSS edit-count work;
+include the neighboring-site count when binding export evidence.
+
 The TSS slice avoids adding another affected constraint by excluding both TSS
 counts from fixed panel constraints; ordinary interactive filters remain
 available. That exclusion does not repair the existing data-type metric path.
@@ -24,6 +29,8 @@ available. That exclusion does not repair the existing data-type metric path.
   panel constraint and feature; preserve deterministic panel reconstruction.
 - A material source-selection change marks the old panel stale, including a
   change to or from missing values. Unrelated visual toggles do not.
+- Export the neighboring-site count when its captured evidence is evaluated,
+  preserving blank counts for genuinely unavailable evidence.
 - CSV/manifest provenance identifies the sources used to design the panel and
   cannot silently describe a different current selection.
 - Test numeric changes, missingness, require-value/include-missing rules,
