@@ -44,7 +44,7 @@ const KEYS = {
   axisXSources: 'xds', axisYSources: 'yds',
   hiddenMarkers: 'mk',
   neighborSiteFilter: 'ns', overlapClassFilter: 'og', overlapLengthFilter: 'ol',
-  pccEssentialityFilter: 'pe',
+  pccEssentialityFilter: 'pe', filtersBypassed: 'fo',
 };
 
 /**
@@ -163,6 +163,10 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // encoder version did not move for it. Only an organism that publishes the
     // calls reads or writes it.
     pccEssentialityFilter: [],
+    // Turn filters off: every configured filter kept but bypassed. An omitted
+    // `fo` means filters apply, which is also what every earlier link drew, so
+    // its absence has one meaning and the encoder version did not move for it.
+    filtersBypassed: false,
     trafficKey: null,
     lengthCohort: 'annotated',
     proteinFilter: 'any',
@@ -255,6 +259,9 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     ...(organism.functionalAnnotations ? { goTerm: state.goTerm ?? '', goEvidenceFilter: state.goEvidenceFilter ?? 'any' } : {}),
     neighborSiteFilter: state.neighborSiteFilter ?? 'any',
     overlapLengthFilter: state.overlapLengthFilter ?? null,
+    // The configured filters are recorded either way; this says whether they
+    // were in force or temporarily off when the view was saved.
+    filtersBypassed: state.filtersBypassed === true,
     ...(publishesPccCalls(organism)
       ? { pccEssentialityFilter: normalizePccEssentialitySelection(state.pccEssentialityFilter) }
       : {}),
@@ -371,6 +378,7 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
     push(KEYS.expressionFilter, state.expressionFilter);
   }
   if (!state.showHidden) push(KEYS.showHidden, '0');
+  if (state.filtersBypassed === true) push(KEYS.filtersBypassed, '1');
   // Written only when reversed. Omitted means highest on top, which is the
   // fresh view and what every earlier encoder's link showed; see STATE_VERSION.
   if (state.drawOnTop && state.drawOnTop !== DEFAULT_DRAW_DIRECTION) {
@@ -492,6 +500,7 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
     if (EXPRESSION_FILTERS.includes(mode)) state.expressionFilter = mode;
   }
   if (values.has(KEYS.showHidden)) state.showHidden = values.get(KEYS.showHidden) !== '0';
+  if (values.has(KEYS.filtersBypassed)) state.filtersBypassed = values.get(KEYS.filtersBypassed) === '1';
   if (values.has(KEYS.trafficKey)) state.trafficKey = values.get(KEYS.trafficKey);
   if (values.has(KEYS.lengthCohort)) {
     const cohort = values.get(KEYS.lengthCohort);

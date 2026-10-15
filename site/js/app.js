@@ -133,6 +133,11 @@ import { PanelDesigner } from './ui/panel-designer.js';
 import { formatCount, formatExpressionSource } from './ui/format.js';
 import { axisPairsNote, axisTitlesNote, filterBannerText } from './ui/axis-copy.js';
 import {
+  filterCriteriaSignature, reconcileFilterBypass, effectiveFilterMask, filterStatusVisible,
+  bypassedStatusText, chromosomeFilterStatusText,
+} from './core/filter-bypass.js';
+import { FilterStatus } from './ui/filter-status.js';
+import {
   annotationSourceLabel, isAllSources, normalizeAnnotationSources,
 } from './core/annotation-source.js';
 import {
@@ -613,9 +618,67 @@ function computeMask() {
 
   let passing = 0;
   for (let i = 0; i < count; i += 1) passing += finalMask[i];
-  context.mask = finalMask;
-  context.passing = passing;
+  // Turn filters off keeps every criterion and its configured result, and
+  // includes every gene. Any criterion the reader changes ends the bypass.
+  const bypass = reconcileFilterBypass(
+    { bypassed: state.filtersBypassed === true, recorded: context.bypassSignature },
+    filterCriteriaSignature(state),
+  );
+  state.filtersBypassed = bypass.bypassed;
+  context.bypassSignature = bypass.recorded;
+  if (bypass.reactivated) context.bypassReactivated = true;
+  context.configuredMask = finalMask;
+  context.configuredPassing = passing;
+  context.mask = effectiveFilterMask(finalMask, bypass.bypassed);
+  if (bypass.bypassed) context.baseMask = effectiveFilterMask(mask, true);
+  context.passing = bypass.bypassed ? count : passing;
   context.missingHidden = missingHidden;
+}
+
+/** Turn every configured filter off or back on, keeping each criterion. */
+function setFiltersBypassed(bypassed) {
+  if ((state.filtersBypassed === true) === bypassed) return;
+  state.filtersBypassed = bypassed;
+  context.bypassSignature = bypassed ? filterCriteriaSignature(state) : null;
+  renderAll();
+  const total = context.dataset.genes.length;
+  announce(bypassed
+    ? `Filters temporarily off. All ${formatCount(total)} genes are included; every filter is kept.`
+    : `Filters back on. ${formatCount(context.passing)} of ${formatCount(total)} genes pass.`);
+}
+
+/** Say once that an edit switched a bypass off, after the redraw it caused. */
+function announceBypassReactivation() {
+  if (!context.bypassReactivated) return;
+  context.bypassReactivated = false;
+  // The control that changed usually announces its own change after this
+  // redraw. Waiting one microtask lets both be heard, this one first.
+  const before = element('announcer').textContent;
+  queueMicrotask(() => {
+    const after = element('announcer').textContent;
+    const lead = 'Filters turned back on because a filter changed.';
+    announce(after !== before && after
+      ? `${lead} ${after}`
+      : `${lead} ${formatCount(context.passing)} of ${formatCount(context.dataset.genes.length)} genes pass.`);
+  });
+}
+
+/** Both Filter status sections, from the one bypass state. */
+function filterStatusModel(viewText) {
+  const total = context.dataset.genes.length;
+  const configuredHidden = total - (context.configuredPassing ?? context.passing);
+  const bypassed = state.filtersBypassed === true;
+  return {
+    visible: filterStatusVisible({ configuredHidden, bypassed }),
+    bypassed,
+    text: bypassed ? bypassedStatusText({ total, configuredHidden }) : viewText(configuredHidden, total),
+  };
+}
+
+function syncChromosomeFilterStatus() {
+  chromosomeFilterStatus?.update(filterStatusModel((hidden, total) => chromosomeFilterStatusText({
+    hidden, total, showHidden: state.showHidden,
+  })));
 }
 
 /** Whether a function-category selection is in force on a resolved model. */
@@ -663,7 +726,7 @@ function previewCategory(id) {
   const preview = new Uint8Array(base.length);
   for (let i = 0; i < base.length; i += 1) {
     preview[i] = base[i] && channel.bucketAt(i) === id
-      && passesOtherChannels(i, channel.skip) ? 1 : 0;
+      && (state.filtersBypassed === true || passesOtherChannels(i, channel.skip)) ? 1 : 0;
   }
   apply(preview);
 }
@@ -818,6 +881,8 @@ function persist() {
 let plot = null;
 let schemeEditor = null;
 let filterPanel = null;
+let scatterFilterStatus = null;
+let chromosomeFilterStatus = null;
 let goTermControls = null;
 let dataSourcesPanel = null;
 let chromosomeDataSourcesPanel = null;
@@ -1516,20 +1581,15 @@ function renderMap() {
       : `${panelName(panel, organism)}: ${projection.message}`,
   );
 
-  const hidden = context.dataset.genes.length - context.passing;
-  const banner = element('filter-banner');
-  const bannerContent = element('filter-banner-content');
-  banner.hidden = hidden <= 0;
-  if (hidden <= 0) banner.open = false;
-  bannerContent.textContent = filterBannerText({
+  scatterFilterStatus?.update(filterStatusModel((hidden, total) => filterBannerText({
     hidden,
-    total: context.dataset.genes.length,
+    total,
     showHidden: state.showHidden,
     projectionAvailable: projection.available,
     projectionMessage: projection.message,
     colorBy: state.colorBy,
     functionColorKey: FUNCTION_COLOR_KEY,
-  });
+  })));
   scheduleTiming();
 }
 
@@ -1566,6 +1626,7 @@ function renderChromosomeView() {
     verified,
     genes: context.dataset.genes,
     mask: context.mask,
+    filtersBypassed: state.filtersBypassed === true,
     showHidden: state.showHidden,
     colors,
     colorLabel: colors.label,
@@ -1598,6 +1659,10 @@ function renderChromosomeView() {
   });
   // After `update`, which is what builds this view's own hosts on first use.
   renderColorHelp(chromosomeView.colourHelpElement());
+  chromosomeFilterStatus ??= new FilterStatus(chromosomeView.filterStatusElement(), {
+    idPrefix: 'chromosome-filter-status', onBypassChange: setFiltersBypassed,
+  });
+  syncChromosomeFilterStatus();
   if (verified) {
     renderColorLegend(chromosomeView.legendElement(), colors, {
       markerConventions: false, controlsHost: chromosomeView.legendInstructionsElement(),
@@ -1797,7 +1862,8 @@ function cancelLiveFilters() {
 function renderLiveFilters() {
   computeMask();
   if (state.panel === CHROMOSOME_TAB.id) {
-    chromosomeView.setFilterMask(context.mask, context.passing);
+    chromosomeView.setFilterMask(context.mask, context.passing, state.filtersBypassed === true);
+    syncChromosomeFilterStatus();
   } else if (state.panel === LENGTH_TAB.id) {
     lengthExplorer.update({
       inventory: context.dataset.lengthCohorts,
@@ -1810,12 +1876,16 @@ function renderLiveFilters() {
   } else if (![CITATIONS_TAB.id, REGULATORY_TAB.id, STRAIN_FITNESS_TAB.id].includes(state.panel)) {
     plot.setMask(context.mask);
   }
-  filterPanel.renderSummary(context.dataset.genes.length, context.passing);
+  filterPanel.renderSummary(context.dataset.genes.length, context.passing, {
+    bypassed: state.filtersBypassed === true, configuredPassing: context.configuredPassing,
+  });
+  announceBypassReactivation();
 }
 
 function renderAll({ schemeErrors = [] } = {}) {
   element('reset-selections').disabled = !state.pinnedId && state.shortlist.length === 0;
   computeMask();
+  announceBypassReactivation();
   goTermControls?.update(context.dataset, state, goTermEvidenceModel(context.dataset, state.goTerm));
   renderCurrentView();
   renderDetail();
@@ -1838,6 +1908,8 @@ function renderAll({ schemeErrors = [] } = {}) {
     goEvidenceFilter: state.goTerm ? state.goEvidenceFilter : 'any',
     count: context.dataset.genes.length,
     passing: context.passing,
+    filtersBypassed: state.filtersBypassed === true,
+    configuredPassing: context.configuredPassing,
     missingHidden: context.missingHidden,
     exceptionFilter: state.exceptionFilter,
     exceptionCount: context.exceptionCount,
@@ -1885,6 +1957,9 @@ function renderAll({ schemeErrors = [] } = {}) {
       proteinEvidence: state.proteinFilter,
       expression: state.expressionFilter,
       translationalException: state.exceptionFilter,
+      // Every criterion above is kept while filters are temporarily off; the
+      // per-gene pass column then reads true for every gene.
+      bypassed: state.filtersBypassed === true,
     },
     filterMask: context.mask,
     viewState: () => ({
@@ -2900,6 +2975,8 @@ function renderProvenance() {
  */
 function normalizeAndApply(decoded) {
   applyDecoded(state, decoded, organism);
+  // A bypass read from a link adopts that link's criteria on the next mask.
+  context.bypassSignature = null;
   filterPanel?.overlapLength.reset(state.overlapLengthFilter);
   // The shortlist is the one field with a second, local source of truth: a
   // hash that never mentions it (a bare initial load, or a partial/legacy
@@ -3894,6 +3971,10 @@ async function boot() {
     onAnnounce: announce,
   });
 
+  scatterFilterStatus = new FilterStatus(element('filter-banner'), {
+    idPrefix: 'filter-banner', onBypassChange: setFiltersBypassed,
+  });
+
   regulatorySitesPanel = new RegulatorySitesPanel(element('regulatory-view'), {
     organism,
     onShowGene: (id) => {
@@ -4047,7 +4128,7 @@ async function boot() {
   confirmedReset(element('reset-panel-layout'), {
     title: 'Reset panel layout?',
     body: 'The controls column returns to its original order, with the gene visualizer '
-      + 'collapsed and the other panels open.',
+      + 'and Custom filters collapsed and the other panels open.',
     confirmLabel: 'Reset layout',
     action: () => {
       resetPanelLayout(state);

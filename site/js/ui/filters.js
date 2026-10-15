@@ -125,6 +125,7 @@ export function clearedFilterState() {
     overlapClassFilter: [],
     overlapLengthFilter: null,
     pccEssentialityFilter: [],
+    filtersBypassed: false,
   };
 }
 
@@ -274,6 +275,7 @@ export class FilterPanel {
    *   basisCounts: {counts: Map<string, number>, recorded: boolean}, trafficKey: string|null}} state
    */
   update(state) {
+    this.filtersBypassed = state.filtersBypassed === true;
     this.registry = state.registry;
     this.filters = state.filters;
     this.count = state.count;
@@ -325,7 +327,9 @@ export class FilterPanel {
       pending: state.overlapsPending });
     this.renderRows(state);
 
-    this.renderSummary(state.count, state.passing);
+    this.renderSummary(state.count, state.passing, {
+      bypassed: this.filtersBypassed, configuredPassing: state.configuredPassing,
+    });
     this.clearButton.disabled = active.length === 0 && state.exceptionFilter === 'any'
       && (state.expressionFilter ?? 'any') === 'any'
       && (state.proteinFilter ?? 'any') === 'any'
@@ -337,8 +341,18 @@ export class FilterPanel {
       && (state.categoryFilter ?? []).length === 0;
   }
 
-  /** The passing count; also refreshed alone while a filter is being dragged. */
-  renderSummary(count, passing) {
+  /**
+   * The passing count; also refreshed alone while a filter is being dragged.
+   * While filters are temporarily off every gene is included, and the count the
+   * configured filters would keep is named rather than claimed as hidden.
+   */
+  renderSummary(count, passing, { bypassed = false, configuredPassing = passing } = {}) {
+    if (bypassed) {
+      this.summary.classList.remove('hiding');
+      this.summary.textContent = `Filters are temporarily off: all ${formatCount(count)} genes `
+        + `are included. Turned back on, ${formatCount(configuredPassing ?? passing)} pass.`;
+      return;
+    }
     const hidden = count - passing;
     this.summary.classList.toggle('hiding', hidden > 0);
     this.summary.textContent = hidden > 0
@@ -612,7 +626,9 @@ export class FilterPanel {
     const hiddenNow = state.missingHidden.get(key) ?? 0;
     label.textContent = `Include the ${formatCount(missing)} genes with no `
       + `${metric.label.toLowerCase()} measurement`
-      + (input.checked ? '' : ` — currently hiding ${formatCount(hiddenNow)}`);
+      + (input.checked ? '' : this.filtersBypassed
+        ? ` — hides ${formatCount(hiddenNow)} when filters are on`
+        : ` — currently hiding ${formatCount(hiddenNow)}`);
     wrapper.append(input, label);
     return wrapper;
   }

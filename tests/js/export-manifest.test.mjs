@@ -14,7 +14,7 @@ import {
 } from '../../site/js/core/url-state.js';
 import {
   buildExport, parseCsv, schemeIdOf, canonicalJson, fnv1a64, recodedSequence,
-  WILD_TYPE_SCHEME_ID, MANIFEST_VERSION,
+  WILD_TYPE_SCHEME_ID, MANIFEST_VERSION, FILTERS_OFF_PASS_VALUE, FILTERS_OFF_EXPORT_NOTE
 } from '../../site/js/core/export-manifest.js';
 import { expressionFixtureDataset, fixtureDataset, fileFetch } from './helpers.mjs';
 
@@ -75,6 +75,33 @@ test('exports preserve the current cohort filter and each shortlisted row pass s
   });
   assert.deepEqual(result.manifest.filterState, filterState);
   assert.deepEqual(result.rows.map((row) => row.passesCurrentFilters), ['true', 'false']);
+});
+
+test('an export made with filters turned off says so in the table and the manifest', async () => {
+  const { dataset, registry } = await context();
+  const ids = dataset.genes.slice(0, 2).map((gene) => gene.id);
+  const filterState = {
+    ranges: { lengthNt: { min: 201, max: 2001, includeMissing: true } }, bypassed: true,
+  };
+  const result = buildExport({
+    dataset, registry, ids, schemes: [{ map: {} }],
+    filterState, filterMask: new Uint8Array(dataset.genes.length).fill(1),
+  });
+  assert.deepEqual(result.rows.map((row) => row.passesCurrentFilters),
+    [FILTERS_OFF_PASS_VALUE, FILTERS_OFF_PASS_VALUE]);
+  assert.equal(FILTERS_OFF_PASS_VALUE, 'true (filters turned off at export)');
+  assert.ok(result.csv.includes('true (filters turned off at export)'), 'the note is in the CSV itself');
+  assert.deepEqual(result.manifest.filterState.ranges, filterState.ranges, 'the criteria are kept');
+  assert.equal(result.manifest.filterState.bypassed, true);
+  assert.equal(result.manifest.filterState.note, FILTERS_OFF_EXPORT_NOTE);
+  assert.match(FILTERS_OFF_EXPORT_NOTE, /temporarily turned off/);
+  // Filters on: no note, plain booleans.
+  const on = buildExport({
+    dataset, registry, ids, schemes: [{ map: {} }],
+    filterState: { ...filterState, bypassed: false }, filterMask: Uint8Array.from([1, 0]),
+  });
+  assert.equal(on.manifest.filterState.note, undefined);
+  assert.deepEqual(on.rows.map((row) => row.passesCurrentFilters), ['true', 'false']);
 });
 
 test('category-filtered exports wire through the real reducer and dataset join, not a hand-'
