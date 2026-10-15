@@ -1854,6 +1854,8 @@ def build(
         and expression_table.quantity_spec(source["quantity"]).exact
     )
     for name, document in documents.items():
+        # Validation tolerances and observed errors are provenance contracts,
+        # not display values; preserve their exact numeric bounds as well.
         # Tiny published adjusted p-values must not round to zero.
         # The parent-frame projector must reproduce sklearn's transform from the
         # published fit, so its floating-point parameters retain JSON's full
@@ -1862,7 +1864,7 @@ def build(
         serializable = (
             document
             if name in {"tss_evidence.json", "codon_pca.json"}
-            else round_floats(document, exact_metric_keys)
+            else round_floats(document, exact_metric_keys | frozenset({"summaryValidation"}))
         )
         content = json.dumps(
             serializable, separators=(",", ":"), ensure_ascii=False

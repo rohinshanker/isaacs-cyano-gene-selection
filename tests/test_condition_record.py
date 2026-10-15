@@ -26,7 +26,7 @@ def test_the_shipped_sources_carry_valid_records():
     assert by_id["GSE205444"]["record"]["basis"] == "transferred"
     assert by_id["TAN2018_TSS"]["record"]["basis"] == "direct"
     ingested = [source for source in sources if "ingest" in source]
-    assert len(ingested) == 162
+    assert len(ingested) == 289
     assert all(source["record"]["basis"] == "transferred" for source in ingested)
     assert {source["record"]["studyId"] for source in ingested} == {
         "GSE288532", "GSE222067", "GSE327989", "GSE79726", "GSE89999", "GSE104203", "PXD062851",
@@ -34,6 +34,7 @@ def test_the_shipped_sources_carry_valid_records():
         "GSE103462", "GSE103463", "GSE103644", "GSE103704", "GSE105774", "GSE237858", "GSE254350", "GSE335065",
         "GSE51112", "GSE252562", "GSE225426", "GSE311172",
         "FitnessBrowser_SynE",
+        "GSE50908", "GSE50919", "GSE50920", "GSE52486", "GSE59112", "GSE18902", "GSE102914",
     }
 
 
