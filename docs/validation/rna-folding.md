@@ -157,7 +157,12 @@ output, collapsed and expanded details, input invalidation, keyboard navigation,
 and bounded scrolling at ten widths including both sides of layout breakpoints.
 Alignment rows are created on expansion; scrolling retains the complete row labels.
 Pairing changes use both a highlight and a `^` marker; sequence edits use an
-underline and `*`. Exact changed-position lists also provide a textual reading.
+underline and `*`. Exact changed-position lists also provide a textual reading. Each disclosure and
+scroll region includes its gene ID in its accessible name. A nested pair-partner
+list exposes exact original and recoded pairs without relying on mouse hover.
+Completed result nodes persist during later progress events, preserving expanded
+details, keyboard focus and scroll position; changed inputs and new result objects
+reset them. The definition link opens separately to preserve in-tab folding results.
 
 Inspect the emitted whole-page and folding-region PNGs, the semantic snapshot,
 and the returned parity/responsiveness/diagnostic report. The check asserts
