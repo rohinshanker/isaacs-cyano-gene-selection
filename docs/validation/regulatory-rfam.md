@@ -369,6 +369,40 @@ regulatory function. A different Infernal build can move bit scores at the
 margins, as [trna-annotation-validation.md](trna-annotation-validation.md) notes
 for its own run.
 
+## Rebuilding the browser payload
+
+`tools/build_rfam_layer.py` runs the pinned pilot afresh; it has no option to
+admit an arbitrary saved report or a hand-entered interval. It writes
+`site/data/rfam_rf01116.json` and `site/data/rfam_rf01116.tsv`. JSON preserves
+the complete pilot provenance and unchanged raw hit rows; local tool/model
+paths become basenames while their hashes remain intact. TSV exports native
+and raw coordinates, strand, model interval, truncation, score, E-value and
+search space, with the JSON provenance identified in its header.
+
+After fetching the model and genome as above, reproduce into fresh scratch
+instead of overwriting the release:
+
+```sh
+RUN=".playwright-cli/rfam-release-$(date +%Y%m%dT%H%M%S)"
+.venv/bin/python tools/build_rfam_layer.py \
+  --cm .playwright-cli/regulatory-rfam/source/RF01116.cm \
+  --cmsearch /opt/miniconda3/envs/trna-validate/bin/cmsearch \
+  --workdir "$RUN/work" \
+  --json-out "$RUN/rfam_rf01116.json" \
+  --tsv-out "$RUN/rfam_rf01116.tsv"
+cmp "$RUN/rfam_rf01116.json" site/data/rfam_rf01116.json
+cmp "$RUN/rfam_rf01116.tsv" site/data/rfam_rf01116.tsv
+.venv/bin/python -m pytest -q tests/test_build_rfam_layer.py tests/test_regulatory_rfam.py
+node --test tests/js/rfam-evidence.test.mjs tests/js/marker-layers.test.mjs
+.venv/bin/python tools/build_data_manifest.py build
+```
+
+Output files and the run directory must not already exist. The executable
+hash is recorded rather than pinned: another Infernal build may legitimately
+change that hash or marginal scores and needs review before replacing the
+release. Do not silently refresh an oracle to fit a changed build. Keep
+synthetic wrap/truncation/no-hit tests separate from the real native oracle.
+
 ## Browser admission boundary
 
 Publish only the native family-homology intervals, with the model version,
@@ -377,6 +411,19 @@ score meaning and search coverage intact. Keep the `computed` origin and its
 translucent lower-precedence rendering. A measured Tan TSS remains a separate
 record and evidence type. An intergenic interval may appear in a CDS's displayed
 genomic context but is not assigned to that CDS by proximity.
+
+The overlay describes the original native assembly, even while a recoding
+scheme is displayed. It is not recomputed for that scheme. The independent
+recoding-comparison scope must establish any changed or added site count.
+
+For rendered validation, open `M744_RS07010` (`trxA`) with at least 240 nt of
+upstream context. The interval is 138–200 nt before that CDS start and must
+occupy exactly its 63 native bases in both gene visualizers and the sequence
+close-up. Check chromosome placement, independent per-view visibility,
+keyboard/hover detail, missing/loading/failed states, a no-match region and
+an organism where RF01116 was not evaluated. Inspect mobile, tablet, desktop
+and wide layouts, plus relevant responsive breakpoints. Exports must retain
+the native interval and cannot infer a neighboring-gene owner.
 
 **[I-SCI-1 remains scientifically unresolved](../notes/tickets/O_yfr1-transcript-interaction-evidence__20261014.md):** neither this family interval nor
 the admitted annotation and retrieved Tan/Richter evidence establishes the full
