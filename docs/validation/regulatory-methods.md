@@ -32,7 +32,7 @@ regulation or calibrated biological probability.
 These are source-pinned candidate and executable-pilot boundaries. They are not a record of seven deployed predictors or validated UTEX
 regulatory annotations. The existing ViennaRNA and tRNA pipelines keep their
 own validated contracts. The [transfer contract](regulatory-transfer.md) retains
-source evidence and limits; [browser-layer admission](../notes/tickets/O_regulatory-layer-admission__20261014.md)
+source evidence and limits; [browser-layer admission](../notes/tickets/A_regulatory-layer-admission__20261014.md)
 remains separate from these non-release producers.
 
 ## Local accessibility indexing

@@ -1,13 +1,24 @@
-# O_regulatory-layer-admission__20261014 — Open
+# A_regulatory-layer-admission__20261014 — Active
 
 Scope: Select and admit browser-facing exploratory regulatory predictions from the evaluated local methods, with method-specific coverage, native coordinates and honest evidence labels.
-Status: open
+Status: active
 Opened: 2026-10-14
 Updated: 2026-10-14
 
 ## Current State
 
-Unassigned. The completed regulatory-method shortlist provides reproducible
+Owned by **cyano-regulatory-sites** (2026-10-14), isolated branch
+`work/rfam-admission-20261014` from `7dedca7`. Selected release: exactly the
+RF01116/Yfr1 native family-homology interval; no additional family or method.
+The intergenic interval is displayed as genomic context without assigning it
+to a neighboring CDS. Full transcript boundaries and interaction targets remain
+unknown (I-SCI-1); they are not claims of this release.
+
+Other active sessions retain filter/neighbor-count and microarray ownership.
+This session does not interrupt them, alter their worktrees, or publish their
+unpushed commits.
+
+The completed regulatory-method shortlist provides reproducible
 non-release pilots with independent review. This ticket owns source/layer selection and browser
 admission; it does not reclassify pilot results as measured regulatory function.
 The owner permits very rough predictions transferred from other bacteria even
