@@ -8,6 +8,9 @@ quantification outputs; this does not reprocess raw mass spectra.
 
 The owner requires reconstruction before browser release and wants twelve
 replicate comparisons plus four optional within-bait averages (2026-10-15).
+The owner also selected a separate detection category alongside numeric ratios
+on that date. Its browser implementation remains part of source admission;
+one-arm detections keep a missing ratio and do not claim a confirmed interaction.
 RpaA, CikB, NblS and ManS are separate baits; none may be pooled with another.
 This is proximity-label enrichment in engineered PCC 7942 CscB-SPS backgrounds,
 not protein abundance or native UTEX 2973 measurements.
