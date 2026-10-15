@@ -1,0 +1,533 @@
+{
+  "assembly": "GCF_000817325.1_ASM81732v1",
+  "family": {
+    "accession": "RF01116",
+    "gaBits": 38.0,
+    "name": "Yfr1",
+    "release": "15.1"
+  },
+  "id": "rfam-rf01116",
+  "label": "RF01116 / Yfr1 family homology",
+  "limitations": [
+    "Exploratory computed homology: the Rfam 15.1 RF01116 (Yfr1) covariance model matched native GCF_000817325.1_ASM81732v1 sequence at or above its gathering threshold of 38.0 bits. Nothing here is measured in UTEX 2973.",
+    "A family match is not a complete transcript, not demonstrated regulatory function and not a native interaction.",
+    "Bit scores and E-values describe model fit and search space; they are not a calibrated biological probability.",
+    "A searched position without a site had no RF01116 match at or above the GA threshold. Other Rfam families were not evaluated, and no absence of regulation is inferred.",
+    "Sites describe the original native GCF_000817325.1_ASM81732v1 sequence. They are not recomputed for an active recoding scheme; comparison with a scheme is separate work.",
+    "Searched space: all 3 replicons (2744626 residues) end to end on both strands, plus a 170-base origin junction for each of 3 circular replicons (model window W=86). An origin-spanning site has position greater than endPosition.",
+    "Shuffled controls (5 mononucleotide replicates) are linear only, with no origin-junction search; their hit count is a composition-matched null rate, not a biological false-positive rate.",
+    "Truncated hits (truncation other than 'no') are kept as cmsearch reported them; their model interval is partial.",
+    "Full native Yfr1 transcript ends and its interaction targets in UTEX 2973 remain unknown (I-SCI-1); this layer does not resolve them.",
+    "No gene is assigned to a site: proximity to a gene does not establish ownership, transcription or regulation.",
+    "Provenance reduces local absolute tool and model paths to file names; the executable and model are identified by their SHA-256 digests."
+  ],
+  "measurement": "predicted",
+  "origin": "computed",
+  "provenance": {
+    "cmsearchFlags": [
+      "--cut_ga",
+      "--rfam",
+      "--nohmmonly"
+    ],
+    "control": {
+      "boundary": "Preserves each replicon's length and base composition but not dinucleotide frequency or structural propensity. A shuffled hit rate is a null rate for composition-matched sequence, not a biological false-positive rate against proven negatives, and not a false-discovery rate for the native hits.",
+      "coverage": "Linear only: each shuffled replicon is searched end to end on both strands, with no origin-junction search. The native search adds one junction per circular replicon, so control and native coverage differ and the control count is not directly comparable to the native count.",
+      "hitsTotal": 0,
+      "method": "mononucleotide shuffle, per replicon, fixed seed",
+      "replicates": [
+        {
+          "argv": [
+            "cmsearch",
+            "-Z",
+            "5.489252",
+            "--cut_ga",
+            "--rfam",
+            "--nohmmonly",
+            "--tblout",
+            "control_00.tblout",
+            "-o",
+            "control_00.cmsearch",
+            "RF01116.cm",
+            "control_00.fna"
+          ],
+          "bestScore": null,
+          "cmsearchSummary": {
+            "hitsReported": 0,
+            "queryModels": 1,
+            "residuesSearched": 5489252,
+            "targetSequences": 3
+          },
+          "fasta": {
+            "path": "control_00.fna",
+            "sha256": "de576c2be0fcd31485ac08f17a21f1088bb0eb4646cc603b04b6f904f0129776"
+          },
+          "hitCount": 0,
+          "hits": [],
+          "replicate": 0,
+          "seedKeys": [
+            "20261012:0:NZ_CP006471.1",
+            "20261012:0:NZ_CP006472.1",
+            "20261012:0:NZ_CP006473.1"
+          ],
+          "sequences": {
+            "NZ_CP006471.1_shuffled_00": "NZ_CP006471.1",
+            "NZ_CP006472.1_shuffled_00": "NZ_CP006472.1",
+            "NZ_CP006473.1_shuffled_00": "NZ_CP006473.1"
+          },
+          "tbloutRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "argv": [
+            "cmsearch",
+            "-Z",
+            "5.489252",
+            "--cut_ga",
+            "--rfam",
+            "--nohmmonly",
+            "--tblout",
+            "control_01.tblout",
+            "-o",
+            "control_01.cmsearch",
+            "RF01116.cm",
+            "control_01.fna"
+          ],
+          "bestScore": null,
+          "cmsearchSummary": {
+            "hitsReported": 0,
+            "queryModels": 1,
+            "residuesSearched": 5489252,
+            "targetSequences": 3
+          },
+          "fasta": {
+            "path": "control_01.fna",
+            "sha256": "b506a6b3ea3daea69f1ffbd649109c951bd3873f746abbd0ef176deb87bd71e7"
+          },
+          "hitCount": 0,
+          "hits": [],
+          "replicate": 1,
+          "seedKeys": [
+            "20261012:1:NZ_CP006471.1",
+            "20261012:1:NZ_CP006472.1",
+            "20261012:1:NZ_CP006473.1"
+          ],
+          "sequences": {
+            "NZ_CP006471.1_shuffled_01": "NZ_CP006471.1",
+            "NZ_CP006472.1_shuffled_01": "NZ_CP006472.1",
+            "NZ_CP006473.1_shuffled_01": "NZ_CP006473.1"
+          },
+          "tbloutRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "argv": [
+            "cmsearch",
+            "-Z",
+            "5.489252",
+            "--cut_ga",
+            "--rfam",
+            "--nohmmonly",
+            "--tblout",
+            "control_02.tblout",
+            "-o",
+            "control_02.cmsearch",
+            "RF01116.cm",
+            "control_02.fna"
+          ],
+          "bestScore": null,
+          "cmsearchSummary": {
+            "hitsReported": 0,
+            "queryModels": 1,
+            "residuesSearched": 5489252,
+            "targetSequences": 3
+          },
+          "fasta": {
+            "path": "control_02.fna",
+            "sha256": "ce0f1c01c81decd2a4ad4ead0334d0fafe5dda3859ccb2b431d07e05b246722e"
+          },
+          "hitCount": 0,
+          "hits": [],
+          "replicate": 2,
+          "seedKeys": [
+            "20261012:2:NZ_CP006471.1",
+            "20261012:2:NZ_CP006472.1",
+            "20261012:2:NZ_CP006473.1"
+          ],
+          "sequences": {
+            "NZ_CP006471.1_shuffled_02": "NZ_CP006471.1",
+            "NZ_CP006472.1_shuffled_02": "NZ_CP006472.1",
+            "NZ_CP006473.1_shuffled_02": "NZ_CP006473.1"
+          },
+          "tbloutRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "argv": [
+            "cmsearch",
+            "-Z",
+            "5.489252",
+            "--cut_ga",
+            "--rfam",
+            "--nohmmonly",
+            "--tblout",
+            "control_03.tblout",
+            "-o",
+            "control_03.cmsearch",
+            "RF01116.cm",
+            "control_03.fna"
+          ],
+          "bestScore": null,
+          "cmsearchSummary": {
+            "hitsReported": 0,
+            "queryModels": 1,
+            "residuesSearched": 5489252,
+            "targetSequences": 3
+          },
+          "fasta": {
+            "path": "control_03.fna",
+            "sha256": "d53de4ce001e7db05600bf67055d252977f40e7c77763e0768c97783a241df43"
+          },
+          "hitCount": 0,
+          "hits": [],
+          "replicate": 3,
+          "seedKeys": [
+            "20261012:3:NZ_CP006471.1",
+            "20261012:3:NZ_CP006472.1",
+            "20261012:3:NZ_CP006473.1"
+          ],
+          "sequences": {
+            "NZ_CP006471.1_shuffled_03": "NZ_CP006471.1",
+            "NZ_CP006472.1_shuffled_03": "NZ_CP006472.1",
+            "NZ_CP006473.1_shuffled_03": "NZ_CP006473.1"
+          },
+          "tbloutRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "argv": [
+            "cmsearch",
+            "-Z",
+            "5.489252",
+            "--cut_ga",
+            "--rfam",
+            "--nohmmonly",
+            "--tblout",
+            "control_04.tblout",
+            "-o",
+            "control_04.cmsearch",
+            "RF01116.cm",
+            "control_04.fna"
+          ],
+          "bestScore": null,
+          "cmsearchSummary": {
+            "hitsReported": 0,
+            "queryModels": 1,
+            "residuesSearched": 5489252,
+            "targetSequences": 3
+          },
+          "fasta": {
+            "path": "control_04.fna",
+            "sha256": "d15b0cbf8705b8891174cf01d3d9a14e9609d77dfdf2821597d36466eadb2d64"
+          },
+          "hitCount": 0,
+          "hits": [],
+          "replicate": 4,
+          "seedKeys": [
+            "20261012:4:NZ_CP006471.1",
+            "20261012:4:NZ_CP006472.1",
+            "20261012:4:NZ_CP006473.1"
+          ],
+          "sequences": {
+            "NZ_CP006471.1_shuffled_04": "NZ_CP006471.1",
+            "NZ_CP006472.1_shuffled_04": "NZ_CP006472.1",
+            "NZ_CP006473.1_shuffled_04": "NZ_CP006473.1"
+          },
+          "tbloutRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "seed": 20261012
+    },
+    "counts": {
+      "controlHitsTotal": 0,
+      "controlReplicates": 5,
+      "nativeLinearHits": 1,
+      "originSpanningHits": 0,
+      "overlappingNativePairs": 0,
+      "totalHits": 1
+    },
+    "coverageBoundary": "One family only (the pinned model). No other Rfam family was searched, so a position with no hit is uncovered by this pilot rather than negative. Covariance-model search finds homologues of a curated family and will miss unrelated or novel elements.",
+    "evidenceBoundary": "Exploratory computed evidence: a pinned Rfam covariance model matched the native pinned UTEX 2973 assembly GCF_000817325.1_ASM81732v1 above that family's Rfam gathering (GA) bit score. This is homology to a curated RNA family, not measured regulation, not demonstrated regulatory activity, and not a calibrated probability for UTEX 2973. Shuffled-background hits estimate a null rate for composition-matched sequence and are not proven biological negatives.",
+    "hits": [
+      {
+        "bias": 0.0,
+        "coordinate_basis": "native pinned assembly, one-based inclusive, stranded",
+        "evalue": 6.7e-12,
+        "gc": 0.6,
+        "inc": "!",
+        "mdl_from": 1,
+        "mdl_to": 59,
+        "model_accession": "RF01116",
+        "model_name": "Yfr1",
+        "native_end": 1364778,
+        "native_length": 63,
+        "native_start": 1364716,
+        "origin_spanning": false,
+        "pipeline_pass": 1,
+        "raw_seq_from": 1364716,
+        "raw_seq_to": 1364778,
+        "replicon": "NZ_CP006471.1",
+        "score": 62.1,
+        "search_space": "native_linear",
+        "search_target": "NZ_CP006471.1",
+        "strand": "+",
+        "trunc": "no"
+      }
+    ],
+    "inputs": {
+      "covarianceModel": {
+        "path": "RF01116.cm",
+        "sha256": "4abf1d7ce88d4d81bd4e680358a9b1de65999126eab03577341be231ee38e8fc"
+      },
+      "genomeFasta": {
+        "md5": "610ceb15a9859046e143d80915d4c984",
+        "path": "GCF_000817325.1_ASM81732v1_genomic.fna.gz",
+        "sha256": "22a2b07881c1099c32454778de0e90b1c40f74f44c0f59e000507106c0deb567"
+      },
+      "genomeFlatFile": {
+        "md5": "fc86ce730ae02cc1cbad14129d50cd45",
+        "path": "GCF_000817325.1_ASM81732v1_genomic.gbff.gz",
+        "sha256": "331ef3bd7c0e9ec2fc3140dd200d2a89109ded72babe4102d0fe4aa361401e56"
+      },
+      "searchedFasta": {
+        "path": "native.fna",
+        "residues": 2744626,
+        "sha256": "4716bbf61cfeb296587c94e90e6b6ce037752f9b9d4d225addd15eea02124984"
+      }
+    },
+    "model": {
+      "accession": "RF01116",
+      "clen": 59,
+      "description": "Cyanobacterial functional RNA 1",
+      "file": "RF01116.cm",
+      "formatLine": "INFERNAL1/a [1.1.5 | Sep 2023]",
+      "gatheringCutoff": 38.0,
+      "name": "Yfr1",
+      "window": 86
+    },
+    "nativeSearch": {
+      "argv": [
+        "cmsearch",
+        "-Z",
+        "5.489252",
+        "--cut_ga",
+        "--rfam",
+        "--nohmmonly",
+        "--tblout",
+        "native.tblout",
+        "-o",
+        "native.cmsearch",
+        "RF01116.cm",
+        "native.fna"
+      ],
+      "cmsearchSummary": {
+        "hitsReported": 1,
+        "queryModels": 1,
+        "residuesSearched": 5489252,
+        "targetSequences": 3
+      },
+      "fasta": {
+        "path": "native.fna",
+        "sha256": "4716bbf61cfeb296587c94e90e6b6ce037752f9b9d4d225addd15eea02124984"
+      },
+      "hitCount": 1,
+      "tbloutRowsSha256": "712dd4895253605bb14cfa7623346fe7fe298136b060a2cd543596841b164e81"
+    },
+    "originJunctionSearch": {
+      "alreadyFoundByLinearSearch": 0,
+      "argv": [
+        "cmsearch",
+        "-Z",
+        "5.489252",
+        "--cut_ga",
+        "--rfam",
+        "--nohmmonly",
+        "--tblout",
+        "origin_junction.tblout",
+        "-o",
+        "origin_junction.cmsearch",
+        "RF01116.cm",
+        "origin_junction.fna"
+      ],
+      "cmsearchSummary": {
+        "hitsReported": 0,
+        "queryModels": 1,
+        "residuesSearched": 1020,
+        "targetSequences": 3
+      },
+      "coverageNote": "Each circular replicon's origin was searched as a 170-base junction sequence built from its last 85 and first 85 bases, so every interval up to the model's W=86 window that crosses position 1 was presented to the model, under the same flags, GA threshold and -Z as the linear search. Searched is not discovered: a searched region without a hit produced no match at or above the family GA threshold under cmsearch's filter pipeline, which does not establish that no element of the family is there. Zero origin-spanning hits therefore does not show that no family element crosses an origin. An origin-spanning interval is reported with native_start > native_end, which is the wrap, not an error.",
+      "fasta": {
+        "path": "origin_junction.fna",
+        "sha256": "dddc64c154b3d13694df684579387b0fc8ce3effee436a4da7cc288a65b3c6bc"
+      },
+      "flankBases": 85,
+      "hitCount": 0,
+      "originSpanningCount": 0,
+      "searchedReplicons": [
+        "NZ_CP006471.1",
+        "NZ_CP006472.1",
+        "NZ_CP006473.1"
+      ],
+      "skippedReplicons": [],
+      "tbloutRowsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "windowBases": 170
+    },
+    "overlaps": [],
+    "pilot": "rfam-regulatory-family-native-utex",
+    "pinnedIdentity": {
+      "assembly_label": "native pinned UTEX 2973 assembly GCF_000817325.1_ASM81732v1",
+      "fasta_md5": "610ceb15a9859046e143d80915d4c984",
+      "fasta_sha256": "22a2b07881c1099c32454778de0e90b1c40f74f44c0f59e000507106c0deb567",
+      "gathering_cutoff": 38.0,
+      "gbff_md5": "fc86ce730ae02cc1cbad14129d50cd45",
+      "gbff_sha256": "331ef3bd7c0e9ec2fc3140dd200d2a89109ded72babe4102d0fe4aa361401e56",
+      "infernal_version": "1.1.5 (Sep 2023)",
+      "model_accession": "RF01116",
+      "model_clen": 59,
+      "model_name": "Yfr1",
+      "model_sha256": "4abf1d7ce88d4d81bd4e680358a9b1de65999126eab03577341be231ee38e8fc",
+      "model_window": 86,
+      "replicons": [
+        [
+          "NZ_CP006471.1",
+          2690418,
+          "circular"
+        ],
+        [
+          "NZ_CP006472.1",
+          46366,
+          "circular"
+        ],
+        [
+          "NZ_CP006473.1",
+          7842,
+          "circular"
+        ]
+      ],
+      "searched_fasta_sha256": "4716bbf61cfeb296587c94e90e6b6ce037752f9b9d4d225addd15eea02124984",
+      "verified": true
+    },
+    "recordOrigin": "computed",
+    "replicons": [
+      {
+        "accession": "NZ_CP006471.1",
+        "description": "Synechococcus elongatus UTEX 2973 chromosome, complete genome",
+        "length": 2690418,
+        "topology": "circular"
+      },
+      {
+        "accession": "NZ_CP006472.1",
+        "description": "Synechococcus elongatus UTEX 2973 plasmid unnamed, complete sequence",
+        "length": 46366,
+        "topology": "circular"
+      },
+      {
+        "accession": "NZ_CP006473.1",
+        "description": "Synechococcus elongatus UTEX 2973 plasmid unnamed, complete sequence",
+        "length": 7842,
+        "topology": "circular"
+      }
+    ],
+    "schemaVersion": 2,
+    "searchCoverage": {
+      "repliconCount": 3,
+      "replicons": [
+        {
+          "accession": "NZ_CP006471.1",
+          "length": 2690418,
+          "linearInterval": [
+            1,
+            2690418
+          ],
+          "originJunction": "searched",
+          "strands": "both",
+          "topology": "circular"
+        },
+        {
+          "accession": "NZ_CP006472.1",
+          "length": 46366,
+          "linearInterval": [
+            1,
+            46366
+          ],
+          "originJunction": "searched",
+          "strands": "both",
+          "topology": "circular"
+        },
+        {
+          "accession": "NZ_CP006473.1",
+          "length": 7842,
+          "linearInterval": [
+            1,
+            7842
+          ],
+          "originJunction": "searched",
+          "strands": "both",
+          "topology": "circular"
+        }
+      ],
+      "residues": 2744626,
+      "shuffledControl": "Linear only: each shuffled replicon is searched end to end on both strands, with no origin-junction search. The native search adds one junction per circular replicon, so control and native coverage differ and the control count is not directly comparable to the native count.",
+      "statement": "All 3 replicons of the pinned FASTA (2744626 residues) were searched end to end on both strands; cmsearch's own pipeline summary counted 3 target sequences and 5489252 residues (both strands). Searched is not discovered: a searched region without a hit produced no match at or above the family GA threshold under cmsearch's filter pipeline, which does not establish that no element of the family is there."
+    },
+    "searchSpaceMb": 5.489252,
+    "strandsSearched": "both",
+    "tool": {
+      "executable": "cmsearch",
+      "package": "Infernal",
+      "program": "cmsearch",
+      "resolvedExecutable": "cmsearch",
+      "sha256": "ff260e40fc2f43c94015fa7e121b1a5a4586b95b2198a0faf1256e63bb0d76b8",
+      "version": "1.1.5 (Sep 2023)"
+    }
+  },
+  "schemaVersion": 1,
+  "sites": [
+    {
+      "endPosition": 1364778,
+      "evalue": 6.7e-12,
+      "id": "RF01116:NZ_CP006471.1:1364716:1364778:+",
+      "measurement": "predicted",
+      "modelEnd": 59,
+      "modelStart": 1,
+      "origin": "computed",
+      "originSpanning": false,
+      "position": 1364716,
+      "producer": "Infernal 1.1.5 / Rfam 15.1 RF01116",
+      "raw": {
+        "bias": 0.0,
+        "coordinate_basis": "native pinned assembly, one-based inclusive, stranded",
+        "evalue": 6.7e-12,
+        "gc": 0.6,
+        "inc": "!",
+        "mdl_from": 1,
+        "mdl_to": 59,
+        "model_accession": "RF01116",
+        "model_name": "Yfr1",
+        "native_end": 1364778,
+        "native_length": 63,
+        "native_start": 1364716,
+        "origin_spanning": false,
+        "pipeline_pass": 1,
+        "raw_seq_from": 1364716,
+        "raw_seq_to": 1364778,
+        "replicon": "NZ_CP006471.1",
+        "score": 62.1,
+        "search_space": "native_linear",
+        "search_target": "NZ_CP006471.1",
+        "strand": "+",
+        "trunc": "no"
+      },
+      "replicon": "NZ_CP006471.1",
+      "scoreBits": 62.1,
+      "strand": "+",
+      "truncation": "no",
+      "type": "rnaFamily"
+    }
+  ]
+}
