@@ -14,10 +14,12 @@ evidence pins and reproduction procedure are in
 [the comparability methods evidence contract](comparability-methods-evidence.md).
 The SRI notification about EcoCyc-derived content was sent, recorded in
 [A_add-ecoli-organism__20261005](../notes/tickets/A_add-ecoli-organism__20261005.md).
-The GSE50920 flask-culture temperature remains unknown. J2's conditional
-decision is recorded in
+The repository records the owner sending the O'Shea flask-temperature question
+on 2026-10-07 (`3bd7dd0`); no reply is recorded. Keep the existing query as
+reply-awaited, not an invitation to resend. The GSE50920 temperature remains
+unknown. J2's conditional decision is recorded in
 [the pair-decision contract](pair-review-intake.md#applying-an-explicit-owner-decision);
-optional author follow-up belongs to
+correspondence status and any owner-directed follow-up belong to
 [the correspondence ticket](../notes/tickets/O_depositor-condition-correspondence__20261007.md).
 
 Two items remain, both deferred by you rather than blocked.

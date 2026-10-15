@@ -8,6 +8,10 @@ a layer join or a contract edit. Each of those stays a separate reviewed step.
 `tools/pair_review_sheet.py` still writes the Markdown sheet people read; this
 tool only validates what comes back.
 
+A hosted shared review page is an optional, unapproved extension. The Markdown
+and TSV workflow is sufficient for intake; build or publish an external review
+page only at the owner's request because it would send package metadata to a host.
+
 ## Applying an explicit owner decision
 
 Record the exact pair identities, reviewer, date, answer and basis in

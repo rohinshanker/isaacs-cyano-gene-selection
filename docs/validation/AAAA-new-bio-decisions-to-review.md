@@ -406,8 +406,10 @@ for a recorded human judgement, not an automatic pooling rule. See
   places each pair's conditions and source text side by side.
 - Useful expertise: a transcriptomics, proteomics, or physiology reviewer, matched
   to each pair's data type.
-- Reviewer and date:
+- Reviewer and date: Rohin, 2026-10-14 (D8 update).
 - Decision (any pair whose entry changes, by pair number, with the new judgement):
+  Rohin, 2026-10-14: pairs 7 and 8 keep separate (D8); other entries unchanged.
+  Labmate review or objections remain welcome.
 
 ---
 
