@@ -53,10 +53,10 @@ async (page) => {
 
     // Exercise the lazy per-base comparison on a real worker result.
     const comparison = region.locator('.folding-comparison').first();
-    await comparison.locator('summary').click();
+    await comparison.locator('summary').first().click();
     await comparison.locator('.folding-alignment').waitFor({ state: 'visible' });
     check((await comparison.innerText()).includes('not genomic coordinates'), 'comparison positions are window-relative');
-    await comparison.locator('summary').click();
+    await comparison.locator('summary').first().click();
     check(!await comparison.locator('.folding-alignment').isVisible(), 'comparison collapses');
 
     // Real worker parity, including synthetic boundaries not present in this genome.
@@ -372,6 +372,12 @@ async (page) => {
           || standalone.results.querySelector('.folding-comparison')) {
         throw new Error('missing outputs must be unavailable, with no fabricated comparison');
       }
+      standalone.renderResults([{ id: 'replacement-missing-output' }]);
+      standalone.renderResults([]);
+      const unpaired = { wildSequence: 'AAAA', recodedSequence: 'AAAA', wildStructure: '....',
+        recodedStructure: '....', wildMfe: 0, recodedMfe: 0, delta: 0, length: 4 };
+      standalone.renderResults([{ id: 'unpaired', windows: { start: unpaired, first100: unpaired } }]);
+      if (!standalone.results.textContent.includes('WT pairs: none')) throw new Error('unpaired partner list missing');
       standaloneHost.remove();
       return 'duplicate, changed-input cancellation, stale progress/success/error, activity cleanup, standalone passthrough, and missing optional scheme passed';
     });

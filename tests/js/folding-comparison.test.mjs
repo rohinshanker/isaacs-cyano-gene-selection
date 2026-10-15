@@ -82,7 +82,7 @@ test('panel renders both windows, exact positions, text markers and explicit una
       start: window(), first100: window('.....', '.....', { recodedSequence: 'AAGUU', delta: 1, recodedMfe: 0 }),
     } }]);
     assert.equal(results.querySelector('pre'), null, 'collapsed details do not build per-base DOM');
-    for (const details of results.querySelectorAll('details')) {
+    for (const details of results.querySelectorAll('.folding-comparison')) {
       details.dispatch('toggle'); // Closed toggle does no work.
       details.open = true;
       details.dispatch('toggle');
@@ -100,17 +100,78 @@ test('panel renders both windows, exact positions, text markers and explicit una
     assert.match(results.textContent, /Pairing-changed positions: 1, 4, 5/);
     assert.match(results.textContent, /Nucleotide-edited positions: 2/);
     assert.match(results.textContent, /1-based within this window, not genomic/);
-    assert.equal(results.querySelectorAll('details').length, 2);
+    assert.match(results.textContent, /Highlight and \^ = pairing partner changed; underline and \* = nucleotide edited/);
+    assert.match(results.querySelector('summary').getAttribute('aria-label'), /<gene>: Start/);
+    assert.match(results.querySelector('pre').getAttribute('aria-label'), /<gene>: Start/);
+    assert.match(results.textContent, /WT pairs: \(1, 4\)/);
+    assert.match(results.textContent, /Recoded pairs: \(1, 5\)/);
+    assert.match(results.textContent, /WT pairs: none/);
+    assert.match(results.textContent, /All other positions are unpaired/);
+    assert.equal(results.querySelectorAll('.folding-partners').length, 2);
+    assert.equal(results.querySelectorAll('.folding-comparison').length, 2);
     assert.match(results.querySelector('.folding-pair-change').title, /WT partner 4, recoded partner 5/);
     assert.ok(results.querySelector('.folding-sequence-edit'));
     assert.equal(results.querySelector('pre').getAttribute('role'), 'region');
     render([{ id: 'bad', windows: { start: window('.....', '[...]'), first100: {} } }]);
-    assert.equal(results.querySelectorAll('details').length, 0);
+    assert.equal(results.querySelectorAll('.folding-comparison').length, 0);
     assert.match(results.textContent, /Structure comparison unavailable/);
     assert.match(results.textContent, /energy unavailable/);
     assert.doesNotMatch(results.textContent, /distance 0/);
     render([{ id: 'missing' }, { id: 'error', error: 'Unavailable engine' }]);
     assert.match(results.textContent, /Unavailable engine/);
     assert.match(results.textContent, /Structure comparison unavailable/);
+  });
+});
+
+
+test('progress appends unchanged results without replacing disclosure, focus or scroll; changed lists reset', () => {
+  withFakeDocument((document) => {
+    const results = document.createElement('div');
+    document.body.append(results);
+    const panel = { results, rosetta: { setFoldResults() {} } };
+    const render = (values) => FoldingPanel.prototype.renderResults.call(panel, values);
+    const first = { id: 'first', windows: { start: window(), first100: window() } };
+    const second = { id: 'second', error: 'Bad context' };
+    render([first]);
+    const firstNode = results.children[0];
+    const details = firstNode.querySelector('details');
+    details.open = true;
+    details.dispatch('toggle');
+    const alignment = details.querySelector('pre');
+    alignment.focus();
+    alignment.scrollLeft = 123;
+    for (const values of [[first, second], [first, second]]) {
+      render(values);
+      assert.equal(results.children[0], firstNode);
+      assert.equal(firstNode.isConnected, true);
+      assert.equal(details.open, true);
+      assert.equal(document.activeElement, alignment);
+      assert.equal(alignment.scrollLeft, 123);
+      assert.equal(results.children.length, 2);
+      assert.match(results.textContent, /Bad context/);
+    }
+    const secondNode = results.children[1];
+    render([second, first]);
+    assert.notEqual(results.children[0], secondNode, 'replacement/order change resets');
+    assert.equal(firstNode.isConnected, false);
+    const reorderedNode = results.children[0];
+    render([second]);
+    assert.notEqual(results.children[0], reorderedNode, 'shortening resets');
+    render([{ ...first, cached: true }]);
+    assert.match(results.textContent, /first · cached/, 'cached rerun refreshes label');
+    results.replaceChildren(); // New run or changed-input update clears the DOM.
+    render([first]);
+    assert.equal(results.children.length, 1, 'cleared DOM reconciles retained state');
+    assert.doesNotMatch(results.textContent, /cached/);
+    const oldNode = results.children[0];
+    results.replaceChildren(document.createElement('div'));
+    render([first]);
+    assert.notEqual(results.children[0], oldNode, 'same-count external DOM replacement resets');
+    render([]);
+    assert.equal(results.children.length, 0);
+    assert.equal(panel.renderedRows.length, 0);
+    render([]);
+    render([first]);
+    assert.equal(results.children.length, 1, 'empty list permits a fresh result');
   });
 });
