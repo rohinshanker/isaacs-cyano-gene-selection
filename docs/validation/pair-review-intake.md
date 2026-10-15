@@ -19,8 +19,10 @@ every historical answer. Do not derive decisions from free text automatically.
 
 Regenerate `meta.pairJudgements` through
 `scripts/build_features.py::load_pair_judgements`, preserving unrelated release
-metadata, then rebuild `site/data/data-manifest.json` with
-`tools/build_data_manifest.py build`. Replay the
+metadata. The admitted expression-agreement payload also pins the metadata
+bytes: run `tools/promote_expression_agreement.py` and verify its only change is
+`metaInput` for a decision-only update. Then rebuild
+`site/data/data-manifest.json` with `tools/build_data_manifest.py build`. Replay the
 [current condition screen](condition-metadata-recovery.md#replaying-the-current-screen)
 to refresh displayed owner calls and the source hash. A decision-only update
 must not change condition values, default verdicts or missing-field rankings.
