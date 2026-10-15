@@ -213,11 +213,11 @@ export class ShortlistPanel {
   /** Build the export for the current shortlist without downloading it. */
   buildExport(generatedAt = new Date()) {
     const {
-      ids, dataset, registry, filterState, filterMask, viewState, colorSources, neighborSiteCounts,
+      ids, dataset, registry, filterState, filterMask, viewState, colorSources, neighborSiteCounts, tssRecodingEvidence,
     } = this.state;
     return buildExport({
       dataset, registry, ids, schemes: this.schemesToExport(), generatedAt,
-      filterState, filterMask, colorSources, neighborSiteCounts,
+      filterState, filterMask, colorSources, neighborSiteCounts, tssRecodingEvidence,
       viewState: typeof viewState === 'function' ? viewState() : viewState,
       trRosettaRnaHandoffs: this.folding.handoffs(),
     });

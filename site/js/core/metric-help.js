@@ -1,3 +1,4 @@
+import { TSS_EDIT_KEY, TSS_EVALUATED_KEY, TSS_EDIT_DESCRIPTION } from './tss-recoding.js';
 import { OVERLAP_LENGTH_METRICS, OVERLAP_LENGTH_METHOD } from './overlap-length.js';
 /** One reusable explanation contract for every selectable colour metric. */
 import { describeReviewed } from './source-derived-categories.js';
@@ -258,7 +259,10 @@ export function metricHelp(metric, dataset) {
   // fitness screen. Each is explained from its own source, not the genome.
   const expression = Boolean(metric.provenance?.citationId)
     || (isExpressionMetric(metric) && !isExpressionProxyMetric(metric));
-  const origin = expression
+  const tssRecoding = [TSS_EDIT_KEY, TSS_EVALUATED_KEY].includes(metric.key);
+  const origin = tssRecoding
+    ? `Computed in this browser from admitted native Tan 2018 Table S1 TSS positions, the active scheme and ${name} release ${release}.`
+    : expression
     ? (describeExpressionSource(metric.provenance) ?? 'Expression source is not declared in this dataset.')
     : metric.key === 'expressionProxy'
       ? declaredGenomeOrigin
@@ -279,16 +283,18 @@ export function metricHelp(metric, dataset) {
     method: methodFor(metric, organism),
     unit: metric.unit || 'unit not declared',
     origin,
-    coverage: metric.fileKey === 'geneOverlaps' && !dataset.geneOverlaps
+    coverage: tssRecoding && metric.availabilityReason?.() ? `Not evaluated: ${metric.availabilityReason()}`
+      : metric.fileKey === 'geneOverlaps' && !dataset.geneOverlaps
       ? 'Not counted: overlap lengths are unavailable until the native overlapping-gene layer is ready. Unavailable is not 0 bp.'
       : `${known.toLocaleString('en-US')} of ${genes.length.toLocaleString('en-US')} plotted CDSs have a finite value; missing values remain unknown, not zero.`,
-    reading: readingNote(metric, dataset, formatCount),
-    limits: shortLimits(metric, dataset, formatCount),
-    sourceLinks: metric.provenance?.sourceLinks
+    reading: tssRecoding ? 'Read edited bases together with evaluated recorded TSS in CDS. An identity scheme is an unchanged comparison; 0 recorded sites is not a promoter-absence prediction.' : readingNote(metric, dataset, formatCount),
+    limits: tssRecoding ? TSS_EDIT_DESCRIPTION : shortLimits(metric, dataset, formatCount),
+    sourceLinks: tssRecoding && meta.tssEvidenceSource?.sourceArtifactUrl
+      ? [{ label: 'Tan 2018 Table S1', url: meta.tssEvidenceSource.sourceArtifactUrl }] : metric.provenance?.sourceLinks
       ?? (metric.provenance?.record?.archiveUrl
         ? [{ label: metric.provenance.record.studyId ?? metric.provenance.id,
           url: metric.provenance.record.archiveUrl }] : []),
-    citations: [...(METHODS_CITATIONS[metric.key]
+    citations: [...(tssRecoding && layerOf(organism, 'tssEvidence') ? ['tan-2018'] : METHODS_CITATIONS[metric.key]
       ?? (expression ? (metric.provenance?.citationIds
         ?? (metric.provenance?.citationId ? [metric.provenance.citationId] : [])) : [])),
     ...(expression ? [] : [organism.genomeCitation.id])],

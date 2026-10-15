@@ -1,3 +1,4 @@
+import { describeTssEdit } from '../core/tss-recoding.js';
 import { makeSwatch } from './legend.js';
 import { formatCount } from './format.js';
 import { GHOST_BORDER, GHOST_COLOR, MISSING_COLOR, PINNED_COLOR, SHORTLIST_COLOR } from './colors.js';
@@ -107,9 +108,10 @@ export function drawNeighborSiteMarks(root, sites, gene, positionX, y, { baseWid
     if (typeof mark.className === 'string') mark.className = 'neighbor-site-mark';
     mark.setAttribute('data-site-key', site.key);
     mark.setAttribute('data-position', site.position);
+    if (typeof site.edited === 'boolean') mark.setAttribute('data-edit-status', site.edited ? 'edited' : 'unchanged');
     mark.setAttribute('tabindex', '0');
     mark.setAttribute('role', 'img');
-    mark.setAttribute('aria-label', `${describeNeighborSite(site, gene)} Purple line at the exact source base${baseWidth > 0 ? '; underlined in each nucleotide row' : ''}. All coincident sites remain in the neighbouring-site list.`);
+    mark.setAttribute('aria-label', `${describeNeighborSite(site, gene)} ${typeof site.edited === 'boolean' ? describeTssEdit(site, gene) : ''} Purple line at the exact source base${baseWidth > 0 ? '; underlined in each nucleotide row' : ''}. All coincident sites remain in the ${typeof site.edited === 'boolean' ? 'TSS edit inspection' : 'neighbouring-site'} list.`);
     mark.addEventListener('click', () => mark.focus?.({ preventScroll: true }));
     const title = document.createElementNS(ns, 'title');
     title.textContent = mark.getAttribute('aria-label');
@@ -125,6 +127,15 @@ export function drawNeighborSiteMarks(root, sites, gene, positionX, y, { baseWid
     mark.append(title,
       line('neighbor-site-halo', x, x, y - 5, y + 5, '#ffffff', 4),
       line('neighbor-site-tick', x, x, y - 5, y + 5, NEIGHBOR_SITE_COLORS[1], 2));
+    if (site.edited) {
+      const diamond = document.createElementNS(ns, 'polygon');
+      diamond.setAttribute('points', `${x},${y - 7} ${x + 3},${y - 4} ${x},${y - 1} ${x - 3},${y - 4}`);
+      diamond.setAttribute('fill', NEIGHBOR_SITE_COLORS[1]);
+      diamond.setAttribute('stroke', '#ffffff');
+      diamond.setAttribute('stroke-width', '1');
+      diamond.setAttribute('pointer-events', 'none');
+      mark.append(diamond);
+    }
     // Exact cell edges, with butt caps: distinct points never paint a span between them.
     if (baseWidth > 0) for (const rowBottom of baseRows) {
       mark.append(

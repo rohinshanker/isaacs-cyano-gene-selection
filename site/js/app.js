@@ -1,3 +1,4 @@
+import { tssRecodingModel, tssRecodingMetrics, TSS_EDIT_KEY, TSS_EVALUATED_KEY } from './core/tss-recoding.js';
 import {
   neighborSiteModel, neighborSiteFilterSummary, passesNeighborSiteFilter, passesNeighborSiteCountFilter,
   neighborSiteCountMetric, neighborSiteSourcesSelected, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL,
@@ -520,6 +521,7 @@ function computeMask() {
   resolveCategoryModel();
   context.overlaps = resolveOverlapModel();
   context.neighborSites = resolveNeighborSiteModel();
+  context.tssRecoding = tssRecodingModel(context.dataset, context.scheme, { evidence: context.neighborSites });
   context.pccEssentiality = resolvePccEssentialityModel();
   const { dataset, registry } = context;
   const count = dataset.genes.length;
@@ -1752,6 +1754,7 @@ function renderChromosomeView() {
     schemeVersion: context.schemeVersion,
     organism,
     neighborSites: context.neighborSites,
+    tssRecoding: context.tssRecoding,
     markerPending: pendingState(context.dataset, 'tssEvidence'),
     rfamEvidence: context.dataset.rfamEvidence,
     rfamPending: pendingState(context.dataset, 'rfamEvidence'),
@@ -1861,6 +1864,7 @@ function renderDetail() {
     inShortlist: index >= 0 && state.shortlist.includes(context.dataset.genes[index].id),
     colorSources: state.colorSources,
     neighborSites: context.neighborSites,
+    tssRecoding: context.tssRecoding,
     startSitesVisible: markersVisibleIn('gene-detail'),
     rfamVisible: markersVisibleIn('gene-detail', 'rfam'),
   });
@@ -1901,6 +1905,7 @@ function renderControlsGeneViewer(index) {
   if (!host) return;
   renderGeneViewer(host, index >= 0 ? context.dataset.genes[index] : null, {
     neighborSites: context.neighborSites,
+    tssRecoding: context.tssRecoding,
     tssPending: pendingState(context.dataset, 'tssEvidence'),
     overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
     organism,
@@ -2071,6 +2076,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       bypassed: state.filtersBypassed === true,
     },
     filterMask: context.mask,
+    tssRecodingEvidence: context.neighborSites,
     neighborSiteCounts: context.neighborSites?.available ? context.neighborSites.siteCounts : null,
     viewState: () => ({
       ...viewStateOf(state, organism), dataSources: sourceSelection(), typeSources: state.typeSources,
@@ -3255,7 +3261,8 @@ function normalizeAndApply(decoded) {
     recomputeScheme();
   }
   if (!context.registry) {
-    const organismMetrics = context.recodedGenome ? [context.recodedGenome.metric] : [];
+    const organismMetrics = [...(context.recodedGenome ? [context.recodedGenome.metric] : []),
+      ...tssRecodingMetrics(() => context.tssRecoding)];
     context.registry = buildMetricRegistry(
       context.dataset.meta, context.dataset.genes, context.live, organismMetrics,
     );
@@ -3489,7 +3496,7 @@ function refreshProteinRecords() {
 function promotedFileKeys(view) {
   const keys = new Set();
   if (view.goTerm || view.colorBy === GO_TERM_COLOR_KEY) { keys.add('annotations'); keys.add('goTerms'); }
-  if (view.colorBy === NEIGHBOR_SITE_COLOR_KEY || view.neighborSiteFilter !== 'any' || Boolean(view.neighborSiteCountFilter) || view.pinnedId || view.panel === 'chromosome') { keys.add('tssEvidence'); keys.add('regulatoryTss'); }
+  if ([NEIGHBOR_SITE_COLOR_KEY, TSS_EDIT_KEY, TSS_EVALUATED_KEY].includes(view.colorBy) || view.neighborSiteFilter !== 'any' || Boolean(view.neighborSiteCountFilter) || view.pinnedId || view.panel === 'chromosome') { keys.add('tssEvidence'); keys.add('regulatoryTss'); }
   if (overlapLengthFilterActive(view.overlapLengthFilter) || view.overlapClassFilter?.length > 0) keys.add('geneOverlaps');
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   // The essentiality colour and filter read the candidate evidence alone.
@@ -3577,7 +3584,7 @@ function colorMetricFileKeys(key) {
     required.add(fileKey);
   };
   if (key === FUNCTION_COLOR_KEY) addWithDependencies('sourceDerivedCategories');
-  if (key === NEIGHBOR_SITE_COLOR_KEY) { addWithDependencies('tssEvidence'); addWithDependencies('regulatoryTss'); }
+  if ([NEIGHBOR_SITE_COLOR_KEY, TSS_EDIT_KEY, TSS_EVALUATED_KEY].includes(key)) { addWithDependencies('tssEvidence'); addWithDependencies('regulatoryTss'); }
   if (key === GO_TERM_COLOR_KEY) { addWithDependencies('annotations'); addWithDependencies('goTerms'); }
   if (key === OVERLAP_COLOR_KEY) addWithDependencies('geneOverlaps');
   if (key === PCC_ESSENTIALITY_COLOR_KEY) addWithDependencies('candidateEvidence');

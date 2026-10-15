@@ -84,7 +84,7 @@ export function indexNativeSites(genes, records, organism) {
       && pieces.some(({ from, to }) => site.position >= from && site.position <= to));
     const linked = contained.filter((site) => site.associations.some(({ id, native }) => native && id !== gene.id));
     const unassigned = contained.filter((site) => site.associations.length === 0 || site.unassigned || site.associations.some(({ native }) => !native));
-    const relation = Object.freeze({ geneId: gene.id, sites: Object.freeze(linked), unassigned: Object.freeze(unassigned), count: linked.length });
+    const relation = Object.freeze({ geneId: gene.id, sites: Object.freeze(linked), contained: Object.freeze(contained), unassigned: Object.freeze(unassigned), count: linked.length });
     byGene.set(gene.id, relation);
     for (const site of linked) marks.push(Object.freeze({ site, geneId: gene.id, index, strand: gene.strand }));
   }

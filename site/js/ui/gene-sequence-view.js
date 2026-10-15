@@ -1,3 +1,4 @@
+import { TssEditPanel } from './tss-recoding.js';
 import { functionStatusNote } from '../core/annotation-records.js';
 import { RfamSitesPanel, drawRfamIntervals } from './rfam-sites.js';
 import { rfamMarkers } from '../core/rfam-evidence.js';
@@ -385,7 +386,7 @@ export class GeneSequenceView {
   update({
     gene, table, scheme, schemeVersion, organism = DEFAULT_ORGANISM,
     markerPending = null, sequenceContextPending = null, markersVisible = true,
-    overlapsPending = null, neighborSites = null,
+    overlapsPending = null, neighborSites = null, tssRecoding = null,
     rfamEvidence = null, rfamPending = null, rfamVisible = true,
   }) {
     if (!this.built) this.build();
@@ -405,12 +406,14 @@ export class GeneSequenceView {
     // changing the gene, so it is its own reason to redraw: without it the
     // tracks would stay empty until the reader pinned something else.
     const neighbourChanged = gene?.flankingNeighbours !== this.neighbourContext;
+    const tssRecodingChanged = this.tssRecoding?.forGene(this.gene) !== tssRecoding?.forGene(gene)
+      || this.tssRecoding?.reason !== tssRecoding?.reason;
     const neighborSitesChanged = this.neighborSites?.forGene(this.gene) !== neighborSites?.forGene(gene)
       || this.neighborSites?.reason !== neighborSites?.reason;
     const overlapChanged = overlapsPending !== this.overlapsPending
       || Array.isArray(gene?.overlapPartners) !== Array.isArray(this.partners);
     // Hover re-renders the tab; nothing here depends on hover, so they cost nothing.
-    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged && !neighbourChanged && !neighborSitesChanged && !rfamChanged) {
+    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged && !neighbourChanged && !neighborSitesChanged && !tssRecodingChanged && !rfamChanged) {
       return;
     }
     this.rfamEvidence = rfamEvidence;
@@ -418,6 +421,7 @@ export class GeneSequenceView {
     this.rfamVisible = rfamVisible;
     this.neighbourContext = gene?.flankingNeighbours;
     this.neighborSites = neighborSites;
+    this.tssRecoding = tssRecoding;
     this.gene = gene;
     this.table = table;
     this.scheme = scheme;
@@ -622,11 +626,15 @@ export class GeneSequenceView {
     this.draw();
     this.writeMarkerList();
     this.writeNeighborSitePanel();
-    if (this.neighborVisibilityNote) this.neighborVisibilityNote.textContent = next
-      ? 'Purple lines in the Sites row align with exact neighbouring-gene TSS bases inside this CDS. At nucleotide zoom, each source base is underlined in the Original and Recoded rows when shown; use the inspection list to reveal individual sites. These are single-base TSS coordinates, not promoter or RBS footprints.'
-      : 'Start-site marks are hidden in this view; the neighbouring-site list retains every contributor.';
+    if (this.neighborVisibilityNote) this.neighborVisibilityNote.textContent = this.tssLineNote(next);
     this.handlers.onAnnounce?.(`${this.markerLayer.label} start sites `
       + `${next ? 'shown' : 'hidden'} on the sequence close-up.`);
+  }
+
+  tssLineNote(visible = this.markersVisible) {
+    const compared = this.tssRecoding?.forGene(this.gene)?.status === 'evaluated';
+    if (!visible) return `Start-site marks are hidden in this view; the ${compared ? 'TSS edit inspection' : 'neighbouring-site'} list retains every contributor.`;
+    return `Purple lines in the Sites row align with exact ${compared ? 'recorded Tan TSS bases inside this CDS, including self, neighbouring and unassigned associations. Diamonds identify sites with edited bases' : 'neighbouring-gene TSS bases inside this CDS'}. At nucleotide zoom, each source base is underlined in the Original and Recoded rows when shown; use the inspection list to reveal individual sites. These are single-base TSS coordinates, not promoter or RBS footprints.`;
   }
 
   build() {
@@ -710,6 +718,7 @@ export class GeneSequenceView {
     this.partnerListHost.append(this.partnerDetails);
     this.neighbourDetails = createNeighbourDisclosure();
     this.neighborSitePanel = new NeighborSitePanel();
+    this.tssEditPanel = new TssEditPanel();
 
     this.selection = element('p', 'gene-sequence-selection');
     this.selection.setAttribute('role', 'status');
@@ -726,7 +735,7 @@ export class GeneSequenceView {
     this.controls.id = 'gene-sequence-controls';
 
     this.figure.append(this.heading, toolbar, this.readout, this.strip, this.markerControlHost,
-      this.rfamPanel.element, this.selection, this.controls, this.markerListHost, this.partnerListHost, this.neighbourDetails, this.neighborSitePanel.element);
+      this.rfamPanel.element, this.selection, this.controls, this.markerListHost, this.partnerListHost, this.neighbourDetails, this.neighborSitePanel.element, this.tssEditPanel.element);
     this.host.append(this.empty, this.figure);
     this.bindEvents();
     if (typeof ResizeObserver !== 'undefined') {
@@ -754,6 +763,13 @@ export class GeneSequenceView {
   }
 
   writeNeighborSitePanel() {
+    this.tssEditPanel.update(this.tssRecoding, this.gene, this.markersVisible, (site) => {
+      const offset = sequenceColumns(this.model).get(site.position);
+      if (offset == null || !this.markersVisible) return;
+      const window = this.visibleWindow();
+      this.setCamera({ ...this.camera, from: offset - (window.to - window.from) / 2 });
+      this.handlers.onAnnounce?.(`${site.edited ? 'Edited' : 'Unchanged'} TSS base ${site.position}: ${site.original} to ${site.recoded} in CDS orientation.`);
+    });
     this.neighborSitePanel.update(this.neighborSites, this.gene,
       (id, index) => this.handlers.onOpenPartner?.(id, index), (site) => {
         const offset = sequenceColumns(this.model).get(site.position);
@@ -766,7 +782,7 @@ export class GeneSequenceView {
 
   render() {
     const model = this.model;
-    const siteHeld = this.heldIn(this.neighborSitePanel.element);
+    const siteHeld = this.heldIn(this.neighborSitePanel.element) || this.heldIn(this.tssEditPanel.element);
     this.writeNeighborSitePanel();
     const neighbourHeld = this.heldIn(this.neighbourDetails);
     updateNeighbourDisclosure(this.neighbourDetails, this.gene, this.overlapsPending,
@@ -847,7 +863,7 @@ export class GeneSequenceView {
     this.markerNavigationStatus = null;
     this.neighborVisibilityNote = null;
     const revealExtent = this.markerRevealExtent();
-    if (!this.markerLayer || this.markerPending || (revealExtent === null && !(this.neighborSites?.forGene(this.gene)?.count > 0))) {
+    if (!this.markerLayer || this.markerPending || (revealExtent === null && !(this.neighborSites?.forGene(this.gene)?.count > 0 || this.tssRecoding?.forGene(this.gene)?.evaluated > 0))) {
       if (this.markerLayer && this.markerPending) {
         host.append(pendingNote(this.markerPending, `the ${this.markerLayer.fileLabel}`));
       }
@@ -866,10 +882,8 @@ export class GeneSequenceView {
     row.append(box, document.createTextNode(` ${this.markerControlLabel()}`));
     host.append(row);
     this.markerToggle = box;
-    if (this.neighborSites?.forGene(this.gene)?.count > 0) {
-      this.neighborVisibilityNote = element('p', 'panel-note', this.markersVisible
-        ? 'Purple lines in the Sites row align with exact neighbouring-gene TSS bases inside this CDS. At nucleotide zoom, each source base is underlined in the Original and Recoded rows when shown; use the inspection list to reveal individual sites. These are single-base TSS coordinates, not promoter or RBS footprints.'
-        : 'Start-site marks are hidden in this view; the neighbouring-site list retains every contributor.');
+    if (this.neighborSites?.forGene(this.gene)?.count > 0 || this.tssRecoding?.forGene(this.gene)?.evaluated > 0) {
+      this.neighborVisibilityNote = element('p', 'panel-note', this.tssLineNote());
       host.append(this.neighborVisibilityNote);
     }
     if (revealExtent === null) {
@@ -1360,7 +1374,8 @@ export class GeneSequenceView {
       } });
     this.drawMarkers(area, rows, x, crowding);
     const columns = sequenceColumns(model);
-    const sites = this.neighborSites?.forGene(this.gene)?.sites ?? [];
+    const edits = this.tssRecoding?.forGene(this.gene);
+    const sites = edits?.status === 'evaluated' ? edits.sites : this.neighborSites?.forGene(this.gene)?.sites ?? [];
     if (this.markersVisible) drawNeighborSiteMarks(area, sites.filter((site) => {
       const offset = columns.get(site.position);
       return offset != null && offset + 1 > window.from && offset < window.to;
@@ -1379,7 +1394,7 @@ export class GeneSequenceView {
     // Reserved by whether this locus has a placeable mark at all, not by
     // whether the reader is showing it: the geometry a reader is reading must
     // not move when they put the marks away.
-    const hasNeighborSites = this.neighborSites?.forGene(this.gene)?.count > 0;
+    const hasNeighborSites = this.neighborSites?.forGene(this.gene)?.count > 0 || this.tssRecoding?.forGene(this.gene)?.evaluated > 0;
     const hasFamily = !this.rfamPending
       && rfamMarkers(this.rfamEvidence).some((row) => rfamPlacement(this.model, row).status === 'placed');
     const markers = this.markerRowShown() || hasNeighborSites || hasFamily ? 0 : null;

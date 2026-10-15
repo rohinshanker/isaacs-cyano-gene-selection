@@ -892,6 +892,7 @@ export class SidePanel {
     const viewerBody = document.createElement('div');
     renderGeneViewer(viewerBody, gene, {
       neighborSites: state.neighborSites,
+      tssRecoding: state.tssRecoding,
       upstreamNt: this.upstreamNt ?? 60,
       onUpstreamNtChange: (extent) => { this.upstreamNt = extent; },
       rfamEvidence: dataset.rfamEvidence,

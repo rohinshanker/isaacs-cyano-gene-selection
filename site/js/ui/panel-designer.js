@@ -58,7 +58,7 @@ const PREFERRED_CONSTRAINT_KEYS = ['lengthCodons', 'gc3', 'rareFraction', 'mfeSt
  * in; this only sets its rank once it is offered.
  */
 export function constrainableMetrics(registry) {
-  const published = registry.metrics.filter((metric) => metric.source === 'pipeline');
+  const published = registry.metrics.filter((metric) => metric.source === 'pipeline' || metric.constrainable === true);
   const native = published.filter(
     (metric) => isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
       && metric.provenance?.isTargetOrganism === true,

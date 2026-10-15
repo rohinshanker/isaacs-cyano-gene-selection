@@ -1,3 +1,4 @@
+import { tssRecodingModel, TSS_EDIT_KEY, TSS_EVALUATED_KEY, TSS_EDIT_DESCRIPTION } from './tss-recoding.js';
 /**
  * Reproducible export of the candidate shortlist: one manifest, one flat CSV.
  *
@@ -53,7 +54,7 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor',
   'overlapClass', 'overlapPartnerCount', 'overlapSharedBases', 'overlapPartners', 'operonId',
   'expressionBasis', 'expressionSourceId', 'tssInitiationBasis',
-  'tssInitiationBasisReason', 'tssMappedSiteCount', 'neighborTssSitesInCds', 'passesCurrentFilters',
+  'tssInitiationBasisReason', 'tssMappedSiteCount', 'neighborTssSitesInCds', 'tssRecodingStatus', 'tssRecodingReason', 'passesCurrentFilters',
   'pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag', 'pcc7942MappingStatus',
   'essentialityEvidenceTier', 'goIeaEssentialityContext', 'goIeaCoreProcessProbability',
   'annotationDiscrepancies',
@@ -66,7 +67,7 @@ const LAYER_COLUMNS = Object.freeze({
   sourceDerivedCategories: ['pcc7942DerivedCategory', 'pcc7942DerivedProbability',
     'goIeaDerivedCategory', 'goIeaDerivedProbability'],
   tssEvidence: ['tssInitiationBasis', 'tssInitiationBasisReason', 'tssMappedSiteCount',
-    'neighborTssSitesInCds'],
+    'neighborTssSitesInCds', 'tssRecodingStatus', 'tssRecodingReason'],
   candidateEvidence: ['pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag',
     'pcc7942MappingStatus'],
   goIeaEssentiality: ['essentialityEvidenceTier', 'goIeaEssentialityContext',
@@ -77,7 +78,7 @@ const LAYER_COLUMNS = Object.freeze({
 const LAYER_DATASET_KEYS = Object.freeze({
   functionCategories: ['functionCategories'],
   sourceDerivedCategories: ['sourceDerivedCategories'],
-  tssEvidence: ['tssEvidenceSource'],
+  tssEvidence: ['tssEvidenceSource', 'tssRecoding'],
   candidateEvidence: ['candidateEvidence'],
   goIeaEssentiality: ['goIeaEssentiality'],
 });
@@ -369,7 +370,7 @@ export const FILTERS_OFF_EXPORT_NOTE = 'Filters were temporarily turned off when
 
 export function buildExport({
   dataset, registry, ids, schemes, generatedAt = new Date(),
-  filterState = null, filterMask = null, viewState = null, neighborSiteCounts = null,
+  filterState = null, filterMask = null, viewState = null, neighborSiteCounts = null, tssRecodingEvidence = null,
   colorSources = undefined, trRosettaRnaHandoffs = [],
 }) {
   const blocked = exportBlockedReason(dataset);
@@ -399,12 +400,14 @@ export function buildExport({
   for (const scheme of schemeList) {
     const compiled = compileScheme(scheme.map, table);
     const live = computeLiveMetrics(dataset, compiled, { baseline: dataset.baseline }).fields;
+    const tssEdits = tssRecodingModel(dataset, compiled, { evidence: tssRecodingEvidence });
     for (const id of ids) {
       const index = indexById.get(id);
       if (index === undefined) continue;
       const gene = genes[index];
       const sequence = recodedSequence(dataset, index, compiled);
       const basis = expressionBasisOf(gene);
+      const tssEdit = tssEdits.forGene(gene);
       const tssBasis = tssInitiationBasis(gene, {
         metric: tssMetric,
         siteSource: meta.tssEvidenceSource,
@@ -480,6 +483,8 @@ export function buildExport({
         tssMappedSiteCount: tssBasis.siteCount ?? '',
         // Distinct neighbouring-gene TSS sites inside the CDS, both strands, as
         // the colour, filter and viewers count them; blank while unavailable.
+        tssRecodingStatus: tssEdit?.status ?? 'not-evaluated',
+        tssRecodingReason: tssEdit?.reason ?? tssEdits.reason ?? '',
         neighborTssSitesInCds: Number.isFinite(neighborSiteCounts?.[index])
           ? neighborSiteCounts[index] : '',
         passesCurrentFilters: !filterMask ? ''
@@ -499,7 +504,9 @@ export function buildExport({
         recodedCds: sequence.recoded,
       }, omittedColumns);
       for (const metric of metrics) {
-        const value = metric.source === 'live' ? live[metric.key][index] : metric.read(index);
+        const value = metric.key === TSS_EDIT_KEY ? tssEdits.editedCounts[index]
+          : metric.key === TSS_EVALUATED_KEY ? tssEdits.evaluatedCounts[index]
+            : metric.source === 'live' ? live[metric.key][index] : metric.read(index);
         row[metric.key] = Number.isFinite(value) ? value : '';
       }
       rows.push(row);
@@ -528,6 +535,8 @@ export function buildExport({
       genome: meta.genome ?? null,
       annotationRelease: annotationRelease(meta),
       tssEvidenceSource: meta.tssEvidenceSource ?? null,
+      tssRecoding: { definition: TSS_EDIT_DESCRIPTION, evidenceAvailable: Boolean(tssRecodingEvidence?.available),
+        reason: tssRecodingEvidence?.reason ?? null, source: dataset.regulatoryTss?.source ?? meta.tssEvidenceSource ?? null },
       candidateEvidence: dataset.candidateEvidence ? {
         manifestSha256: dataset.candidateEvidence.manifestSha256,
         testedSource: dataset.candidateEvidence.testedSource,

@@ -1,3 +1,5 @@
+import { TssEditPanel } from './tss-recoding.js';
+const tssEditMounts = new WeakMap();
 import { functionStatusNote } from '../core/annotation-records.js';
 import { RfamSitesPanel, drawRfamIntervals } from './rfam-sites.js';
 import { rfamGeneRows } from '../core/rfam-evidence.js';
@@ -988,7 +990,7 @@ function factsFor(model) {
 export function renderGeneViewer(host, gene, {
   tssPending = null, overlapsPending = null, organism = DEFAULT_ORGANISM,
   startSitesVisible = true, onStartSitesVisibleChange = null,
-  onOpenPartner = null, table = null, neighborSites = null,
+  onOpenPartner = null, table = null, neighborSites = null, tssRecoding = null,
   rfamEvidence = null, rfamPending = null, rfamVisible = true, onRfamVisibleChange = null,
   upstreamNt = null, onUpstreamNtChange = null,
 } = {}) {
@@ -1032,6 +1034,7 @@ export function renderGeneViewer(host, gene, {
     const neighbourDetails = neighbourMounts.get(host) ?? createNeighbourDisclosure();
     neighbourMounts.set(host, neighbourDetails);
     const neighbourFocus = neighbourDetails.contains(document.activeElement) ? document.activeElement : null;
+    const priorEditFocus = tssEditMounts.get(host)?.element.contains(document.activeElement) ? document.activeElement : null;
     const priorSiteFocus = neighborSiteMounts.get(host)?.element.contains(document.activeElement) ? document.activeElement : null;
     const familyFocus = rfamMounts.get(host)?.element.contains(document.activeElement)
       ? document.activeElement : null;
@@ -1076,9 +1079,12 @@ export function renderGeneViewer(host, gene, {
     };
     familyPaint(rfamVisible);
     const relation = neighborSites?.forGene(gene);
-    if (visible) drawNeighborSiteMarks(picture, relation?.sites ?? [], gene,
+    const edits = tssRecoding?.forGene(gene);
+    if (visible) drawNeighborSiteMarks(picture, edits?.status === 'evaluated' ? edits.sites : relation?.sites ?? [], gene,
       (site) => xScale(model)(neighborSiteOffset(gene, site) + 0.5), TRACK_Y + TRACK_HEIGHT / 2);
-    const siteDescription = relation ? ` ${relation.count} distinct native neighbouring-gene TSS points in actual CDS segments, ${visible ? 'shown as purple lines at exact source bases' : 'hidden by the start-sites control'}; contributors remain in the neighbouring-site list.` : ` ${neighborSites?.reason ?? 'Native neighbouring-site evidence unavailable.'}`;
+    const siteDescription = edits?.status === 'evaluated'
+      ? ` ${edits.evaluated} distinct recorded native Tan TSS points in actual CDS segments, including self, neighbouring and unassigned associations; ${edits.edited} sites with edited bases. ${visible ? 'Purple lines retain the exact source bases; diamonds identify edits.' : 'Start-site marks are hidden.'} The separate neighbouring-gene count remains ${relation?.count ?? 'unavailable'}.`
+      : relation ? ` ${relation.count} distinct native neighbouring-gene TSS points in actual CDS segments, ${visible ? 'shown as purple lines at exact source bases' : 'hidden by the start-sites control'}; contributors remain in the neighbouring-site list.` : ` ${neighborSites?.reason ?? 'Native neighbouring-site evidence unavailable.'}`;
     picture.setAttribute('aria-label', picture.getAttribute('aria-label') + siteDescription);
     const sitePanel = neighborSiteMounts.get(host) ?? new NeighborSitePanel();
     neighborSiteMounts.set(host, sitePanel);
@@ -1120,7 +1126,7 @@ export function renderGeneViewer(host, gene, {
     // hide evidence that is not there, and would read as a promise that it
     // could be shown.
     let toggle = null;
-    if (startSites && (model.tss.length > 0 || relation?.count > 0)) {
+    if (startSites && (model.tss.length > 0 || relation?.count > 0 || edits?.evaluated > 0)) {
       const control = startSitesControl(startSites, visible, (next) => {
         onStartSitesVisibleChange?.(next);
         paint(next);
@@ -1139,8 +1145,10 @@ export function renderGeneViewer(host, gene, {
     if (startSites && visible && model.tss.length > 0) {
       items.push(['gene-view-key-tss', `${startSites.label} start site`]);
     }
-    if (visible && relation?.count > 0) {
-      items.push(['gene-view-key-neighbor-site', 'Neighbouring-gene TSS: line at exact base in CDS']);
+    if (visible && (edits?.evaluated > 0 || relation?.count > 0)) {
+      items.push(['gene-view-key-neighbor-site', edits?.status === 'evaluated'
+        ? 'Recorded Tan TSS in CDS: exact-base line; diamond = edited site'
+        : 'Neighbouring-gene TSS: line at exact base in CDS']);
     }
     if (Array.isArray(model.overlaps) && model.overlaps.length > 0) {
       items.push(['gene-view-key-overlap',
@@ -1174,6 +1182,11 @@ export function renderGeneViewer(host, gene, {
       if (sites) host.append(sites);
     }
 
+    const editPanel = tssEditMounts.get(host) ?? new TssEditPanel();
+    tssEditMounts.set(host, editPanel);
+    editPanel.update(tssRecoding, gene, visible);
+    if (tssRecoding) host.append(editPanel.element);
+    if (priorEditFocus?.isConnected) priorEditFocus.focus({ preventScroll: true });
     host.append(overlapList(model, onOpenPartner, gene, table));
     host.append(neighbourDetails);
     if (neighbourFocus?.isConnected) neighbourFocus.focus({ preventScroll: true });
