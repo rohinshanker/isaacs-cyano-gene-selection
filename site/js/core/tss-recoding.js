@@ -8,7 +8,7 @@ export const TSS_EDIT_DESCRIPTION = 'Distinct recorded Tan 2018 TSS identities i
 const cache = new WeakMap();
 const complement = (base) => ({ A: 'T', T: 'A', C: 'G', G: 'C' })[base];
 
-/** Public, DOM-free per-gene oracle. Bases are in focal CDS transcription orientation. */
+/** DOM-free per-gene comparison. Bases are in focal CDS transcription orientation. */
 export function evaluateTssRecoding(gene, table, scheme, sites) {
   const sequence = geneSequenceModel(gene, table, scheme, { upstreamNt: 0 });
   if (!['+', '-'].includes(gene?.strand) || !sequence?.coordinatesKnown
