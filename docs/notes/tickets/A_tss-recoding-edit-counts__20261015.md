@@ -50,6 +50,14 @@ and other site types remain separate in the parent ticket.
   draws all contained Tan sites, including self/unassigned. The legend/explanation
   now describe the actual set, preserving the existing neighbour-only count.
 
+- **TSS-R1 — open (DEM-425).** The panel designer must reject a scheme-dependent
+  edited-site count as a fixed hard constraint, including saved/manual constraints;
+  its input identity currently does not capture the active display scheme.
+- **TSS-R2 — open (DEM-425).** Avoid rebuilding complete per-base models for every
+  CDS on scheme changes; preserve exact semantics and validate measured runtime.
+- **TSS-R3 — open (DEM-425).** Readiness/promotion/default-scale selection must
+  include both TSS payloads for colors, axes and numeric filters.
+
 ## Verification
 
 Pending implementation, focused tests, rendered checks and independent review.
