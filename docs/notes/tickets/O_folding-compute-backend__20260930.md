@@ -10,6 +10,10 @@
 
 ## Current State
 
+The bounded local structure-comparison implementation is owned by
+`cyano-regulatory-sites` in [its active ticket](A_rna-structure-comparison__20261014.md).
+Remote infrastructure and workload-policy questions remain here.
+
 Owner decision, 2026-10-14 (D12): prioritize **RNA folding, accessibility and
 mRNA secondary structure**. Assess an original-versus-recoded comparison that
 shows whether the active recoding scheme changes predicted mRNA secondary
