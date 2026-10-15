@@ -15,7 +15,10 @@
 Owner direction, 2026-10-14: add general annotation search/open support for
 noncoding genes and pseudogenes outside CDS-only metrics/recoding, distinguish
 hypothetical-protein function status, and keep the native PCA. The implementation
-scope is under “Reference-view decisions and implementation scope” below.
+scope is under “Reference-view decisions and implementation scope” below. That
+implementation was split on 2026-10-14 into
+[A_annotation-search-noncoding__20261014](A_annotation-search-noncoding__20261014.md),
+owned by cyano-unblocked-tix.
 
 The data contract admits PCC 6301, PCC 6311, PCC 7942, PCC 7943, and UTEX 3055 as
 sister strains of UTEX 2973 for gene annotations, transcriptomics, proteomics,
