@@ -81,9 +81,30 @@ method is implicitly added to this ticket's implementation scope.
 
 ## Verification
 
-This is an admission queue entry, not evidence that a new browser layer ships.
-Run the applicable method runbook, data/annotation contracts, repository gates,
-coordinate oracles and rendered UI checks for each selected implementation.
+Producer/data/source slice `7dedca7..de8c0ec` independently accepted by
+Multica DEM-416 (Codex reviewer), with 275 focused tests passing and no skips.
+The reviewer re-fetched Rfam 15.1 receipts/library, reproduced the model digest,
+verified native replay/rotated circular cases and confirmed citation terms.
+
+Producer DEM-414 findings are retained explicitly:
+- **RFAM-1 (manifest) — resolved by `de8c0ec`.** New payload and citation hashes
+  are included in the rebuilt data manifest.
+- **RFAM-2 (no-hit coverage wording) — resolved by `de8c0ec`.** The pilot and
+  fresh release now distinguish a searched family without a GA match from
+  other families not evaluated. Only the provenance coverage sentence changed;
+  all native values and the TSV remained identical.
+- **RFAM-3 (38.0 serialization) — informational, no defect.** JSON's `38.0`
+  and JavaScript's `38` represent the same published GA bit score.
+- **I-SCI-1 — open**, owned by the separate Yfr1 evidence ticket above; no
+  transcript or interaction claim is admitted here.
+
+Coordinator citation renders at 375×812, 768×1024, 1280×800 and 1440×900 show
+readable source/method cards, working keyboard focus and no horizontal overflow.
+All eight screenshots and the semantic snapshot were inspected; console errors
+and warnings were zero. Browser download-byte verification awaits publication.
+
+Browser integration/render review and aggregate repository gates remain pending.
+Do not close this ticket before they pass.
 
 ## Cleanup
 
