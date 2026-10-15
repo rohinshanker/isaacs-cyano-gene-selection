@@ -42,6 +42,14 @@ Remaining PXD036717 admission findings (open):
   four optional complete-case means, original/reconstruction provenance,
   source-specific citation/terms and rendered validation. No PXD036717 browser
   values have been admitted by the reader work.
+- **PXD-DETECTION (owner question pending):** choose a separate detection
+  category alongside numeric ratios, or detection status in details/exports
+  only. Preserve bait-only/control-only/neither states; a missing numerical
+  ratio is not absence of evidence. There are 784 bait-only comparisons, and
+  101 of 107 author-selected three-replicate bait/protein entries lack a
+  complete non-imputed mean. The reader preserves these states explicitly;
+  this decision concerns browser presentation, not imputation or new interactor
+  calls. Asked 2026-10-15 by cyano-lit-unreach.
 
 The existing-report portion of S6 is implemented and independently reviewed by
 `cyano-ui-fixes`; its [browser contract](../../validation/expression-agreement.md#browser-presentation)

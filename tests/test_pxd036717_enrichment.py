@@ -105,10 +105,14 @@ def test_inconsistent_source_logs_and_ratios_do_not_contaminate_reconstruction()
         "unavailable_published_control_log2", "unavailable_published_bait_log2",
         "unavailable_published_ratio",
     }
+    partial_log = enrichment.reconstruct_comparison(4, 16, None, 4, 2)
+    assert partial_log["reconstructedLog2Ratio"] == 2
+    assert partial_log["flags"] == ["unavailable_published_control_log2"]
     assert not enrichment.reconstruct_comparison(4, 16, 2, 4, 2 + 1e-8)["flags"]
     assert enrichment.reconstruct_comparison(4, 16, 2, 4, 2 + 1e-6)["flags"]
     # Subtraction of logarithms avoids overflow in a direct bait/control division.
-    assert math.isfinite(enrichment.reconstruct_comparison(1e-300, 1e300, None, None, None)["reconstructedLog2Ratio"])
+    extreme = enrichment.reconstruct_comparison(1e-300, 1e300, None, None, None)
+    assert math.isfinite(extreme["reconstructedLog2Ratio"])
 
 
 def test_formulas_cached_values_errors_and_missing_caches_are_preserved():
@@ -189,9 +193,38 @@ def test_zero_published_log_and_multiaccession_are_explicit():
     assert result["reconstructedLog2Ratio"] is None
     assert "zero_published_control_log2_without_positive_intensity" in result["flags"]
     assert "zero_published_bait_log2_without_positive_intensity" in result["flags"]
-    table = read(workbook(lambda b: b.worksheets[0].__setitem__("A2", "Q12345;Q99999")))["sheets"][0]
+    data = workbook(lambda b: b.worksheets[0].__setitem__("A2", "Q12345;Q99999"))
+    table = read(data)["sheets"][0]
     assert table["rows"][0]["accession"] == "Q12345;Q99999"
     assert table["audit"]["multiAccessionRows"] == [2]
+
+
+@pytest.mark.parametrize("control,bait,state", [
+    (4, 16, "both"), (0, 16, "bait_only"), (None, 16, "bait_only"),
+    (4, 0, "control_only"), (4, None, "control_only"),
+    (0, 0, "neither"), (0, None, "neither"), (None, None, "neither"),
+    (-1, 16, "invalid"), (4, "bad", "invalid"), (None, True, "invalid"),
+])
+def test_detection_is_distinct_from_ratio_missingness(control, bait, state):
+    result = enrichment.reconstruct_comparison(control, bait, None, None, None)
+    assert result["detectionState"] == state
+    assert (result["reconstructedLog2Ratio"] is not None) == (state == "both")
+
+
+def test_detection_counts_preserve_bait_only_even_when_mean_is_null():
+    def mutate(book):
+        for col in "CDE":
+            book.worksheets[0][f"{col}2"] = 0
+    table = read(workbook(mutate))["sheets"][0]
+    row = table["rows"][0]
+    assert row["meanLog2Ratio"] is None
+    assert row["validReplicates"] == 0
+    assert row["detectionCounts"] == {
+        "both": 0, "bait_only": 3, "control_only": 0, "neither": 0, "invalid": 0,
+    }
+    assert table["audit"]["detectionCounts"] == {
+        "both": 0, "bait_only": 4, "control_only": 0, "neither": 1, "invalid": 1,
+    }
 
 
 PINNED = Path(__file__).resolve().parents[1] / "data/interim/pxd036717" / enrichment.SOURCE_FILE
@@ -215,6 +248,10 @@ def test_pinned_workbook_matches_independent_source_audit():
         assert not audit["duplicateAccessions"]
         assert not any("disagrees" in flag for flag in audit["flags"])
     assert sum(s["audit"]["formulaCells"] for s in doc["sheets"]) == 11009
+    assert {
+        state: sum(s["audit"]["detectionCounts"][state] for s in doc["sheets"])
+        for state in enrichment.DETECTION_STATES
+    } == {"both": 2581, "bait_only": 784, "control_only": 188, "neither": 1322, "invalid": 0}
     cikb = doc["sheets"][1]["rows"][0]
     assert cikb["cells"][7]["value"] == cikb["cells"][13]["value"] == 0
     assert cikb["comparisons"][2]["reconstructedLog2Ratio"] is None
@@ -226,6 +263,16 @@ def test_cli_source_protection_pin_and_success(tmp_path, monkeypatch, capsys):
     source.write_bytes(workbook())
     with pytest.raises(SystemExit):
         enrichment.main(["--input", str(source), "--output", str(source)])
+    hardlink = tmp_path / "hardlink.xlsx"
+    hardlink.hardlink_to(source)
+    source_before = source.read_bytes()
+    with pytest.raises(SystemExit):
+        enrichment.main(["--input", str(source), "--output", str(hardlink)])
+    assert source.read_bytes() == source_before
+    symlink = tmp_path / "symlink.xlsx"
+    symlink.symlink_to(source)
+    with pytest.raises(SystemExit):
+        enrichment.main(["--input", str(source), "--output", str(symlink)])
     output = tmp_path / "new" / "evidence.json"
     args = ["--input", str(source), "--output", str(output)]
     with pytest.raises(ValueError, match="SHA-256"):

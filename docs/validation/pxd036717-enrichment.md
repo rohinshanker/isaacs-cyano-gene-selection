@@ -22,6 +22,8 @@ extracted from PRIDE's search-result RAR archives.
 | Artifact | Verified | Bytes | SHA-256 |
 | --- | --- | ---: | --- |
 | `1-s2.0-S1096717623001490-mmc1.xlsx` | 2026-10-15 | 506,106 | `287d5f49a71425ba2b085a7070053a34f9f17219833663e1231ea3ab81d86804` |
+| `1-s2.0-S1096717623001490-mmc2.xlsx` (author-selected lists, audit only) | 2026-10-15 | 21,565 | `d1772cbc72cb156f49d15fce5159e011c460292403a4ed8d91f992a1a7166625` |
+| `1-s2.0-S1096717623001490-main.pdf` | 2026-10-15 | 10,056,603 | `376ad183e1fb089bbf33613e45a0f7ef6e13a8b453cf11709a93a907738c22e0` |
 | PRIDE v3 project JSON | 2026-10-15 | 11,852 | `3fe76e2dd3765bfa4e10afd5e4ad47bbfc64ebf62c14bf2fbb87f4a7c0f525ca` |
 
 The private publisher ZIP is
@@ -69,6 +71,13 @@ equivalently the log2 geometric mean of their linear ratios. It is null if any
 replicate is missing. It is not a ratio of arithmetic mean intensities. The
 valid-replicate count remains available even when a mean is missing.
 
+Each comparison separately records `detectionState`: `both`, `bait_only`,
+`control_only`, `neither`, or `invalid` for malformed intensity inputs. Every
+row and bait tab carries counts of these states. Here "detection" means only
+presence of a positive deposited LFQ intensity; it is not a protein-identification
+or interaction call. A bait-only comparison has a null ratio but retains its
+distinct detection state. No pseudocount or artificial infinite ratio is added.
+
 Diagnostics compare every source log against its positive intensity, every
 published ratio against its source logs, and every calculable ratio against
 the reconstruction. Absolute tolerance is `1e-7`, with zero relative tolerance.
@@ -97,6 +106,19 @@ reconstruction. All 4,875 published ratios agree with their cached log
 differences; this arithmetic agreement does not validate the source's handling
 of missing intensities.
 
+Of the 2,294 null comparisons, 784 are bait-only, 188 control-only and 1,322
+neither; no source input is invalid. Bait-only counts are RpaA 370, CikB 81,
+NblS 174 and ManS 159. This missingness is scientifically consequential: the
+`Common 3 replicates` lists in `mmc2`, columns A/B, contain 107 author-selected
+bait/protein entries. An exact accession join within each bait to `mmc1` finds
+90 bait-only in all three replicates and 101 missing means (RpaA 69/72,
+CikB 5/5, NblS 13/16, ManS 14/14). Only six have complete reconstructed means.
+These are author selections, not new calls or 107 unique proteins. Reproduce
+this check using nonblank column-B IDs under that heading, exact tab-local
+accession equality, and each matched row's detection counts and mean. A numeric
+ratio alone would hide roughly 94% of these selections; the detection state
+must remain accessible in any later release.
+
 The PRIDE `dataProcessingProtocol` states
 `missing intensity values were imputed using the “min” method`. This exact
 substring was mechanically matched against the pinned JSON on 2026-10-15.
@@ -108,8 +130,13 @@ substitute supplies a measured enrichment. Reconstruction leaves these pairs
 missing, while retaining the published values.
 
 The same protocol says “both CscB-SPS replicates,” also matched mechanically,
-whereas the workbook has A/B/C columns and the existing article intake records
-three biological replicates. Preserve this source discrepancy. Supplement
+whereas the workbook has A/B/C columns. The pinned article PDF, physical page 8
+(printed page 45), section 3.6, says: “Biotinylated proteins from three biological
+replicates for each strain were extracted using streptavidin beads”. On
+2026-10-15 this quote was matched after whitespace normalization against
+`pdftotext -f 8 -l 8` output and checked on the rendered page. This is a direct
+article receipt; the older condition intake did not establish the count.
+Preserve the discrepancy with the archive protocol. Supplement
 `mmc2` contains selected interactor lists and `mmc4` an RpaA pull-down context
 table; neither supplies per-row p-values. Those selection calls are separate
 evidence and are not inferred by this reader.

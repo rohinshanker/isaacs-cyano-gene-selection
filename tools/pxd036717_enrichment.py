@@ -25,6 +25,7 @@ SOURCE_FILE = "1-s2.0-S1096717623001490-mmc1.xlsx"
 SOURCE_SHA256 = "287d5f49a71425ba2b085a7070053a34f9f17219833663e1231ea3ab81d86804"
 BAITS = ("RpaA", "CikB", "NblS", "ManS")
 REPLICATES = ("A", "B", "C")
+DETECTION_STATES = ("both", "bait_only", "control_only", "neither", "invalid")
 ABS_TOLERANCE = 1e-7
 
 
@@ -60,6 +61,7 @@ def reconstruct_comparison(
     """
     flags = []
     logs = []
+    invalid_intensity = False
     for arm, raw, published_log in (
         ("control", control, published_control_log2),
         ("bait", bait, published_bait_log2),
@@ -68,6 +70,7 @@ def reconstruct_comparison(
             flags.append(f"missing_{arm}_intensity")
         elif not _finite_number(raw) or raw < 0:
             flags.append(f"invalid_{arm}_intensity")
+            invalid_intensity = True
         raw_log = math.log2(raw) if _finite_number(raw) and raw > 0 else None
         logs.append(raw_log)
         if not _finite_number(published_log):
@@ -90,7 +93,16 @@ def reconstruct_comparison(
             published_ratio, reconstructed, rel_tol=0, abs_tol=ABS_TOLERANCE
         ):
             flags.append("published_ratio_disagrees_with_reconstruction")
-    return {"reconstructedLog2Ratio": reconstructed, "flags": flags}
+    if invalid_intensity:
+        detection = "invalid"
+    elif logs[0] is not None:
+        detection = "both" if logs[1] is not None else "control_only"
+    else:
+        detection = "bait_only" if logs[1] is not None else "neither"
+    return {
+        "reconstructedLog2Ratio": reconstructed,
+        "detectionState": detection, "flags": flags,
+    }
 
 
 def _source_cell(cell: Any, cached: Any, coordinate: str) -> dict[str, Any]:
@@ -155,14 +167,16 @@ def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[
             counts = Counter()
             ids = Counter()
             valid_by_replicate = Counter({rep: 0 for rep in REPLICATES})
-            for number, (source, values) in enumerate(zip(source_rows, cached_rows, strict=True), 2):
+            row_pairs = zip(source_rows, cached_rows, strict=True)
+            for number, (source, values) in enumerate(row_pairs, 2):
                 if any(cell.value is not None for cell in source[32:]):
                     raise ValueError(f"{sheet.title}:{number}: populated extra column")
                 if all(cell.value is None for cell in source):
                     table["blankRows"].append(number)
                     continue
                 identifier = source[0].value
-                if not isinstance(identifier, str) or not identifier.strip() or source[0].data_type == "f":
+                if (not isinstance(identifier, str) or not identifier.strip()
+                        or source[0].data_type == "f"):
                     raise ValueError(f"{sheet.title}:A{number}: missing/nonliteral identifier")
                 ids[identifier] += 1
                 cells = [
@@ -186,9 +200,13 @@ def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[
                     comparisons.append(comparison)
                 ratios = [c["reconstructedLog2Ratio"] for c in comparisons]
                 complete = all(value is not None for value in ratios)
+                detection_counts = Counter({state: 0 for state in DETECTION_STATES})
+                detection_counts.update(c["detectionState"] for c in comparisons)
                 table["rows"].append({
                     "row": number, "accession": identifier, "cells": cells,
-                    "comparisons": comparisons, "validReplicates": sum(v is not None for v in ratios),
+                    "comparisons": comparisons,
+                    "validReplicates": sum(v is not None for v in ratios),
+                    "detectionCounts": dict(detection_counts),
                     "meanLog2Ratio": math.fsum(ratios) / 3 if complete else None,
                 })
             if not table["rows"]:
@@ -198,8 +216,16 @@ def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[
                 "completeMeans": sum(row["meanLog2Ratio"] is not None for row in table["rows"]),
                 "flags": dict(sorted(counts.items())),
                 "duplicateAccessions": {key: count for key, count in ids.items() if count > 1},
-                "multiAccessionRows": [row["row"] for row in table["rows"] if ";" in row["accession"]],
-                "formulaCells": sum(cell["type"] == "f" for row in table["rows"] for cell in row["cells"]),
+                "multiAccessionRows": [
+                    row["row"] for row in table["rows"] if ";" in row["accession"]
+                ],
+                "formulaCells": sum(
+                    cell["type"] == "f" for row in table["rows"] for cell in row["cells"]
+                ),
+                "detectionCounts": {
+                    state: sum(row["detectionCounts"][state] for row in table["rows"])
+                    for state in DETECTION_STATES
+                },
             }
             document["sheets"].append(table)
     return document
@@ -211,7 +237,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--input", type=Path, required=True, help="Pinned mmc1.xlsx")
     parser.add_argument("--output", type=Path, required=True, help="Non-release evidence JSON")
     args = parser.parse_args(argv)
-    if args.input.resolve() == args.output.resolve():
+    if (args.input.resolve() == args.output.resolve()
+            or (args.output.exists() and args.output.samefile(args.input))):
         parser.error("output must not overwrite the source workbook")
     document = read_workbook(args.input.read_bytes())
     text = json.dumps(document, indent=2, ensure_ascii=False, allow_nan=False) + "\n"

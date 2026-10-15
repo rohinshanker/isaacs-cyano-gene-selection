@@ -34,9 +34,22 @@ admission and rendered checks remain in the parent ticket.
 
 ## Verification
 
-Pending: focused parser/reconstruction fixtures; direct workbook audit;
-independent exact-patch review; `npm test`, Python `pytest -q`, and
-`tools/validate_contract.py`.
+Initial implementation `57c8771`: 32 focused tests; full gates pass (1,653
+JavaScript tests, 2,334 Python tests plus 51 subtests / 23 skips; contract
+130 passes / one skip). DEM-422 independently verified source counts and
+arithmetic. DEM-424 approved the non-release math/preservation but raised:
+
+- F1: explicit detection states and counts required for one-arm detections;
+  implementation added, recheck pending. The related browser choice remains
+  open as PXD-DETECTION in the parent; no imputation is authorized.
+- F2: replace unsupported prior-intake reference with direct article quote,
+  page/date/hash; added and mechanically verified, recheck pending.
+- F3: missing-log/present-ratio branch test; added, recheck pending.
+- F4: hardlinked output could overwrite source; same-file check and regression
+  added, recheck pending.
+
+Current focused suite: 44 passing including the pinned workbook. Rerun full
+gates and obtain independent review of the repair before closure.
 
 ## Cleanup
 
