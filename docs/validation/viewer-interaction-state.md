@@ -417,15 +417,27 @@ the Data Sources window in `subset` mode and stores the threshold's own list in
 `trafficSources` (`tds`), resolved with the same contributor resolver the axes
 use and pooled by `buildTypeMetrics`, the colouring's own rules. Colouring and
 its informing choice are never changed by it. A type that does not pool reads
-one dataset and says which. Loading or failed contributors are requested but
-left out of the calculation, and a notice outside the collapsed box says so.
+one dataset and says which. As in colouring, every requested dataset stays in
+the pool while it loads or after it fails; it contributes no value until it can
+be read, so the pool and its scale never change as files arrive, and a notice
+outside the collapsed box says which are missing.
 
 - An omitted `tds` means the threshold reads what the Data Sources selection
   gives its type, which is what every earlier link drew. Changing the threshold
-  metric drops the list, which belongs to the type it was made for.
-- A threshold is cleared only when its scale kind changes, from one deposit's
-  units to a pooled percentile or back (`trafficScaleKind`). A pooled percentile
-  is the same 0 to 1 scale whatever the pool size, so resizing a pool keeps it.
+  metric drops the list, which belongs to the type it was made for. The follow
+  switch is link state too: `tf=0` when off, omitted when on, so a reload never
+  replaces a saved own pool with the colouring's datasets.
+- `renderAll` settles the criteria before the mask: it applies follow-colour,
+  then clears a threshold whose scale kind changed (`reconcileTrafficScale`,
+  `trafficScaleKind`), whatever changed it: the threshold's datasets, the follow
+  switch, or the Data Sources selection colouring reads. One deposit's units are
+  never reapplied to a pooled percentile or back. A pooled percentile is the same
+  0 to 1 scale whatever the pool size, so resizing a pool keeps the threshold. A
+  link's threshold is taken on its own scale, never compared with the last view.
+- The bypass signature also covers the reader choices an active channel reads:
+  the enabled annotation sources behind a category selection, and whether a Tan
+  source is selected behind a neighbouring-site filter. While a bypassed slider
+  is dragged, the map's and chromosome's Filter status follow it live.
 - The explanation, every contributing source and condition, units, pooling
   method, coverage, the borrowed-strain caveat and archive links sit in one tan
   **Provenance** disclosure, closed by default, with no box nested inside it.

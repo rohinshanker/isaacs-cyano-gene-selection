@@ -55,6 +55,11 @@ test('the signature moves for every criterion and for nothing else', () => {
   const pools = (ids) => ({ contributorsOf: (key) => (key === 'gc3' ? ids : null) });
   assert.notEqual(filterCriteriaSignature(base, pools(['A'])), filterCriteriaSignature(base, pools(['A', 'B'])));
   assert.equal(filterCriteriaSignature(base, pools(['B', 'A'])), filterCriteriaSignature(base, pools(['A', 'B'])));
+  // Other reader choices an active channel reads are part of it too (R5).
+  const deps = (dependencies) => filterCriteriaSignature(base, { dependencies });
+  assert.notEqual(deps({ categorySources: ['a'] }), deps({ categorySources: ['a', 'b'] }));
+  assert.notEqual(deps({ neighborSources: true }), deps({ neighborSources: false }));
+  assert.equal(deps({ categorySources: null }), deps({ categorySources: null }));
   // Set order is not a change.
   assert.equal(
     filterCriteriaSignature({ ...base, categoryFilter: ['b', 'a'] }),

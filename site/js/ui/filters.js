@@ -481,6 +481,12 @@ export class FilterPanel {
       return;
     }
     this.trafficSync = null;
+    // A redraw replaces the Provenance box; keyboard focus inside it moves to
+    // the same control in its replacement rather than falling to the page.
+    const previousBox = this.trafficHost.querySelector('details.traffic-provenance-disclosure');
+    const focused = previousBox?.contains(document.activeElement) ? document.activeElement : null;
+    const boxFocus = !focused ? null : String(focused.tagName).toLowerCase() === 'summary'
+      ? { summary: true } : { link: [...previousBox.querySelectorAll('a')].indexOf(focused) };
     this.trafficHost.replaceChildren();
     if (candidates.length === 0) {
       const note = document.createElement('p');
@@ -593,7 +599,12 @@ export class FilterPanel {
 
     const values = metricValues(metric, state.count);
     const finite = sortedFinite(values);
-    this.trafficHost.append(this.trafficProvenance(metric, selection, following, finite.length, state.count));
+    const box = this.trafficProvenance(metric, selection, following, finite.length, state.count);
+    this.trafficHost.append(box);
+    if (boxFocus) {
+      const target = boxFocus.summary ? null : box.querySelectorAll('a')[boxFocus.link];
+      (target ?? box.querySelector('summary')).focus({ preventScroll: true });
+    }
 
     const range = state.filters[this.trafficKey];
     const current = range?.min ?? finite[0] ?? 0;

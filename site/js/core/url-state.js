@@ -44,7 +44,7 @@ const KEYS = {
   typeSources: 'src',
   fitnessDatasetId: 'fd',
   strainFitnessSources: 'fds',
-  axisXSources: 'xds', axisYSources: 'yds', trafficSources: 'tds',
+  axisXSources: 'xds', axisYSources: 'yds', trafficSources: 'tds', trafficFollowsColor: 'tf',
   hiddenMarkers: 'mk',
   neighborSiteFilter: 'ns', neighborSiteCountFilter: 'nc', overlapClassFilter: 'og', overlapLengthFilter: 'ol',
   pccEssentialityFilter: 'pe', filtersBypassed: 'fo',
@@ -181,6 +181,10 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // the Data Sources selection gives its type, which is what every earlier
     // link drew, so the encoder version did not move for it.
     trafficSources: null,
+    // Use same source as colouring. An omitted `tf` means on, the fresh view and
+    // what every earlier link drew; `tf=0` keeps an own threshold source, which
+    // a reload must not quietly replace with the colouring's datasets.
+    trafficFollowsColor: true,
     lengthCohort: 'annotated',
     proteinFilter: 'any',
     axisX: organism.freshAxes.x,
@@ -440,6 +444,7 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   if (Array.isArray(state.axisXSources) && state.axisXSources.length > 0) {
     push(KEYS.axisXSources, state.axisXSources.join(','));
   }
+  if (state.trafficFollowsColor === false) push(KEYS.trafficFollowsColor, '0');
   if (Array.isArray(state.trafficSources) && state.trafficSources.length > 0) {
     push(KEYS.trafficSources, state.trafficSources.join(','));
   }
@@ -613,6 +618,7 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
     state.axisXSources = values.get(KEYS.axisXSources).split(',')
       .filter((id) => /^[\w.-]+$/.test(id));
   }
+  if (values.has(KEYS.trafficFollowsColor)) state.trafficFollowsColor = values.get(KEYS.trafficFollowsColor) !== '0';
   if (values.has(KEYS.trafficSources)) {
     const ids = values.get(KEYS.trafficSources).split(',').filter((id) => /^[\w.-]+$/.test(id));
     state.trafficSources = ids.length ? ids : null;

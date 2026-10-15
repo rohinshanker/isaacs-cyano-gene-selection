@@ -162,3 +162,56 @@ test('the threshold section keeps its controls outside one collapsed Provenance 
     assert.match(following.querySelector('details').textContent, /reads the colouring metric itself/);
   });
 });
+
+test('Use same source as colouring is link state, so a saved own pool survives a reload (R1)', () => {
+  const state = { ...defaultState(), trafficKey: KEY, trafficSources: ['GSE9.5'], trafficFollowsColor: false };
+  const hash = encodeState(state);
+  assert.match(hash, /(^|&)tf=0(&|$)/);
+  const restored = applyDecoded(defaultState(), decodeState(hash));
+  assert.equal(restored.trafficFollowsColor, false);
+  assert.deepEqual(restored.trafficSources, ['GSE9.5']);
+  assert.ok(!encodeState(defaultState()).includes('tf='), 'following, the fresh view, writes nothing');
+  assert.equal(applyDecoded(defaultState(), decodeState('#ver=9&p=native')).trafficFollowsColor, true);
+});
+
+test('a pool with a contributor still loading keeps its pooled scale (R2)', () => {
+  const { all, metricOf } = fixture();
+  const resolve = createAxisContributorResolver();
+  const own = [all[1].id, all[2].id];
+  const loadingUnit = 'RPKM';
+  const readers = { metricOf, resourceStateOf: (m) => (m.unit === loadingUnit ? 'loading' : null) };
+  // As app.js builds it: every requested dataset with a registry metric.
+  const [threshold] = buildTypeMetrics(all, {
+    contributing: (key) => resolve(key, own, all, readers).requested.filter((d) => metricOf(d)),
+    metricOf: (d) => {
+      const metric = metricOf(d);
+      return metric.unit === loadingUnit ? { ...metric, read: () => Number.NaN } : metric;
+    },
+    geneCount: 4,
+  });
+  assert.equal(threshold.pooled, true, 'still a pool of two');
+  assert.equal(trafficScaleKind(threshold), 'pooled:percentile');
+  assert.ok(threshold.read(0) >= 0 && threshold.read(0) <= 1, 'a percentile, not raw units');
+});
+
+test('focus inside the Provenance box survives a redraw (R7)', async () => {
+  await withFakeDocument(async (document) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const panel = new FilterPanel(host, {
+      onChange: () => {}, onClear: () => {}, onExceptionFilterChange: () => {}, onExpressionFilterChange: () => {},
+      onTrafficKeyChange: () => {}, onTrafficFollowChange: () => {}, onProteinFilterChange: () => {},
+      onChooseTrafficDatasets: () => {},
+    });
+    panel.update(panelState());
+    const box = () => host.querySelector('section.traffic-filter').querySelector('details.tan-disclosure');
+    box().open = true;
+    box().dispatch('toggle');
+    box().querySelector('a').focus();
+    panel.update(panelState({ passing: 2 }));
+    assert.equal(document.activeElement, box().querySelector('a'), 'the link in the new box has focus');
+    box().querySelector('summary').focus();
+    panel.update(panelState({ passing: 1 }));
+    assert.equal(document.activeElement, box().querySelector('summary'));
+  });
+});

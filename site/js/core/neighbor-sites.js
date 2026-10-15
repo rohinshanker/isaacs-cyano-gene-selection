@@ -91,9 +91,14 @@ export function indexNativeSites(genes, records, organism) {
   return Object.freeze({ byGene, sites: Object.freeze(allSites), marks: Object.freeze(marks) });
 }
 
+/** Whether the reader's source selection lets the site evidence be used at all. */
+export function neighborSiteSourcesSelected(sources = []) {
+  return sources.some((id) => TAN_SOURCES.includes(id));
+}
+
 /** Selection gates evidence access; condition-specific scores never replace site coordinates. */
 export function neighborSiteModel(dataset, { sources = [], pending = null, sourcePending = null } = {}) {
-  const selected = sources.some((id) => TAN_SOURCES.includes(id));
+  const selected = neighborSiteSourcesSelected(sources);
   const index = dataset.neighborSites;
   const organism = organismOf(dataset);
   const declared = layerOf(organism, 'tssEvidence') && layerOf(organism, 'regulatoryTss');

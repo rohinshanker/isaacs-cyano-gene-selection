@@ -29,10 +29,14 @@ const sortedCopy = (value) => (Array.isArray(value) ? [...value].map(String).sor
  * requested them, never as loaded, so a file landing is not a change; without
  * it, the informing choice recorded in `typeSources` stands in.
  *
+ * `dependencies` names the other reader choices an active filter channel reads,
+ * such as the annotation sources behind a category selection; the caller
+ * includes one only while its channel is active.
+ *
  * @param {object} state
- * @param {{contributorsOf?: (key: string) => string[]|null}} [options]
+ * @param {{contributorsOf?: (key: string) => string[]|null, dependencies?: object}} [options]
  */
-export function filterCriteriaSignature(state, { contributorsOf } = {}) {
+export function filterCriteriaSignature(state, { contributorsOf, dependencies = null } = {}) {
   const filters = state.filters ?? {};
   const keys = Object.keys(filters).sort();
   const ranges = keys.map((key) => {
@@ -54,6 +58,7 @@ export function filterCriteriaSignature(state, { contributorsOf } = {}) {
     overlapClass: sortedCopy(state.overlapClassFilter),
     overlapLength: state.overlapLengthFilter ?? null,
     essentiality: sortedCopy(state.pccEssentialityFilter),
+    dependencies,
   });
 }
 
