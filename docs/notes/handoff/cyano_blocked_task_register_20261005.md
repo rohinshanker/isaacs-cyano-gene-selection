@@ -2,8 +2,11 @@
 
 Current BioCyc dispositions supersede this dated register: [the consolidated
 ticket](../tickets/O_biocyc-ortholog-annotations__20261014.md) records the
-2026-10-14 owner answers and carries BIO-01/02/03/05/06 forward. OWN-01/02/03
-are answered; MET-13 is superseded. The original register/TSV remain dated
+2026-10-14 owner answers and carries BIO-01/02/03/05 forward. BIO-06 is
+resolved by the [pinned product-text reader](../../validation/biocyc-annotations.md#ortholog-product-text-reader):
+46 product commas are decoded at use time while the original table stays
+unchanged. The TSV's intake fields record this disposition; its original
+observation remains. OWN-01/02/03 are answered; MET-13 is superseded. The original register/TSV remain dated
 evidence, not the live queue.
 
 Compiled 2026-10-05 by a read-only Claude Science session. Evidence and recommendation only: nothing here admits data, grants a licence, performs a locus join, settles a lab decision, or recommends closing or retiring any ticket. A blocked item is evidence plus an owner-facing question. Every location is `file:line` in the repository at commit `70bc590` plus the working tree as mounted; machine-readable form is `cyano_blocked_task_register_20261005.tsv` (one row per item, same ids).

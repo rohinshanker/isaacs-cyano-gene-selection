@@ -12,7 +12,7 @@ public-deployment-check sessions. This bounded correction is split from
 [BioCyc annotations](O_biocyc-ortholog-annotations__20261014.md), which remains
 open for its separate access, source, join and admission dependencies.
 
-**BIO-06 — open:** 46 of the 2,715 product values retain GFF `%2C` escapes.
+**BIO-06 — resolved by `3c5fac8`:** 46 of the 2,715 product values retain GFF `%2C` escapes.
 Use-time decoding is already specified by the
 [BioCyc contract](../../validation/biocyc-annotations.md). Keep the frozen
 returned table and its checksum unchanged. Decode only encoded commas in the
@@ -32,8 +32,17 @@ product column, once; preserve every other field, row order and literal plus.
 
 ## Verification
 
-Pending implementation, focused tests, full repository gates and coordinator
-review of the exact patch. No visible UI change is intended.
+Multica DEM-418 implemented `ac50f4b`, integrated as `3c5fac8`. Coordinator
+`cyano-regulatory-sites` reviewed both files independently and found no remaining
+implementation defect. All 37 focused tests pass. An independent byte-level
+export check confirms exactly 46 comma substitutions, every other byte unchanged,
+and all 2,715 decoded products equal the existing native gene product strings.
+The source still has SHA-256
+`e49f7d8f7d328cfc3b7e4e9f50c4a802f450f32cbc782b8fd9428eb3a01ec861`.
+
+JavaScript gate: 1,635 passed. Contract gate: 130 passed, zero failed, one
+declared spliced-CDS exemption. Full Python gate and final remote integration
+remain pending. No visible UI or release dataset changed.
 
 ## Cleanup
 
