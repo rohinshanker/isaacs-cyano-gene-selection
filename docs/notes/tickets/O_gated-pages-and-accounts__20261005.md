@@ -26,7 +26,7 @@ ACC-01, ACC-02, ACC-04, ACC-06, BIO-01 to BIO-03, BIO-07, LIC-01, LIC-02.
 | BioCyc summary pages | page-view metering redirects to an account page | Owner logs in with their own account in their own browser, checks whether Yale holds a subscription, and exports the wanted pages or files | None. No agent creates an account or drives a logged-in session. If the owner later wants an agent to use a session, that is a separate, disclosed decision, after the BioCyc terms are quoted |
 | BioCyc and KEGG reuse terms | never quoted | — | The public licence pages are readable. Queue a terms-quotation claim; the permission decision is the ledger's |
 | GtRNAdb, GSE225426, GSE311172 | no terms published anywhere | Owner writes to the maintainers or depositors; a draft is prepared for each. A reply is quoted with its date | None |
-| Deployed site against the audited tree | never compared | — | The agents fetch the deployed bundle and compare file hashes with the tree. Entirely in-repository work |
+| Deployed site against the audited tree | independent of source access | — | Reusable selected-file comparison is handled by [the deployed-content check](A_deployed-content-check__20261014.md); workflow and browser checks remain in the [release gate](../../validation/release-gate.md#publish-and-smoke-test) |
 
 ## Decisions for the owner
 
