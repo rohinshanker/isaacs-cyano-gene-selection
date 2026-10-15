@@ -1,6 +1,57 @@
+import { compareFoldingWindow } from '../core/folding-comparison.js';
 import { FoldingClient } from '../core/folding-client.js';
 import { serializeSchemeMap } from '../core/scheme.js';
 import { RosettaHandoffPanel } from './rosetta-handoff-panel.js';
+
+/** A compact, keyboard-scrollable alignment; every column is a window position. */
+function comparisonDetails(value, comparison, label) {
+  const details = document.createElement('details');
+  details.className = 'folding-comparison';
+  const summary = document.createElement('summary');
+  summary.textContent = `${label}: aligned sequence and structure details`;
+  const note = document.createElement('p');
+  note.textContent = 'Positions are 1-based within this window, not genomic coordinates. WT = original. ^ = pairing partner changed; * = nucleotide edited. Dots are unpaired; matching parentheses form a pair. Scroll horizontally for all positions.';
+  const changes = document.createElement('p');
+  changes.textContent = `Pairing-changed positions: ${comparison.pairingChanged.join(', ') || 'none'}. Nucleotide-edited positions: ${comparison.sequenceChanged.join(', ') || 'none'}.`;
+  details.append(summary, note, changes);
+  let built = false;
+  // Large shortlists keep their per-base DOM out of the collapsed view.
+  details.addEventListener('toggle', () => {
+    if (!details.open || built) return;
+    built = true;
+    const alignment = document.createElement('pre');
+    alignment.className = 'folding-alignment';
+    alignment.tabIndex = 0;
+    alignment.setAttribute('role', 'region');
+    alignment.setAttribute('aria-label', `${label}: window-relative sequence and dot-bracket alignment`);
+    const rows = [
+      ['Position', Array.from({ length: value.length }, (_, i) => String(i + 1))],
+      ['WT RNA', [...value.wildSequence]], ['Recoded RNA', [...value.recodedSequence]],
+      ['WT structure', [...value.wildStructure]], ['Recoded structure', [...value.recodedStructure]],
+      ['Pairing change', Array.from({ length: value.length }, (_, i) => comparison.pairingChanged.includes(i + 1) ? '^' : ' ')],
+      ['Sequence edit', Array.from({ length: value.length }, (_, i) => comparison.sequenceChanged.includes(i + 1) ? '*' : ' ')],
+    ];
+    for (const [name, symbols] of rows) {
+      const row = document.createElement('span');
+      row.className = 'folding-alignment-row';
+      const heading = document.createElement('span');
+      heading.textContent = name.padEnd(19);
+      row.append(heading);
+      symbols.forEach((symbol, i) => {
+        const base = document.createElement('span');
+        const pairing = comparison.pairingChanged.includes(i + 1);
+        const edited = comparison.sequenceChanged.includes(i + 1);
+        base.textContent = symbol.padStart(4);
+        base.className = `${pairing ? 'folding-pair-change' : ''} ${edited ? 'folding-sequence-edit' : ''}`.trim();
+        base.title = `Window position ${i + 1}: WT partner ${comparison.wildPartners[i] || 'unpaired'}, recoded partner ${comparison.recodedPartners[i] || 'unpaired'}; ${pairing ? 'pairing changed' : 'pairing unchanged'}; ${edited ? 'nucleotide edited' : 'nucleotide unchanged'}.`;
+        row.append(base);
+      });
+      alignment.append(row);
+    }
+    details.append(alignment);
+  });
+  return details;
+}
 
 /** A changed input only invalidates something after the user has actually started a fold. */
 export function foldInputsInvalidateResult(previousSignature, nextSignature, hasStarted) {
@@ -30,6 +81,7 @@ export class FoldingPanel {
       <p class="panel-note">Minimum free energy (MFE) predicts the most stable RNA secondary structure in a sequence window. More negative energy means a more stable predicted structure. ΔMFE is recoded minus wild type: positive means less stable; negative means more stable.</p>
       <p class="panel-note">Two windows are folded: genomic −30:+60 around the translation start (90 nt, wrapping circular replicon boundaries) and the first 100 CDS nt, or the whole CDS if shorter. Only selected CDS positions are recoded; other genomic bases remain wild type. Shared bases in overlapping neighbors can change. The initiation triplet is preserved, including non-ATG starts; a mapped terminal stop remains a stop.</p>
       <p class="panel-note">Folding is calculated on request to keep the map responsive. These are unconstrained, linear RNA predictions, not measured structures or expression. They omit cellular conditions, RNA–protein interactions, pseudoknots, and effects outside the windows. Overlaps can affect neighboring proteins; synonymous recoding here does not guarantee neighbor safety.</p>
+      <p class="panel-note">The comparison uses one predicted MFE structure per sequence. Retained pairs occur in both structures; lost pairs occur only in WT; gained pairs occur only in recoded. Base-pair distance is lost + gained (<a href="https://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/html/utils/struct/metrics.html">ViennaRNA definition</a>). Pairing changes compare partner positions, separately from nucleotide edits. These counts are not accessibility probabilities, functional effects, or harm scores.</p>
       <p class="panel-note">ViennaRNA 2.7.2 · Turner 2004 · 37 °C · dangles 2 · salt 1.021 M · GU and lonely pairs allowed · minimum loop 3 · no G-quadruplexes. <a href="vendor/viennarna/PROVENANCE.md">Engine source, license, and build</a>. Credit: ViennaRNA authors and the Institute for Theoretical Chemistry, University of Vienna.</p>
     </details>
     <p class="panel-note" role="status" aria-live="polite" data-fold-status></p>
@@ -85,10 +137,19 @@ export class FoldingPanel {
         item.append(error);
       } else {
         for (const [key, label] of [['start', 'Start −30:+60'], ['first100', 'First CDS nt']]) {
-          const value = result.windows[key];
+          const value = result.windows?.[key];
           const line = document.createElement('p');
-          line.textContent = `${label} (${value.length} nt): WT ${value.wildMfe.toFixed(2)} → recoded ${value.recodedMfe.toFixed(2)}; Δ ${value.delta >= 0 ? '+' : ''}${value.delta.toFixed(2)} kcal/mol`;
+          const validEnergy = value && [value.wildMfe, value.recodedMfe, value.delta].every(Number.isFinite);
+          line.textContent = validEnergy ? `${label} (${value.length} nt): WT ${value.wildMfe.toFixed(2)} → recoded ${value.recodedMfe.toFixed(2)}; Δ ${value.delta >= 0 ? '+' : ''}${value.delta.toFixed(2)} kcal/mol` : `${label}: energy unavailable.`;
           item.append(line);
+          const comparison = compareFoldingWindow(value);
+          const counts = document.createElement('p');
+          counts.className = 'folding-pair-summary';
+          counts.textContent = comparison
+            ? `Predicted pairs: ${comparison.retained.length} retained · ${comparison.lost.length} lost · ${comparison.gained.length} gained. Base-pair distance ${comparison.distance}. Pairing changed at ${comparison.pairingChanged.length} positions; ${comparison.sequenceChanged.length} nucleotide edits.`
+            : 'Structure comparison unavailable: missing or invalid sequence/structure output.';
+          item.append(counts);
+          if (comparison) item.append(comparisonDetails(value, comparison, label));
         }
       }
       this.results.append(item);

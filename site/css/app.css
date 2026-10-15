@@ -1831,6 +1831,12 @@ input[type="range"] { width: 100%; }
 .folding-panel progress { max-width: 100%; width: 100%; }
 .folding-result { margin-block: .75rem; font-size: .8rem; overflow-wrap: anywhere; }
 .folding-result p { margin-block: .25rem; }
+.folding-comparison { min-width: 0; margin-block: .35rem .75rem; }
+.folding-alignment { max-width: 100%; white-space: pre; overflow-wrap: normal; font-size: .75rem; }
+.folding-alignment-row { display: block; width: max-content; }
+.folding-alignment-row > span:first-child { position: sticky; left: 0; display: inline-block; background: var(--surface-sunken); }
+.folding-pair-change { background: var(--accent-soft); font-weight: 700; }
+.folding-sequence-edit { text-decoration: underline; text-decoration-thickness: 2px; }
 .rosetta-handoff { border-top: 1px solid var(--line); margin-top: 1rem; padding-top: .75rem; min-width: 0; }
 .rosetta-handoff h3 { margin-top: 0; }
 .rosetta-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .55rem; margin-bottom: .55rem; }

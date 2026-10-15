@@ -51,6 +51,14 @@ async (page) => {
     await fold.click();
     await page.waitForFunction(() => document.querySelector('[data-fold-status]').textContent.includes('10 cache hits'));
 
+    // Exercise the lazy per-base comparison on a real worker result.
+    const comparison = region.locator('.folding-comparison').first();
+    await comparison.locator('summary').click();
+    await comparison.locator('.folding-alignment').waitFor({ state: 'visible' });
+    check((await comparison.innerText()).includes('not genomic coordinates'), 'comparison positions are window-relative');
+    await comparison.locator('summary').click();
+    check(!await comparison.locator('.folding-alignment').isVisible(), 'comparison collapses');
+
     // Real worker parity, including synthetic boundaries not present in this genome.
     const parity = await page.evaluate(async () => {
       const { FoldingClient } = await import('./js/core/folding-client.js');
@@ -357,6 +365,12 @@ async (page) => {
       await standalone.run();
       if (!standalone.status.textContent.startsWith('Finished')) {
         throw new Error('standalone activity passthrough failed');
+      }
+      standalone.renderResults([{ id: 'missing-window-output' }]);
+      if (!standalone.results.textContent.includes('energy unavailable')
+          || !standalone.results.textContent.includes('Structure comparison unavailable')
+          || standalone.results.querySelector('.folding-comparison')) {
+        throw new Error('missing outputs must be unavailable, with no fabricated comparison');
       }
       standaloneHost.remove();
       return 'duplicate, changed-input cancellation, stale progress/success/error, activity cleanup, standalone passthrough, and missing optional scheme passed';
