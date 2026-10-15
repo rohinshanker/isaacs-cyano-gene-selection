@@ -5,9 +5,15 @@
   types and evidence requirements before choosing or implementing the metric.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-14
+- **Updated:** 2026-10-15
 
 ## Current State
+
+Owner confirmed 2026-10-15: ship the TSS sequence-edit counts first. The
+[active implementation slice](A_tss-recoding-edit-counts__20261015.md) is owned by
+`cyano-regulatory-sites`. It compares actual bases at admitted Tan TSS positions;
+new-promoter predictions and other regulatory-site calculations remain here.
+
 
 Owner decision, 2026-10-14 (D9): **no data / not evaluated is distinct from
 zero detected changes**. Preserve a site's original location when recoding
