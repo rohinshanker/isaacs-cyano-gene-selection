@@ -3,7 +3,7 @@
 - **Scope:** Owner/labmate follow-up with depositors for remaining condition and sample-identity questions; evidence intake after replies.
 - **Status:** open
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-14
 
 ## Current State
 
@@ -30,11 +30,14 @@ the owner's citation-only distribution decision of 2026-10-06 applies.
 
 ### GSE50920 / GSE50922 — temperature of clock-rescue flask cultures
 
-**Sent by the owner on 2026-10-07, according to repository record `3bd7dd0`.**
-No reply is recorded. Do not resend this retained query without a new owner
-instruction. J2 remains conditional pair 33 and its temperature remains unknown.
-This status reconciles the earlier “prepared, not sent” heading; it does not
-claim a new mail-access verification.
+The owner sent the O'Shea-lab version on 2026-10-07, according to repository
+record `3bd7dd0`. That version is retained in
+`3bd7dd0^:docs/validation/AAA-next-steps.md`, section 4: it asks about flask
+temperature and the turbidostat lamp. No reply is recorded. The fuller draft
+below, including GSE50922/GSM scope and protocol questions, was not sent; do not
+send it without a new owner instruction. J2 remains conditional pair 33, and
+temperature and lamp identity remain unknown. Intake any reply only within the
+scope it actually establishes.
 
 Hello,
 
