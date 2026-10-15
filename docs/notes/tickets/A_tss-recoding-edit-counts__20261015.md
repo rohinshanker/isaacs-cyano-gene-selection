@@ -10,8 +10,9 @@ Updated: 2026-10-15
 Owner: `cyano-regulatory-sites` (AgentDeck `e6e54b6e-1791581192`). Isolated
 worktree `worktrees/tss-recoding-changes-20261015`, baseline `cccd4a8`.
 Other sessions' unknown-function work, source admissions and model work are outside
-this scope. Multica DEM-421 is a read-only integration scout; the coordinator owns
-implementation routing, integration and closure.
+this scope. Multica DEM-421 completed the read-only integration map; DEM-423 owns the
+implementation in its separate worktree. The coordinator owns independent
+release-data enumeration, integration documentation, review and closure.
 
 Owner confirmed 2026-10-15: **ship the TSS edit counts first**. This is the
 first slice of [regulatory-site changes](O_recoding-regulatory-site-change__20260930.md).
