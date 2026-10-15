@@ -185,5 +185,11 @@ test('the Filters panel shows the saved range, reports edits, and offers Clear a
     assert.equal(ranges.at(-1), null, 'two blank fields are no range');
     panel.update({ ...base, neighborSiteCountFilter: null });
     assert.equal(clear.disabled, true);
+    // Unreadable evidence: no new range, but a saved one can still be cleared.
+    const unavailable = modelFor(genes, [site(20, '+')], { sources: [] });
+    panel.update({ ...base, neighborSites: unavailable, neighborSiteCountFilter: null });
+    assert.equal(field('min').disabled, true);
+    panel.update({ ...base, neighborSites: unavailable, neighborSiteCountFilter: { min: 1, max: null } });
+    assert.equal(field('min').disabled, false);
   });
 });

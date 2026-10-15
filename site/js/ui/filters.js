@@ -895,6 +895,9 @@ export class FilterPanel {
       input.step = '1';
       input.inputMode = 'numeric';
       input.value = range?.[bound] == null ? '' : String(range[bound]);
+      // Like With and Without, no range can be set on evidence that cannot be
+      // read; a saved one stays editable so it can be cleared.
+      input.disabled = !model?.available && !range;
       input.addEventListener('change', () => {
         const read = (field) => (field.value === '' ? null : Number(field.value));
         this.handlers.onNeighborSiteCountFilterChange?.(normalizeNeighborSiteCountFilter({
