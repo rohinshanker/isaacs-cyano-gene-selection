@@ -128,6 +128,10 @@ number of axes passed.
 
 ## 7. PXD030282 (PCC 7942; proteomics (LC-MS/MS)) against PXD062851 (PCC 7942; proteomics (LC-MS/MS))
 
+**Current owner decision — Rohin, 2026-10-14:** keep separate. Response D8,
+“remain separate,” applies to this pair. It supersedes the earlier undecided
+entry/extrapolation; the original review entry and condition evidence remain below.
+
 - **Data type:** proteomics
 - **Screen verdict:** escalate; 3 of 6 axes passed; marginal axis: light_intensity (narrow)
 - **A:** condition table row 72, Standard growth/cultivation condition (L1118 and engineered strains, flask/Roux bottle stage)
@@ -147,6 +151,10 @@ number of axes passed.
 - **Basis:**
 
 ## 8. PXD030282 (PCC 7942; proteomics (LC-MS/MS)) against PXD062851 (PCC 7942; proteomics (LC-MS/MS))
+
+**Current owner decision — Rohin, 2026-10-14:** keep separate. Response D8,
+“remain separate,” applies to this pair. It supersedes the earlier undecided
+entry/extrapolation; the original review entry and condition evidence remain below.
 
 - **Data type:** proteomics
 - **Screen verdict:** escalate; 3 of 6 axes passed; marginal axis: light_intensity (narrow)

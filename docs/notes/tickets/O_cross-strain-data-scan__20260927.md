@@ -8,9 +8,14 @@
   `site/`.
 - **Status:** open
 - **Opened:** 2026-09-27
-- **Updated:** 2026-10-12
+- **Updated:** 2026-10-14
 
 ## Current state
+
+Owner direction, 2026-10-14: add general annotation search/open support for
+noncoding genes and pseudogenes outside CDS-only metrics/recoding, distinguish
+hypothetical-protein function status, and keep the native PCA. The implementation
+scope is under “Reference-view decisions and implementation scope” below.
 
 The data contract admits PCC 6301, PCC 6311, PCC 7942, PCC 7943, and UTEX 3055 as
 sister strains of UTEX 2973 for gene annotations, transcriptomics, proteomics,
@@ -711,19 +716,25 @@ exact denominators and caveats. Remaining admission, additional statistical work
 and distribution-comparison presentation stay with the dedicated Data Sources
 ticket; this parent does not reassign them.
 
-## Open questions for the lab
+## Reference-view decisions and implementation scope
 
 The default-selection and disagreement questions formerly numbered 1 and 2 were
 answered by the 2026-10-05 design above: standard-group plus existing-layer
 selection, separate source values and a visible conflict. They are not new gates.
 
-- **Scope of the reference.** The plotted/selectable set remains the screened CDSs.
-  Noncoding annotation context does not turn this into general annotation lookup
-  or admit those loci as recoding candidates. A broader selectable reference set
-  still needs its own decision and schema work.
-- **PCA retirement.** No retirement is authorized by this task. The chromosome view
-  remains its own tab alongside the native PCA and other existing views; deleting
-  a view and its audit trail still requires the owner's explicit decision.
+- **Scope of the reference, owner answer 2026-10-14 (D10).** Include hypothetical
+  proteins and distinguish them clearly. Hypothetical proteins are predicted
+  protein-coding genes with unknown function; they must not be labelled noncoding.
+  After reviewing current behavior, the owner chose **add general annotation
+  search/open support** for noncoding genes and pseudogenes. Apply this consistently
+  across organism views, while keeping those records outside CDS-only metrics,
+  filters, shortlist/recoding candidates and codon-based projections. Opening an
+  annotation must not fabricate protein metrics or silently pin a CDS. Preserve
+  existing neighbor/overlap context and the separate tRNA browser. Hypothetical
+  proteins already belong to the CDS population; distinguish unknown function
+  from known function without reclassifying them as noncoding.
+- **PCA, decided 2026-10-14 (D10).** Keep the native codon-space PCA alongside the
+  chromosome view. No PCA removal is requested; existing live PCAs also remain.
 
 ## Verification
 

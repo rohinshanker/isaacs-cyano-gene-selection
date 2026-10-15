@@ -34,7 +34,7 @@ scoring, 941 pairs, none comparable under the thresholds alone) and
 | J7 | The literature offers no numerical comparability threshold. Set one, or judge case by case? | **Decided 2026-10-05, owner,** through the confirmed instruction: no pass mark, a person judges each pair from the statistics and the conditions | Nothing, unless a number is wanted after all |
 | J8 | No cross-study sample pair reaches the replicate band. Is pooling levels across studies off the table unless the data are reprocessed uniformly? | **Decided 2026-10-05, owner:** proceed with reprocessing | Nothing |
 | J9 | Is condition-resolved fitness (RB-TnSeq, GSE205443) a wanted data type? | **Decided 2026-10-05, owner:** yes, in its own tab. Admitted as a data type in the data contract; the work is [O_fitness-screen-data-type__20261005](../../validation/fitness-screen-data.md) | Nothing |
-| J10 | The 32 escalated pairs, one by one: may each share a layer? | **Reviewed 2026-10-05, owner:** 23 may share, 5 keep separate, 1 undecided, 3 left blank; three of the 23 are qualified or conditional (pairs 9, 10 and 24). The table is in section 1b | Pairs 8, 11 and 30 were extrapolated on 2026-10-05 at the owner's instruction (8 undecided as pair 7, 11 and 30 may share); pair 7 stays the owner's "maybe" |
+| J10 | The 32 escalated pairs, one by one: may each share a layer? | Original review and authorized extrapolations retained; **Rohin, 2026-10-14:** pairs 7 and 8 keep separate | No unanswered 7/8 decision remains; 11 and 30 retain may-share extrapolations |
 
 Also decided 2026-10-05 and recorded in the contract: decisions D1 to D5 of your
 2026-10-04 instruction stand as written; any number of datasets may be shown at
@@ -72,18 +72,18 @@ The questions are verbatim from the earlier list.
 
 | Id | Question, in short | Holds |
 | --- | --- | --- |
-| Q1 | Do PCC 6311, PCC 7943 and UTEX 3055 have a comparative use, such as UTEX 3055 as an outgroup for conservation? | Three BioCyc tickets with no database behind them |
-| Q2 | One ortholog-annotation ticket organised by database, or six per-strain BioCyc tickets? | All six BioCyc tickets |
+| Q1 | Comparative work for PCC 6311, PCC 7943 and UTEX 3055? | **Decided 2026-10-14:** drop these proposed scopes for now; existing data/crosswalks remain |
+| Q2 | One BioCyc/ortholog ticket or six strain tickets? | **Decided 2026-10-14:** consolidate into [one ticket](../tickets/O_biocyc-ortholog-annotations__20261014.md) |
 | Q3 | For tRNA, are the three dropped candidates and score breakdown wanted, and does "how likely" mean the tool score or a calibrated probability? | tRNA viewer ticket |
-| Q4 | Is a clearly labelled predicted pathway and operon layer for UTEX 2973 wanted? | BioCyc UTEX 2973 ticket |
-| Q5 | Is curated PCC 7942 pathway and regulatory content wanted as a transferred layer? | BioCyc PCC 7942 ticket |
-| Q6 | Is curated *E. coli* context on already-named loci worth a display layer, or export only? | Proposed ortholog work |
+| Q4 | UTEX predicted pathways/operons? | **Decided 2026-10-14:** include, with precedence over PCC 7942 and disclosed disagreements |
+| Q5 | Curated PCC 7942 transferred annotations? | **Decided 2026-10-14:** include alongside UTEX at lower priority |
+| Q6 | E. coli context on mapped loci? | **Decided 2026-10-14:** lower-priority viewer gap-fill only where UTEX/PCC lack coverage; disclose disagreements |
 | Q7 | Port RBS Calculator v1.0, or assess a current version or another model? | RBS ticket |
-| Q8 | Wait for Bouchet, or benchmark the Mac mini and Jetson first? | Folding backend ticket; also where reprocessing runs |
-| S3 | Is the audience the recoding-panel workflow or general *S. elongatus* lookup? | Scan ticket; a schema change if the second |
-| S4 | Is the native codon-space PCA retired now that the chromosome tab exists, and do the live risk and perturbation PCAs stay? | Scan ticket; row 9 |
+| Q8 | Folding workload and backend? | Bouchet access available since 2026-10-07; **2026-10-14:** RNA folding/accessibility/mRNA structure first, including original/recoded comparison if feasible. Host route, service audience/scale and workspace setup remain |
+| S3 | Broader annotation lookup? | **Decided 2026-10-14:** add general noncoding/pseudogene search/open consistently across organisms, outside CDS-only metrics and recoding; hypothetical proteins remain CDSs |
+| S4 | Retire native codon-space PCA? | **Decided 2026-10-14:** keep it; no existing PCA removal |
 | R1 to R8 | The eight clarifying questions of the regulatory-site viewer, starting with which toggle types come first | Regulatory-site viewer ticket |
-| C1 | Which regulatory-site types should the recoding metric consider first? | Recoding ticket, one answer from starting |
+| C1 | Which regulatory types and missingness? | **Answered inline in the metric ticket:** all proposed types plus cryptic promoters, per-gene changed/added counts, active scheme versus original, no minimum coverage; **2026-10-14:** no data/not evaluated differs from zero |
 | A3 | Keep the live PCAs' mean-imputation of a missing cell, or drop such a gene as the precomputed maps do? | Audit-fixes ticket, contract wording |
 | T1 | Ratify the list of changes that must be verified before landing, now that Claude Science is the last resort | Topology ticket |
 
@@ -113,9 +113,9 @@ Nothing below waits on a further answer. The order is by how much each releases.
 
 **Needs you present or your answer first.**
 
-- The BioCyc session: you sign in, an agent reads the pages with you there. Q2
-  first, since it decides which pages.
-- Q1 and Q2 together decide six tickets. C1 starts the recoding ticket. Row 12 has
-  waited longest.
+- Authenticated BioCyc content still needs the owner-present session. Q2/Q4/Q5/Q6
+  are answered; use the consolidated ticket to identify exact required pages.
+- BioCyc consolidation and recoding scope are decided. Row 12 (derived categories)
+  remains a separate unanswered review item.
 - The UI clutter walk, later:
   [O_ui-clutter-human-audit__20261005](../tickets/O_ui-clutter-human-audit__20261005.md).

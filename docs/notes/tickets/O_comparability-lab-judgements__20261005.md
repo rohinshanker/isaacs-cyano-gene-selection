@@ -6,9 +6,18 @@
   small generator under `tools/`. Decides nothing itself.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-10
+- **Updated:** 2026-10-14
 
 ## Current state
+
+Owner decision, 2026-10-14 (D8): **keep pairs 7 and 8 separate**: PXD030282
+condition rows 72 and 74 against PXD062851 row 77. This supersedes pair 7's
+“maybe” and pair 8's extrapolated undecided outcome. The question identified
+75-to-100 versus 50 µmol photons m⁻² s⁻¹ and the changing-light concern;
+the owner's answer was “remain separate.” No new culture condition is inferred.
+The decision is also recorded in the pair sheet and lab decision document.
+Pairs 11 and 30 retain the previously authorized “may share” extrapolations.
+No dataset values or browser grouping were changed by this documentation pass.
 
 Opened at the owner's request. Package D (returned 2026-10-04, intake pending; its
 counts were recomputed here 2026-10-05) scored 941 dataset pairs against

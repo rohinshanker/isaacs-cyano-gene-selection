@@ -5,27 +5,41 @@
   types and evidence requirements before choosing or implementing the metric.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-14
 
 ## Current State
+
+Owner decision, 2026-10-14 (D9): **no data / not evaluated is distinct from
+zero detected changes**. Preserve a site's original location when recoding
+alters or removes its candidate match. A missing evaluation is not a lost site.
+D12 also requests an assessment of original-versus-recoded mRNA secondary
+structure/accessibility changes; [the folding ticket](O_folding-compute-backend__20260930.md)
+owns the initial workload. Predicted structural change is not measured functional
+disruption and must remain distinguishable from a changed regulatory-site count.
+
+The owner's inline answers below settle the initial types (including cryptic
+promoters), rough native/transferred/model evidence, no minimum coverage gate,
+per-gene changed/added counts, and active scheme versus original sequence.
+Do not re-ask those as unanswered prerequisites. This pass records the decisions;
+no metric or RNA comparison has been implemented by it.
 
 Owner direction, 2026-10-09: investigate very rough regulatory candidates
 transferred from other cyanobacteria, E. coli and other prokaryotes. The
 [selected-method transfer assessment](../../validation/regulatory-transfer.md)
 now records routes for every selected method. These may become exploratory
 inputs to this metric, with source host, native sequence and mapping provenance.
-This research request does not choose the metric's unit, aggregation, coverage
-threshold or implementation. Retain experimental, homology-derived and model-only
+The inline owner answers below choose per-gene changed/added counts and no minimum
+coverage threshold. Retain experimental, homology-derived and model-only
 evidence separately; recompute each method on original and recoded sequence under
 identical settings. Report changed predictions separately from functional effects,
 and no-hit/unevaluated regions separately from unchanged sites. Original donor
 coordinates stay donor-only; any inferred UTEX interval requires its own explicit
 alignment/placement contract.
 
-The owner intends to add this metric once enough data has been collected. This
-ticket records the idea and questions for a later discussion; it does not
-authorize implementation or a research dispatch now. The metric's definition,
-site inventory, coverage threshold, and display unit remain undecided.
+The desired metric is now specified at the owner-policy level. Implementing it
+still requires concrete admitted candidate intervals, reproducible original/
+recoded calculations and a tested sequence/coordinate contract. Do not replace
+those technical dependencies with a new “enough data” approval gate.
 
 The desired outcome is a coloring option that responds to the selected recoding
 scheme and indicates changes to regulatory-site DNA. Sequence change and a
@@ -36,12 +50,10 @@ own assembly and never lands on this genome's coordinate axis.
 
 ## Claude Science claims
 
-No scientific claim is asserted or verified here. D1 requires a bounded research
-package, and that package's return format is already fully specified below.
-**It is one owner answer away from dispatchable:** clarifying question 1, which
-regulatory-site types come first (2026-09-30 return, section 5.3). The only missing
-input is a scope decision, so D1 is not blocked on evidence it is not waiting for.
-The package is not queued in Pending Claude Science until that answer lands.
+No scientific claim is asserted or verified here. The owner has supplied the
+initial scope in question 1 below. Review reachable sources directly under the
+project's last-resort Claude Science policy; this ticket does not require a
+dispatch or another scope answer before claim-independent preparation.
 
 Its return format is one row per site type: definition, biological
 context, assay or annotation basis, strain and genome build, coordinate and strand
@@ -55,10 +67,10 @@ when a concrete scientific assumption gates a step.
 
 | Id | Prerequisite | Dependent step | Completion condition |
 | --- | --- | --- | --- |
-| D1 | The owner's initial scope list (clarifying question 1), then a sourced review of the relevant regulatory-site types | Decide which features the metric covers | Owner approves the site taxonomy and evidence standards after that review |
-| D2 | Sufficient admitted data for the approved types | Compute and expose the metric | Owner defines “enough data”; sources pass the existing admission, coordinate, provenance, and licence contracts |
+| D1 | Initial types answered in question 1; source/model capabilities still require evidence | Build the site inventory | Concrete supported site definitions and source-backed intervals for the selected calculations |
+| D2 | Admitted data for each evaluated type; no owner-imposed minimum coverage | Compute and expose the metric | Sources pass admission/coordinate/provenance contracts; uncovered genes/types say no data or not evaluated |
 | D3 | Exact changes produced by each supported recoding scheme | Compare original and recoded site sequences | A tested sequence/coordinate contract identifies edited bases and their overlap with admitted sites |
-| D4 | Metric and coloring decisions below | Implement aggregation and UI | Owner resolves the blocking design questions and approves a concrete definition |
+| D4 | Per-gene changed/added counts, active scheme versus original, missingness policy answered | Implement aggregation and UI | A concrete count/deduplication contract preserves source, changed/added states and evaluation coverage |
 
 Related work:
 [cross-strain data scan](O_cross-strain-data-scan__20260927.md) may supply relevant
@@ -93,6 +105,9 @@ it can be a changed-site and or added count
 7. How should absent annotations, incomplete coverage, and uncertain mappings
    appear so that “no detected change” cannot be mistaken for “no data”?
 what do you mean by absent annotations? as in if an annotation gets removed by a recoding scheme? then in that case there should be an indication that it was there and no longer is. ask further clarifying quesitons to confirm these answers.
+   **Clarified by the owner 2026-10-14:** a gene/site type without evaluation
+   shows “no data/not evaluated,” not 0. This is separate from an evaluated site
+   whose match was lost after recoding.
 8. Should both disruption of existing sites and creation of new candidate sites
    be considered? What evidence would permit either interpretation?
 yes, if the new site matches an existing site or site brought over from other organisms. if possible and lightweight enough, can potentially add the option to calculate some of these on-demand for a newly recoded gene

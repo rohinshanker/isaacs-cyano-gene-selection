@@ -29,8 +29,9 @@ Four items have either waited longest or would unblock the most downstream work:
 2026-09-22 choice of independent layers remains open for lab review), **8** (which
 placement of a start site a construct boundary should trust — the kind of answer
 that affects real construct design), and **J10** (the 32 escalated dataset pairs:
-review the owner's entries and their qualifications, including "maybe" at pair 7
-and blank entries at pairs 8, 11 and 30). Everything else is ordered by theme.
+review the owner's entries and their qualifications. Pairs 7 and 8 now stay
+separate by the 2026-10-14 decision; 11 and 30 retain authorized may-share
+extrapolations). Everything else is ordered by theme.
 
 ## Glossary
 
@@ -154,10 +155,11 @@ wanted?"**
   uncurated database generated in 2020, with 1,969 computationally predicted
   transcription units. The download page says data-file access requires a licence
   and a paid subscription. Authenticated download has not been tested, and
-  artifact-specific reuse and redistribution permission remains unresolved. See
-  [the UTEX 2973 pathway-database assessment](../notes/tickets/O_biocyc-utex-2973-data__20260930.md).
+  actual account/subscription access remains unverified. The source ledger
+  records the owner's citation-based redistribution policy. See
+  [the UTEX 2973 pathway-database assessment](../notes/tickets/O_biocyc-ortholog-annotations__20261014.md).
 - Reviewer and date:
-- Decision (build the predicted layer, or decline):
+- Decision (Rohin, 2026-10-14): include the UTEX predicted layer, with precedence over PCC 7942; preserve sources and disclose disagreements.
 
 **Q5. "Is curated PCC 7942 pathway and regulatory content wanted as a transferred
 layer?"**
@@ -170,10 +172,11 @@ layer?"**
   among the six strains checked; which exact PCC 7942 genome assembly it is built
   on has not been determined. The download page says data-file access requires a
   licence and a paid subscription. Authenticated download has not been tested, and
-  artifact-specific reuse and redistribution permission remains unresolved. See
-  [the PCC 7942 pathway-database assessment](../notes/tickets/O_biocyc-pcc-7942-data__20260930.md).
+  actual account/subscription access remains unverified. The source ledger
+  records the owner's citation-based redistribution policy. See
+  [the PCC 7942 pathway-database assessment](../notes/tickets/O_biocyc-ortholog-annotations__20261014.md).
 - Reviewer and date:
-- Decision (bring in the curated PCC 7942 layer, or leave it out):
+- Decision (Rohin, 2026-10-14): include PCC 7942 alongside UTEX; UTEX takes precedence, disagreements remain visible.
 
 **Q6. "Is curated *E. coli* context on already-named loci worth a display layer, or
 export only?"**
@@ -190,10 +193,10 @@ export only?"**
   is not an admitted locus join. Among the currently hypothetical products, 391
   have neither GO nor KEGG orthology evidence in the annotation the site uses, and
   this table does not supply names for them. See
-  [the ortholog table and its limits](../notes/tickets/O_biocyc-utex-2973-data__20260930.md)
+  [the ortholog table and its limits](../notes/tickets/O_biocyc-ortholog-annotations__20261014.md)
   and [the cross-organism evidence contract](data-contract.md#evidence-coverage-and-cross-organism-transfer).
 - Reviewer and date:
-- Decision (visible layer, export only, or skip):
+- Decision (Rohin, 2026-10-14): use E. coli at lower priority only for gaps not covered by UTEX/PCC 7942, with source and disagreement disclosure.
 
 ---
 
@@ -335,13 +338,12 @@ and gene-relative evidence without a chromosome position be presented?"**
   under recoding — but only for the site types it is told to check.
 - Options: promoters, transcription-factor binding sites, terminators,
   ribosome-binding sites, or regulatory RNA elements, in any order or combination.
-- What's known and not known: whether "changed" means an edited base, a changed
-  motif or prediction, or evidence of altered function remains undecided. This
-  item chooses the site types for the initial evidence review; implementation also
-  needs admitted data and a metric definition. See
+- What's known and not known: the owner selected added/changed candidate-site counts and visible
+  marks for changed existing sites; no functional effect is inferred. Implementation
+  still needs concrete admitted intervals and a tested comparison contract. See
   [the proposed recoding regulatory-site metric](../notes/tickets/O_recoding-regulatory-site-change__20260930.md).
 - Reviewer and date:
-- Decision (site types the recoding metric considers first):
+- Decision: all types listed above plus cryptic promoters, as already answered inline in the metric ticket. Per-gene changed/added counts compare active scheme with original; no minimum coverage gate. Rohin clarified 2026-10-14: no data/not evaluated is not zero.
 
 ---
 
@@ -395,8 +397,9 @@ for a recorded human judgement, not an automatic pooling rule. See
   says "maybe"; pairs 8, 11 and 30 are blank. Each entry and its qualifications
   are reproduced under
   [Pair judgements from the review sheet](#pair-judgements-from-the-review-sheet)
-  for review. A judgement on the four unsettled pairs, or a disagreement with any
-  other entry, is what is asked here. The
+  for review. The later 2026-10-14 decision keeps pairs 7 and 8 separate;
+  pairs 11 and 30 retain the owner-authorized may-share extrapolations.
+  Those are no longer four unanswered questions. The
   [pair review sheet](../notes/handoff/cyano_escalated_pairs_review_20261005.md)
   places each pair's conditions and source text side by side.
 - Useful expertise: a transcriptomics, proteomics, or physiology reviewer, matched
@@ -460,8 +463,8 @@ ambiguity. See
   [the recorded cross-strain sweep](../notes/tickets/O_cross-strain-data-scan__20260927.md).
 - Useful expertise: a comparative-genomics reviewer.
 - Reviewer and date:
-- Decision (comparative use of PCC 6311 and PCC 7943, if any):
-- Decision (UTEX 3055 as a conservation outgroup):
+- Decision (Rohin, 2026-10-14): drop these proposed comparative scopes for now; retain existing admitted data/crosswalks.
+- Decision (Rohin, 2026-10-14): drop this proposed outgroup scope for now.
 
 **15. "Is UTEX 3055 close enough for each admitted data type, given its real
 gene-content difference?"**
@@ -665,8 +668,8 @@ and do the live risk and perturbation PCAs stay?"**
   that has not been taken. See
   [the open scope and retirement questions](../notes/tickets/O_cross-strain-data-scan__20260927.md).
 - Reviewer and date:
-- Decision (retire the native codon-space PCA):
-- Decision (live risk and perturbation PCAs stay):
+- Decision (Rohin, 2026-10-14): keep the native codon-space PCA.
+- Decision: no removal requested; keep existing live views.
 
 ---
 
@@ -822,7 +825,7 @@ may overrule any of them:
   the circadian array series (pairs 1, 3, 4 and 5, "may share"); the light ratio
   here is smaller than in pair 31: may share.
 
-Pair 7 stays undecided; it is the owner's own "maybe".
+**Current owner decision, Rohin, 2026-10-14:** pairs 7 and 8 stay separate (D8: “remain separate”). This supersedes the historical “maybe” and extrapolated undecided entries above. Pairs 11 and 30 retain the authorized may-share extrapolations.
 
 Rules the owner stated along the way, to apply to later pairs:
 

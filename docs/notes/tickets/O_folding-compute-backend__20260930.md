@@ -10,6 +10,20 @@
 
 ## Current State
 
+Owner decision, 2026-10-14 (D12): prioritize **RNA folding, accessibility and
+mRNA secondary structure**. Assess an original-versus-recoded comparison that
+shows whether the active recoding scheme changes predicted mRNA secondary
+structure, where feasible. Use the same model, temperature, sequence-window
+policy and parameters on both sequences; distinguish predicted structural or
+accessibility changes from measured functional disruption. Protein structure
+is not the first workload. Local browser/worker capability can be assessed
+without waiting for a remote backend.
+
+Workload scale, audience, acceptable wait/budget, sequence transfer/retention,
+host route and workspace setup are not settled by this answer. These gate only
+their dependent remote deployment steps. Coordinate the scheme comparison with
+[the recoding metric](O_recoding-regulatory-site-change__20260930.md).
+
 Owner direction, 2026-10-09: rough regulatory predictions may use models and
 evidence from other organisms. The [shared method assessment](../../validation/regulatory-transfer.md)
 records new ViennaRNA local-structure/accessibility and IntaRNA interaction uses.
@@ -127,8 +141,9 @@ for backend feasibility, nor does this ticket authorize their scientific adoptio
 
 ## Clarifying questions for later
 
-1. Which RNA and protein algorithms are intended, and for what outputs: energies,
-   secondary structure, 3D structures, original/recoded comparisons, or other tasks?
+1. **Initial outputs decided 2026-10-14:** RNA folding/accessibility and mRNA
+   secondary structure, including original/recoded comparison if feasible.
+   Select concrete algorithms and output metrics during the assessment.
 2. Are jobs short sequence windows, full genes/proteins, batches of selected genes,
    or genome-scale studies? What input sizes and request volume are expected?
 3. Is the website compute feature private to you/the lab or available to external

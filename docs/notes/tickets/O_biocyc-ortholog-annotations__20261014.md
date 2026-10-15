@@ -23,7 +23,8 @@ which holds the precedence, labelling, scope and probe contract:
   sister-strain crosswalk stay.
 - **D4.** The six per-strain tickets are consolidated into this one.
 
-No data has been retrieved, admitted or shipped, and no implementation exists.
+No BioCyc annotation layer has been admitted or shipped. The receipts below are
+metadata/returned evidence, not implemented browser layers.
 Target genome stays UTEX 2973 (`GCF_000817325.1`, per [data-contract.md](../../validation/data-contract.md)).
 Sister-strain coordinates never go on its axis, and transferred values never
 become native UTEX measurements.
@@ -120,7 +121,8 @@ The table is returned evidence, not an admitted source or an identifier join.
 
 Packages 5.2 and 5.6 of the return specify the content reads. Dispatching them to
 Claude Science is the owner's call and a last resort under [AGENTS.md](../../../AGENTS.md);
-BioCyc content is readable only in the D1 session.
+Use that session only for content that still requires authenticated access;
+publicly reachable evidence can be assessed directly under the standing policy.
 
 ## Open findings carried forward
 
@@ -134,7 +136,7 @@ All are `open` unless marked.
 | BIO-03 | BioCyc and KEGG terms on how pages and APIs are read are unquoted; authenticated download untested. This is an access-terms item, not a redistribution gate |
 | BIO-05 | The recurring release watch (recheck at each BioCyc version past 30.0) is not adopted or declined |
 | BIO-06 | 46 `product` values in the ortholog table keep the GFF escape `%2C` |
-| OWN-03 | D1 and D2 answer inclusion and precedence for the UTEX prediction, `SYNEL` and *E. coli* layers. Not stated: whether *E. coli* gap-fill is a visible layer or export-only (former Q6) |
+| OWN-03 — answered | D1 and D2 select viewer inclusion of both UTEX and `SYNEL`, with lower-priority *E. coli* gap-fill and disclosed disagreements. No additional visible-versus-export-only approval is required; preserve the same provenance in exports |
 
 Answered by the 2026-10-14 decisions: OWN-01 (D4) and OWN-02 (D3). BIO-04 is
 preserved above as verified absence. MET-13 (stale crosswalk-check wording in the
@@ -155,9 +157,14 @@ status stays in [the cross-strain ticket](O_cross-strain-data-scan__20260927.md)
 
 ## Verification
 
-Consolidation verified 2026-10-14 by documentation review only: required fields,
-links, anchors and diff whitespace. No tests, data retrieval, admission,
-implementation or UI change were run in this pass.
+Consolidation and owner-decision recording verified 2026-10-14 by
+`cyano-regulatory-sites`: 21 open/active tickets pass filename/H1/status/queue
+checks; changed Markdown has no missing local link targets; `git diff --check`
+is clean. Required repository gates passed on the combined documentation patch:
+1,597 JavaScript tests; 2,079 Python tests and 51 subtests (20 skipped); contract
+validator 130 passed, 0 failed, 1 declared skip. No application/data files changed;
+these checks do not establish BioCyc admission or implementation. No UI render
+was needed for the documentation-only patch.
 
 Future integration: run `npm test`, `.venv/bin/python -m pytest -q` and
 `.venv/bin/python tools/validate_contract.py`; verify pinned artifact checksums,

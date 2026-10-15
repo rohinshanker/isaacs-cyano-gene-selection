@@ -3,9 +3,32 @@
 Scope: Add E. coli as a selectable organism in the visualizer.
 Status: active
 Opened: 2026-10-05
-Updated: 2026-10-06
+Updated: 2026-10-14
 
 ## Current State
+
+Owner decision, 2026-10-14 (D5): show `fdnG`, `fdoG`, and `fdhF` and flag
+their selenoprotein gene-model/recoding constraints. This changes the requested
+display scope; it does not make their in-frame TGA codons ordinary recodable
+stops. Implementation and gene-model tests remain to be done.
+
+Owner clarification, 2026-10-14: use the most recently collected CDS data and
+look for conclusive publication evidence identifying the most accurate CDS.
+For multi-product loci, review dated source data and primary-publication support
+instead of assuming the longest product is correct. Keep alternative products
+and uncertainty explicit where evidence does not settle the choice; recency
+alone is not proof of correctness. Exact latest records and their assembly joins
+must be verified before replacing the pinned dataset.
+
+CAI reference membership for `prfB`, `ykgM`, `ykgO`, and `efp` is a separate
+expression/reference-set question. The owner chose **review the evidence and
+retain current membership meanwhile** (2026-10-14). Investigate primary-source
+expression/reference-set support before proposing a membership change.
+The owner's “keep them separate, but allow for
+pooling” answer was explicitly clarified to mean **microarray measurements**,
+recorded in [the array ticket](O_array-expression-reader__20261007.md); it is not
+an E. coli source-admission or pooling decision. The E. coli source choices
+(PRECISE-1K/regulatory sources, EQ353 proteomics and Choe essentiality) remain open.
 
 The owner asked on 2026-10-05 for implementation and data gathering to begin. A
 selector at the top of the visualizer offers **Cyanobacteria** and **E. coli**,
@@ -90,26 +113,28 @@ RefSeq and EcoCyc; the rule for curator-submitted RefSeq annotation is in the
 [source ledger](../../validation/source-ledger.md); the E. coli citations ledger
 cites the RefSeq record, EcoCyc (Keseler et al. 2021, with the BioCyc
 attribution statement and biocyc.org link SRI's open-database terms ask for), and
-the original sequence paper (Blattner et al. 1997, GenBank U00096). **Owner
-action still open:** notify SRI that the site makes EcoCyc-derived content
-available, per the same terms, and record the date here. SRI's terms also ask
+the original sequence paper (Blattner et al. 1997, GenBank U00096). **Owner action completed 2026-10-07:** the SRI notification was sent, as
+recorded in [the owner next-steps document](../../validation/AAA-next-steps.md). SRI's terms also ask
 for the BioCyc logo on a distribution of the open database itself; this site
 redistributes no EcoCyc file, so that clause is noted for the notification
 rather than acted on.
 
 ## Lab questions raised by the E. coli dataset
 
-Not decided here; for the owner or the lab.
+Owner directions and remaining evidence work:
 
-- The three selenoprotein genes (`fdnG`, `fdoG`, `fdhF`) are excluded, so their
-  in-frame TGA is never offered as a recodable stop. Is exclusion right, or
-  should they be shown and flagged?
+- **Decided 2026-10-14:** show and flag the three selenoprotein genes (`fdnG`,
+  `fdoG`, `fdhF`), retaining explicit recoding restrictions. The shipped dataset
+  still excludes them pending implementation.
 - CAI reference set membership under the product-name rule: the frameshifted
   `prfB`; the zinc-independent ribosomal paralogues `ykgM` and `ykgO`, which are
-  near-silent in rich media; and whether EF-P belongs.
-- At nine loci with more than one annotated product, the longest CDS is kept and
-  the alternates are excluded (for example the `dnaX` gamma frameshift product,
-  CheA-short). Is the longest product the right one to recode against?
+  near-silent in rich media; and whether EF-P belongs. **Owner direction
+  2026-10-14:** review the evidence, retaining current membership meanwhile.
+- At nine loci with more than one annotated product, the current build keeps the
+  longest CDS (for example over the `dnaX` gamma frameshift product or CheA-short).
+  **Owner direction 2026-10-14:** review the most recent CDS data and conclusive
+  publication evidence before deciding the most accurate model; do not treat
+  longest-product selection as the scientific answer.
 
 ## Source dossier, 2026-10-05
 
@@ -202,7 +227,7 @@ simulated locally; an independent tRNAscan-SE run for E. coli.
 For the base view to ship:
 
 1. Done 2026-10-06: the publication decision, the EcoCyc and Blattner citations,
-   and the ledger rule. Open: the owner's notification to SRI.
+   and the ledger rule. The owner's notification to SRI was sent 2026-10-07.
 2. Done 2026-10-06: `feat/ecoli-organism` fast-forwarded into `main` at
    `8e504db` and pushed. The first two Pages runs failed on the fixture-digest
    tests alone: the generator's mean codon-pair score differs in its last bit
@@ -265,5 +290,5 @@ ticket's first release.
 Related context: the
 [cross-strain scan](O_cross-strain-data-scan__20260927.md) covers cyanobacterial
 dataset selectors; the
-[UTEX BioCyc ticket](O_biocyc-utex-2973-data__20260930.md) separately asks whether
-curated E. coli evidence should be shown on matched UTEX loci.
+[consolidated BioCyc ticket](O_biocyc-ortholog-annotations__20261014.md) separately
+owns lower-priority E. coli gap-fill on matched UTEX loci.

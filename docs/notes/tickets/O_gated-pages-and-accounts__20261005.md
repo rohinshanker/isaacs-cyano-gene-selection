@@ -5,9 +5,11 @@
   missing account, or terms that were never published. Covers `docs/` only.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-05
+- **Updated:** 2026-10-14
 
 ## Current state
+
+BioCyc source choices are now recorded in the [consolidated annotation ticket](O_biocyc-ortholog-annotations__20261014.md) (owner decisions, 2026-10-14). Access actions remain separate; the source-priority decision does not create an account or verify subscription access.
 
 Opened at the owner's request. None of these blocks a current licence decision
 except BioCyc, which gates the BioCyc tickets. The scope questions for BioCyc stay

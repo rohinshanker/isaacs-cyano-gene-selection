@@ -56,12 +56,12 @@ Probing the six strains on 2026-09-30 against BioCyc version 30.0:
 
 | Strain | Ticket | orgid probed | Result |
 | --- | --- | --- | --- |
-| UTEX 2973 | [biocyc-utex-2973](../tickets/O_biocyc-utex-2973-data__20260930.md) | `GCF_000817325` | **real PGDB**, Tier 3 Uncurated |
-| PCC 6301 | [biocyc-pcc-6301](../tickets/O_biocyc-pcc-6301-data__20260930.md) | `GCF_000010065` | **real PGDB**, Tier 3 Uncurated |
-| PCC 7942 | [biocyc-pcc-7942](../tickets/O_biocyc-pcc-7942-data__20260930.md) | `GCF_000012525` | E. coli fallback — but a PGDB exists at `SYNEL`, see 1.2 |
-| PCC 6311 | [biocyc-pcc-6311](../tickets/O_biocyc-pcc-6311-data__20260930.md) | `GCF_022984265` | E. coli fallback; **no PGDB found** |
-| PCC 7943 | [biocyc-pcc-7943](../tickets/O_biocyc-pcc-7943-data__20260930.md) | `GCF_022984345` | E. coli fallback; **no PGDB found** |
-| UTEX 3055 | [biocyc-utex-3055](../tickets/O_biocyc-utex-3055-data__20260930.md) | `GCF_003957805` | E. coli fallback; **no PGDB found** |
+| UTEX 2973 | [biocyc-utex-2973](../tickets/O_biocyc-ortholog-annotations__20261014.md) | `GCF_000817325` | **real PGDB**, Tier 3 Uncurated |
+| PCC 6301 | [biocyc-pcc-6301](../tickets/O_biocyc-ortholog-annotations__20261014.md) | `GCF_000010065` | **real PGDB**, Tier 3 Uncurated |
+| PCC 7942 | [biocyc-pcc-7942](../tickets/O_biocyc-ortholog-annotations__20261014.md) | `GCF_000012525` | E. coli fallback — but a PGDB exists at `SYNEL`, see 1.2 |
+| PCC 6311 | [biocyc-pcc-6311](../tickets/O_biocyc-ortholog-annotations__20261014.md) | `GCF_022984265` | E. coli fallback; **no PGDB found** |
+| PCC 7943 | [biocyc-pcc-7943](../tickets/O_biocyc-ortholog-annotations__20261014.md) | `GCF_022984345` | E. coli fallback; **no PGDB found** |
+| UTEX 3055 | [biocyc-utex-3055](../tickets/O_biocyc-ortholog-annotations__20261014.md) | `GCF_003957805` | E. coli fallback; **no PGDB found** |
 
 Because a fallback page is indistinguishable from a hit by status code, absence
 was confirmed by a second, independent route: the published PGDB list at

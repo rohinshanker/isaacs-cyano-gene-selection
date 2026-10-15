@@ -1,22 +1,31 @@
 # O_idog-promoter-prediction__20260930 — Open
 
-- **Scope:** Determine whether iDOG code can support promoter prediction for
-  UTEX 2973 and whether validated predictions could be added to the gene visualizer.
-  Assess additional data and annotation requirements before proposing integration.
+- **Scope:** Investigate building a new promoter-location predictor around iDOG
+  for native UTEX 2973 sequence, with exploratory predictions and explicit
+  code/model, evaluation and coordinate requirements for viewer integration.
 - **Status:** open
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-09
+- **Updated:** 2026-10-14
 - **Requested future models:** Mythos 5.1 / Fable 5.1. Reserved for future assessment;
   neither availability nor a provider/transport identifier is assumed. Confirm
-  routing when work is activated; do not dispatch or substitute a model now.
+  routing under the current agent policy when needed; these are not verified
+  runtime identifiers or a requirement to wait for an unavailable model.
 
 ## Current State
 
-Owner direction, 2026-10-09: record ways to transfer other-organism evidence for
-very rough UTEX regulatory predictions. This authorizes the source-based planning
-below; it does not release the existing hold on running/adapting iDOG. The ticket
-remains open. The owner's missing-full-code reopening request was confirmed to
-refer to RBS Calculator, which also remains open.
+Owner direction, 2026-10-14 (R1): the goal is **promoter-location prediction**,
+not promoter design, and implementation is authorized. The owner explicitly
+selected **investigate building a new locator around iDOG** after being told
+that the inspected public code contains no locator. The previous personal-review
+and execution hold is released. The absence finding is not reversed by this
+permission: a new genomic-sequence-to-position/scoring component must be built
+and evaluated, rather than presented as an existing iDOG capability.
+
+The owner also asked which iDOG source is missing and whether that source is
+necessary. Distinguish unavailable source for bytecode modules from the entirely
+absent locator/model. The RBS Calculator's missing-code ticket remains separate.
+Rough cross-organism exploratory assessment remains authorized by the earlier
+2026-10-09 direction; no validated-UTEX claim follows from authorization.
 
 Owner supplied [jayman1466/iDOG](https://github.com/jayman1466/iDOG), pinned at
 commit `9d71187f0b2eb27ee681918927e12850470a0688` (2022-04-01, head of `master`),
@@ -52,18 +61,16 @@ shipped only as bytecode) establishes what the tool does:
 
 **Design and location prediction are different problems with different labels,
 and stay separate here.** This ticket's title and CS-1 are both about location
-prediction while the owner's interest includes design. Predicting promoter
+prediction; the owner confirmed that design is outside this goal. Predicting promoter
 strength needs sequence-activity pairs; locating candidates needs a separate
 positional evaluation. Tan 2018 supplies native UTEX TSS evidence across four
 conditions, not complete promoter boundaries or a promoter-strength benchmark.
 Its condition measurements are not independent loci for train/test splitting.
 
-**Owner hold: this ticket is not to be closed, resolved, or run through its
-Cleanup section.** Owner direction recorded in the 2026-09-30 return (section
-1.4a): the promoter *design* capability is the point of interest, and the owner
-intends to revisit refitting iDOG toward promoter prediction after their own code
-and literature review. A CS-1 verdict of "the capability is absent" is therefore
-not grounds to resolve this ticket. There is also no model to refit: `promoters.csv` is a lookup table, and its `Core` index and shared
+The former review hold and design interpretation are superseded by the owner's
+2026-10-14 direction. CS-1's absent-capability verdict remains evidence for the
+new-locator work, not grounds to claim a ready predictor. There is no model to
+refit: `promoters.csv` is a lookup table, and its `Core` index and shared
 `ccgcgcc`/`TATAAAAG` scaffold show the 48 rows sample a designed combinatorial
 space rather than natural promoter diversity.
 
@@ -153,6 +160,38 @@ Intake found PMID 35366417 (Patel JR et al., *Cell* 2022, PMC10619838), which
 names `github.com/jayman1466/iDOG` as its code and describes a 48-promoter
 library; whether that paper validates anything about iDOG is not judged here.
 
+## Missing source and the new locator
+
+Checked 2026-10-14 by `cyano-regulatory-sites` against the complete pinned
+[Git tree](https://github.com/jayman1466/iDOG/tree/9d71187f0b2eb27ee681918927e12850470a0688),
+with read-only scout DEM-407. No bytecode was decompiled or executed in this check.
+
+- Available Python source modules: `RNAfold_wrapper`, `codon_opt`, `create_RBS`, `dG_tot_calc`, `detailed_output`, `dnaplotlib`, `orf_recode`, `plot_operon`, `transterm_wrapper`.
+- Bytecode-only modules without matching Python source: `config`, `countwords`, `create_RBS_web`, `create_RBS_webwrapper`, `hello`, `models`, `operon_design`, `refactor_pipeline`, `refactor_pipeline_web`, `web_codon_opt`, `web_create_RBS`, `web_operon_design`.
+- In particular, `operon_design.py` is absent; the repository ships
+  `__pycache__/operon_design.cpython-37.pyc`. Missing source impedes inspection,
+  maintenance and portable reuse of that existing pipeline/web application.
+- A separate native-sequence scanner and integration interface do not require
+  those design/web modules. There is no identified promoter-location model to
+  recover by obtaining their source: the earlier capability audit remains the
+  basis for the absence finding. The public promoter CSV and fixed T7 insert
+  are design assets, not a genomic-position scoring model.
+- `create_RBS.py` and `dG_tot_calc.py` are present. The separate RBS Calculator
+  v2.1.1 harness's private `DNAc` dependency is not an iDOG locator dependency.
+
+The new work should define a strand-aware scanner/scorer with explicit native
+intervals and score semantics, and an adapter for any useful iDOG components.
+Choose and justify the scoring basis before implementation; parts lookup alone
+cannot supply it. Evaluate on held-out loci with native genomic/background
+controls and preserve source/model versions, parameters and coverage. Tan TSSs
+and the existing promoter pilot support localization checks, not complete
+promoter boundaries or a validated UTEX model. This is the authorized development
+scope, not a claim that a new locator is already implemented.
+
+Reproducible inventory: `git ls-tree -r --name-only` at the pinned commit, compare
+root `.py` stems with `__pycache__/*.cpython-37.pyc` stems. Source receipts:
+`README.md` SHA-256 `f38ab3f7e4b9f75627adb9dae8464f2dc46a19ef3d66690639fe4380042ad554`; `yeast_elements/promoters.csv` SHA-256 `0e75223494bc452ade4ceaba56f2fe8d15bd1b16e00be0386c64e9ddbe6336b8`.
+
 ## Dependencies and work
 
 ### Rough transfer route and limits
@@ -167,7 +206,7 @@ resolved by accepting low confidence. Obtaining the twelve bytecode-only modules
 source remains useful for inspection and portability, not proof of a missing
 genomic promoter predictor.
 
-Standalone TransTermHP can be assessed independently of the iDOG hold. The
+Standalone TransTermHP has its own independent assessment. The
 [shared transfer assessment](../../validation/regulatory-transfer.md)
 records native UTEX scoring, PCC 7942 transcript-end evidence (Cascino 2026,
 GSE309256) and UTEX reporter-part evidence (Gale 2021), with located primary-source
@@ -175,8 +214,8 @@ receipts S3/S4. Intrinsic terminator candidates cover only one termination
 mechanism; donor transcript ends and reporter strengths are not native UTEX
 termination coordinates or calibrated model confidence. RBS scoring retains its
 [own code-access and host-input ticket](O_rbs-calculator-gene-visualizer__20260930.md).
-No iDOG execution or new promoter-model development was performed or authorized
-by this documentation update.
+No iDOG execution or new promoter-model development was performed by this
+documentation update; the owner has now authorized investigation and implementation.
 
 1. **Code feasibility:** Pin an iDOG commit; inspect relevant functions, input and
    output contracts, dependencies, runtime compatibility, and code/asset licences.
@@ -209,27 +248,28 @@ by this documentation update.
    Implementation requires an approved definition and passing applicable gates.
 
 Related data work:
-[UTEX BioCyc assessment](O_biocyc-utex-2973-data__20260930.md) and its sister-strain
-tickets may supply annotations; [cross-strain data scan](O_cross-strain-data-scan__20260927.md)
+[consolidated BioCyc assessment](O_biocyc-ortholog-annotations__20261014.md)
+may supply native and sister-strain annotations; [cross-strain data scan](O_cross-strain-data-scan__20260927.md)
 may supply TSS and other suitable evidence. Depend on identified artifacts and
 admission checks, not completion of whole tickets. Discovery and code assessment
 can proceed without waiting for data collection once this ticket is activated.
 
 The [regulatory-site recoding metric](O_recoding-regulatory-site-change__20260930.md)
-may later consume validated predictions, but this ticket does not establish
+may later consume explicitly exploratory predictions, but this ticket does not establish
 regulatory function or recoding effects. Predicted sites must remain distinguishable
 from measured sites; sister-strain coordinates never become UTEX coordinates.
 
 ## Clarifying questions for later
 
-1. Does promoter prediction mean finding native promoter positions, scoring known
-   promoter regions, comparing original and recoded DNA, or designing promoters?
+1. **Answered 2026-10-14:** find native promoter locations; investigate a new
+   locator around iDOG. Promoter design is not the requested goal.
 2. Is the initial target UTEX 2973 only, or should the method be assessed on sister
    strains too, with separate validity and evidence labels?
 3. If iDOG supplies RBS/terminator tools but no suitable promoter predictor, should
    the ticket conclude with that finding or expand to a comparison of alternatives?
-   **Answered a third way** by owner direction recorded in the 2026-09-30 return:
-   neither, for now — hold pending the owner's own code and literature review.
+   **Answered 2026-10-14:** investigate building a new locator around iDOG.
+   The former personal-review hold is released; do not silently substitute a
+   different predictor and call its outputs iDOG predictions.
 4. What data and annotation improvements should be prioritized if required inputs
    or credible evaluation labels are missing? Is experimental validation in scope?
 5. What precision, recall, localization accuracy, and uncertainty would justify

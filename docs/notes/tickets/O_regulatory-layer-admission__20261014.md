@@ -33,8 +33,10 @@ native-sequence calculation or checked alignment.
 | IntaRNA | Explicit query/target window interaction calculations and controls | Identify query/target sequences and transcript-boundary evidence, or retain approximate-window sensitivity labels. A Yfr1 homology interval or TSS anchor is not a confirmed transcript. No inferred target interaction becomes a validated native target. |
 
 [RBS Calculator](O_rbs-calculator-gene-visualizer__20260930.md) retains its
-missing-code dependency. [iDOG](O_idog-promoter-prediction__20260930.md) retains
-the owner's execution hold. Neither is executable scope for this ticket.
+missing-code dependency. [iDOG](O_idog-promoter-prediction__20260930.md) now owns
+the authorized investigation of a new promoter locator (2026-10-14); its former
+review hold is released, but the public code still supplies no locator. Neither
+method is implicitly added to this ticket's implementation scope.
 
 ## Open Scientific Dependencies
 
@@ -73,7 +75,7 @@ coordinate oracles and rendered UI checks for each selected implementation.
 
 ## Cleanup
 
-Keep RBS and iDOG ownership/holds unchanged. When the selected layer scope is
+Keep the separate RBS dependency and iDOG ownership intact. When the selected layer scope is
 complete, name the closing session and every finding/resolution, distill reusable
 admission/validation rules, resolve by R-rename, remove the queue row and delete
 the resolved ticket last. Further unselected methods remain optional, not an

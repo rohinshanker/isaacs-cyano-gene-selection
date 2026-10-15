@@ -7,9 +7,20 @@
   Sources platform grouping.
 - **Status:** open
 - **Opened:** 2026-10-07
-- **Updated:** 2026-10-07
+- **Updated:** 2026-10-14
 
 ## Current state
+
+Owner decision, 2026-10-14: keep microarray measurements separate by default,
+but allow optional pooling. The owner explicitly clarified that the answer
+labelled D6 referred to this ticket's dye-swap/probe measurements, not E. coli
+datasets. Preserve the individual measurements and their provenance; do not
+silently collapse them into one per-gene value. In the follow-up the owner chose
+**develop and validate source-specific pooling rules**. A universal mean/median
+is not selected; define each rule from the deposit's assay, channel orientation,
+normalisation and probe mapping, and validate it before a pooled layer ships.
+J5's separate array platform remains. No further owner choice of a universal
+pooling method is required to begin that work.
 
 Split out of
 the resolved licence-unblocked-sources ticket (row 6 was split out of it)
@@ -42,9 +53,10 @@ an RNA-seq one.
 
 ## Work
 
-1. Decide and record the four rules above. The per-gene reduction and the
-   dye-swap rule need an owner or lab judgement; the rest follow from the
-   deposits.
+1. Preserve individual probes and dye-swap measurements by default, with optional
+   pooling as requested. Record channel orientation and normalisation from the
+   deposits, and develop/validate each source's pooling method before computing
+   a combined value.
 2. Implement the reader behind a `reader.format` of its own, with tests, in the
    shape the existing readers take.
 3. Ingest the series whose condition records are already settled, each under the

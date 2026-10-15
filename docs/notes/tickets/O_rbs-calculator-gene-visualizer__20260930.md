@@ -152,7 +152,7 @@ missing flanks, ambiguous starts, and invalid sequences. Retain unsupported and
 missing outputs explicitly.
 
 Related: [cross-strain data scan](O_cross-strain-data-scan__20260927.md) and
-[UTEX BioCyc assessment](O_biocyc-utex-2973-data__20260930.md) may supply particular
+[UTEX BioCyc assessment](O_biocyc-ortholog-annotations__20261014.md) may supply particular
 inputs; depend only on identified artifacts and their admission checks. Coordinate
 with [iDOG assessment](O_idog-promoter-prediction__20260930.md) where RBS capability
 or dependencies overlap, without conflating promoter prediction and RBS scoring
@@ -241,8 +241,10 @@ precedence; the exact category and opacity are not yet specified. Hover outlines
 apply to annotations, including initiation/termination sites, in both gene
 viewers. See [the method contracts](../../validation/regulatory-methods.md) and
 O_gene-sequence-structural-features__20261007 for the shared display requirement.
-**Record only; do not evaluate, run or integrate the methods yet.** Existing
-scientific, dependency, licence and iDOG-hold constraints remain in force.
+Execution status now follows each method ticket/runbook: the selected local
+pilots have been evaluated, and the owner released iDOG's review hold on
+2026-10-14 to investigate a new locator. This does not remove the RBS
+Calculator's own missing-code dependency or establish UTEX validation.
 
 ## Remaining gene-viewer integration scope
 

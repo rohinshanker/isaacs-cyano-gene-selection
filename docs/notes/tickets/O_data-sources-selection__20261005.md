@@ -9,9 +9,16 @@
   `data/`, `tests/`, and `docs/validation/`.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-12
+- **Updated:** 2026-10-14
 
 ## Current state
+
+Owner decision, 2026-10-14 (D11): retain **PXD036717 proximity-label enrichment
+ratios** and **PXD044412 metabolite–protein interaction measurements** as separate
+evidence types. Neither is protein abundance, and neither is admitted by this
+decision alone. Source-specific readers, identifier/condition checks and the
+PXD044412 peptide-to-protein aggregation contract remain implementation work.
+The owner has settled whether these evidence types are wanted.
 
 The existing-report portion of S6 is implemented and independently reviewed by
 `cyano-ui-fixes`; its [browser contract](../../validation/expression-agreement.md#browser-presentation)
@@ -276,9 +283,9 @@ on 2026-10-12. Metadata only; nothing was downloaded.
 | --- | --- | --- | --- | --- |
 | PXD023591 | PCC 7942 | 3 files: one mzIdentML (`hf2019103123.mzid.gz`), its MGF, one raw | the existing `mzidentml` reader, one spectral-count layer | its condition record. Growth details are unreported and the depositor query is drafted and deferred by the owner |
 | PXD027430 | PCC 7942 | 9 files: three mzIdentML with their MGFs and raws | the same reader, three runs | its condition record, and that this is a TMT study whose reporter-ion quantification is not in the deposit, so counts are the only quantity it can yield. Conditions and the 0 h baseline assignments are open depositor questions, deferred |
-| PXD014590 | **UTEX 2973, native** | 135 files: 27 top-down runs as `.raw`, 27 `.ms1ft` MS1 feature files, 27 search archives and 54 `*_MSAlign_Results_XML.zip` | no protein-level table; an MSAlign result-XML reader would be new | a scientific decision before any code: top-down results identify proteoforms, not gene-level amounts. Roadmap item 7 already directs a presence overlay first, not a quantitative layer |
-| PXD036717 | PCC 7942 CscB-SPS, engineered | 24 files: APEX2 proximity labelling, four baits (CikB, ManS, NblS, RpaA) each against the CscB-SPS parent; every search and peak result inside `.rar` | a `.rar` reader, and the layer would be an enrichment ratio | the 2026-10-07 ratio rule: a bait-against-parent enrichment is not an amount, so it ships apart from abundances and labelled a ratio, if at all |
-| PXD044412 | multi-organism; PCC 7942 among them | 2,002 files. The PCC 7942 arms serve `quant_report_7942_*.elib.peptides.txt` only; the *Cupriavidus* arms serve `.elib.proteins.txt`. Arms are metabolites: 2PG, ADP, AcCoA, G6P, Mal, Ru5P, RuBP | peptide-level EncyclopeDIA reports, with an SDRF experimental design | two blocks: a peptide-to-protein roll-up would be ours to define, and the measured quantity is metabolite–protein interaction, not protein abundance |
+| PXD014590 | **UTEX 2973, native** | 135 files: 27 top-down runs as `.raw`, 27 `.ms1ft` MS1 feature files, 27 search archives and 54 `*_MSAlign_Results_XML.zip` | no protein-level table; an MSAlign result-XML reader would be new | top-down results identify proteoforms, not gene-level amounts. Roadmap item 7 directs a presence overlay first; define/validate that output contract before a layer ships |
+| PXD036717 | PCC 7942 CscB-SPS, engineered | 24 files: APEX2 proximity labelling, four baits (CikB, ManS, NblS, RpaA) each against the CscB-SPS parent; every search and peak result inside `.rar` | a `.rar` reader, and the layer would be an enrichment ratio | the 2026-10-07 ratio rule: a bait-against-parent enrichment is not an amount; owner approved it as a separate ratio evidence type on 2026-10-14; reader/admission checks remain |
+| PXD044412 | multi-organism; PCC 7942 among them | 2,002 files. The PCC 7942 arms serve `quant_report_7942_*.elib.peptides.txt` only; the *Cupriavidus* arms serve `.elib.proteins.txt`. Arms are metabolites: 2PG, ADP, AcCoA, G6P, Mal, Ru5P, RuBP | peptide-level EncyclopeDIA reports, with an SDRF experimental design | owner approved a separate interaction evidence type on 2026-10-14; define/validate the peptide-to-protein roll-up, retaining interaction rather than abundance semantics |
 
 Unchanged and still outside the shortlist: PXD019731 and PXD074299 deposit no
 proteome-wide table and wait on reprocessing; PXD011485 is PCC 11801, outside
@@ -289,8 +296,11 @@ package B with no grant over its files.
 today by a reader that already exists and is already tested. Neither is blocked
 by licence, by tooling or by the crosswalk. Both are blocked by the same thing:
 a condition record, which needs depositor answers the owner has deferred. The
-other three each need a new reader *and* a prior scientific decision, so none is
-a next step without the owner. S5 therefore has no unblocked admission left.
+other three each need a new reader and a source-appropriate output contract.
+PXD014590 already has a presence-overlay-first direction; D11 now approves
+separate enrichment/interaction evidence types for PXD036717/PXD044412.
+Their reader/contract preparation can proceed; this is not a claim of admitted
+layers or permission to reinterpret those measurements as protein abundance.
 
 
 ## Work
