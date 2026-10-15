@@ -19,7 +19,8 @@ async (page) => {
     await page.getByLabel('Colour by', { exact: true }).waitFor();
     await page.waitForFunction(() => document.body.innerText.includes('Every protein-coding gene'));
     const sourceSummary = page.locator('summary').filter({hasText:/^Data Sources/});
-    const provenanceSummary = page.locator('summary').filter({hasText:/^Provenance$/});
+    const provenance = page.locator('#legend details').filter({has:page.locator('summary').filter({hasText:/^Provenance$/})});
+    const provenanceSummary = provenance.locator('summary');
     for (const [type, label, count] of [
       ['array-log2-ratio', 'Array log2 sample/reference ratio', 95],
       ['array-signal', 'Array normalized signal', 20],
@@ -46,8 +47,7 @@ async (page) => {
         check(await optional.first().isChecked(), `${type} optional summary selection`);
       }
       if (!await provenanceSummary.evaluate(el => el.parentElement.open)) await provenanceSummary.click();
-      const provenance = page.locator('details').filter({has:provenanceSummary});
-      await page.waitForFunction(() => [...document.querySelectorAll('details')].some(d=>d.querySelector('summary')?.textContent==='Provenance' && d.textContent.includes('combined by the authors')));
+      await page.waitForFunction(() => [...document.querySelectorAll('#legend details')].some(d=>d.querySelector('summary')?.textContent==='Provenance' && d.textContent.includes('combined by the authors')));
       const text = await provenance.innerText();
       check(text.includes('Measured in PCC 7942') && text.includes('not measured in UTEX'), `${type} transferred caveat`);
       if (type === 'array-profile') check(text.includes('not absolute RNA abundance'), 'profile meaning');
