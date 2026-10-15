@@ -69,7 +69,11 @@ def generate():
                 for value in values.values():
                     for key in ["wild", "recoded"]:
                         value[key] = value[key].replace("T", "U")
-                        value[key + "Mfe"] = RNA.fold(value[key])[1]
+                        structure, mfe = RNA.fold(value[key])
+                        value[key + "Mfe"] = mfe
+                        value[key + "Structure"] = structure
+                    value["basePairDistance"] = RNA.bp_distance(
+                        value["wildStructure"], value["recodedStructure"])
                 case = {"gene": gene, "map": scheme, "windows": values}
                 if neighbor_positions:
                     neighbor_recoded = "".join(edited_genome[position % 300] for position in neighbor_positions)

@@ -21,6 +21,12 @@ Worktree: `work/rna-structure-comparison-20261014`, baseline `2ebc5dd`.
 Separate from the active annotation-search work; do not interrupt other sessions.
 The parent ticket retains remote-compute access/service decisions and larger workloads.
 
+## Findings
+
+- UI-1 — open: initial expanded alignment screenshots clipped the row labels
+  after horizontal keyboard scroll. The implementer is checking the sticky-label
+  fix and must replace the evidence with renders from the final patch.
+
 ## Verification
 
 Pending focused core/UI tests, real-worker browser inspection at mobile/tablet/

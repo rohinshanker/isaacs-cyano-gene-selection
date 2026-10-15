@@ -21,13 +21,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "wildMfe": -27.5,
-          "recodedMfe": -27.5
+          "wildStructure": ".....((((((.((.......)).))))))(((.((((((((((((((.(((((....))))).)))))))))))))).)).).......",
+          "recodedMfe": -27.5,
+          "recodedStructure": ".....((((((.((.......)).))))))(((.((((((((((((((.(((((....))))).)))))))))))))).)).).......",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -40.0,
-          "recodedMfe": -40.0
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.0,
+          "recodedStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -54,13 +60,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
           "wildMfe": -27.5,
-          "recodedMfe": -26.799999237060547
+          "wildStructure": ".....((((((.((.......)).))))))(((.((((((((((((((.(((((....))))).)))))))))))))).)).).......",
+          "recodedMfe": -26.799999237060547,
+          "recodedStructure": ".....((((((.((.......)).))))))...((((...((((.((.((((...((((....))))...)))).)).))))...)))).",
+          "basePairDistance": 40
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -40.0,
-          "recodedMfe": -40.20000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.20000076293945,
+          "recodedStructure": "((.((((...((((.((.((((...((((.((.((((...((((....))))...)))).)).))))...)))).)).))))...)))).))....",
+          "basePairDistance": 68
         }
       }
     },
@@ -87,13 +99,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
           "wildMfe": -27.5,
-          "recodedMfe": -33.599998474121094
+          "wildStructure": ".....((((((.((.......)).))))))(((.((((((((((((((.(((((....))))).)))))))))))))).)).).......",
+          "recodedMfe": -33.599998474121094,
+          "recodedStructure": ".......................(((((.((((.((((((..((((((.(((((....))))).))))))..)))))).)).)).)))))",
+          "basePairDistance": 16
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -40.0,
-          "recodedMfe": -54.70000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -54.70000076293945,
+          "recodedStructure": "....((((((..((((((.((((((..((((((.((((((..(((((...)))))..)))))).))))))..)))))).))))))..))))))...",
+          "basePairDistance": 73
         }
       }
     },
@@ -116,13 +134,19 @@
           "wild": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "wildMfe": -27.600000381469727,
-          "recodedMfe": -27.600000381469727
+          "wildStructure": "((((((.(.((..((..(((((((.....((((.(((((....))))).)).)))))))))..))..))).)))))).............",
+          "recodedMfe": -27.600000381469727,
+          "recodedStructure": "((((((.(.((..((..(((((((.....((((.(((((....))))).)).)))))))))..))..))).)))))).............",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -40.0,
-          "recodedMfe": -40.0
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.0,
+          "recodedStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -149,13 +173,19 @@
           "wild": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
           "wildMfe": -27.600000381469727,
-          "recodedMfe": -25.5
+          "wildStructure": "((((((.(.((..((..(((((((.....((((.(((((....))))).)).)))))))))..))..))).)))))).............",
+          "recodedMfe": -25.5,
+          "recodedStructure": "((((((.(((((...(.((((((((....(((.((((...)))).)))....).))))))))..))).)).)))))).............",
+          "basePairDistance": 26
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -40.0,
-          "recodedMfe": -40.20000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.20000076293945,
+          "recodedStructure": "((.((((...((((.((.((((...((((.((.((((...((((....))))...)))).)).))))...)))).)).))))...)))).))....",
+          "basePairDistance": 68
         }
       }
     },
@@ -182,13 +212,19 @@
           "wild": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "GCCGAUCCGUGUAGAGACCAGCACCCAAAUGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
           "wildMfe": -27.600000381469727,
-          "recodedMfe": -30.299999237060547
+          "wildStructure": "((((((.(.((..((..(((((((.....((((.(((((....))))).)).)))))))))..))..))).)))))).............",
+          "recodedMfe": -30.299999237060547,
+          "recodedStructure": "...............(((..((((......)))).)))((..((((((.((((((..(((((...)))))..)))))).))))))..)).",
+          "basePairDistance": 53
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -40.0,
-          "recodedMfe": -54.70000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -54.70000076293945,
+          "recodedStructure": "....((((((..((((((.((((((..((((((.((((((..(((((...)))))..)))))).))))))..)))))).))))))..))))))...",
+          "basePairDistance": 73
         }
       }
     },
@@ -303,13 +339,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUAGCACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUAGCACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
           "wildMfe": -19.899999618530273,
-          "recodedMfe": -19.899999618530273
+          "wildStructure": ".....((((((.((.......)).))))))(((((((((....)))))..))))..((.((((((((....)))))))))).........",
+          "recodedMfe": -19.899999618530273,
+          "recodedStructure": ".....((((((.((.......)).))))))(((((((((....)))))..))))..((.((((((((....)))))))))).........",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -4.099999904632568,
-          "recodedMfe": -4.099999904632568
+          "wildStructure": "....(((((....)))))...",
+          "recodedMfe": -4.099999904632568,
+          "recodedStructure": "....(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -428,13 +470,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUAGCACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGAGCAGUGUGUUGGCGUAACACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
           "wildMfe": -19.899999618530273,
-          "recodedMfe": -19.700000762939453
+          "wildStructure": ".....((((((.((.......)).))))))(((((((((....)))))..))))..((.((((((((....)))))))))).........",
+          "recodedMfe": -19.700000762939453,
+          "recodedStructure": ".................(((((((..((......((..(((((((...)))))))..)).....))..)))))))...((......))..",
+          "basePairDistance": 47
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -4.099999904632568,
-          "recodedMfe": -4.199999809265137
+          "wildStructure": "....(((((....)))))...",
+          "recodedMfe": -4.199999809265137,
+          "recodedStructure": "((.((((...)))).))....",
+          "basePairDistance": 11
         }
       }
     },
@@ -553,13 +601,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGUUGGCGUAGCACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUCCUGGCGUGACACGGAGCGUGUCUCGAGAUUGGGGUACCUAAAGCGGAG",
           "wildMfe": -19.899999618530273,
-          "recodedMfe": -22.700000762939453
+          "wildStructure": ".....((((((.((.......)).))))))(((((((((....)))))..))))..((.((((((((....)))))))))).........",
+          "recodedMfe": -22.700000762939453,
+          "recodedStructure": ".....((((((.((.......)).))))))(((.(.((((((....((.((((((...)))))).)).)))))).))))...........",
+          "basePairDistance": 37
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -4.099999904632568,
-          "recodedMfe": -4.099999904632568
+          "wildStructure": "....(((((....)))))...",
+          "recodedMfe": -4.099999904632568,
+          "recodedStructure": "....(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -683,13 +737,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGGAUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGU",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGGAUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGU",
           "wildMfe": -28.100000381469727,
-          "recodedMfe": -28.100000381469727
+          "wildStructure": ".....((((((.((.......)).))))))(((.((((((...(((((((.(((((....))))).))))))).)))))).)).).....",
+          "recodedMfe": -28.100000381469727,
+          "recodedStructure": ".....((((((.((.......)).))))))(((.((((((...(((((((.(((((....))))).))))))).)))))).)).).....",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -40.0,
-          "recodedMfe": -40.0
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.0,
+          "recodedStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -817,13 +877,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGGAUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGU",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGAGCAGUGUGGAUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGU",
           "wildMfe": -28.100000381469727,
-          "recodedMfe": -22.399999618530273
+          "wildStructure": ".....((((((.((.......)).))))))(((.((((((...(((((((.(((((....))))).))))))).)))))).)).).....",
+          "recodedMfe": -22.399999618530273,
+          "recodedStructure": ".....((((((.((.......)).))))))....(((.(((....(.((.((((...((((....))))...)))).)).)))).)))..",
+          "basePairDistance": 38
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -40.0,
-          "recodedMfe": -40.20000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.20000076293945,
+          "recodedStructure": "((.((((...((((.((.((((...((((.((.((((...((((....))))...)))).)).))))...)))).)).))))...)))).))....",
+          "basePairDistance": 68
         }
       }
     },
@@ -951,13 +1017,19 @@
           "wild": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUGGAUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGU",
           "recoded": "GUAUGAUUCCUUACCAACCCAGUUAGGAAUGUGUCGUCAGUCGACUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCC",
           "wildMfe": -28.100000381469727,
-          "recodedMfe": -35.29999923706055
+          "wildStructure": ".....((((((.((.......)).))))))(((.((((((...(((((((.(((((....))))).))))))).)))))).)).).....",
+          "recodedMfe": -35.29999923706055,
+          "recodedStructure": ".....((((((.((.......)).))))))............((((((((.((((((..(((((...)))))..)))))).)))))))).",
+          "basePairDistance": 40
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -40.0,
-          "recodedMfe": -54.70000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -54.70000076293945,
+          "recodedStructure": "....((((((..((((((.((((((..((((((.((((((..(((((...)))))..)))))).))))))..)))))).))))))..))))))...",
+          "basePairDistance": 73
         }
       }
     },
@@ -980,13 +1052,19 @@
           "wild": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "recoded": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "wildMfe": -30.799999237060547,
-          "recodedMfe": -30.799999237060547
+          "wildStructure": ".........(((((((.((....)).))))).))..((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "recodedMfe": -30.799999237060547,
+          "recodedStructure": ".........(((((((.((....)).))))).))..((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -36.29999923706055,
-          "recodedMfe": -36.29999923706055
+          "wildStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "recodedMfe": -36.29999923706055,
+          "recodedStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "basePairDistance": 0
         }
       },
       "neighbor": {
@@ -1022,13 +1100,19 @@
           "wild": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "recoded": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGU",
           "wildMfe": -30.799999237060547,
-          "recodedMfe": -36.20000076293945
+          "wildStructure": ".........(((((((.((....)).))))).))..((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "recodedMfe": -36.20000076293945,
+          "recodedStructure": "...........(((((.((....)).)))))((((.(((((((...((((.((.((((...)))).)).))))...))))))).))))..",
+          "basePairDistance": 44
         },
         "first100": {
           "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGCUAGCUAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -36.29999923706055,
-          "recodedMfe": -37.599998474121094
+          "wildStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "recodedMfe": -37.599998474121094,
+          "recodedStructure": "......(((((((...((((.((.((((...((((.((.((((...)))).)).))))...)))).)).))))...)))))))....",
+          "basePairDistance": 62
         }
       },
       "neighbor": {
@@ -1064,13 +1148,19 @@
           "wild": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "recoded": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCA",
           "wildMfe": -30.799999237060547,
-          "recodedMfe": -35.70000076293945
+          "wildStructure": ".........(((((((.((....)).))))).))..((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "recodedMfe": -35.70000076293945,
+          "recodedStructure": ".........(((((((.((....)).))))).))..((..((((((..((((((.(((((....))))).))))))..))))))..))..",
+          "basePairDistance": 2
         },
         "first100": {
           "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGCUAGCUUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -36.29999923706055,
-          "recodedMfe": -45.70000076293945
+          "wildStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "recodedMfe": -45.70000076293945,
+          "recodedStructure": "..........((((((..((((((.((((((..((((((.(((((....))))).))))))..)))))).))))))..))))))...",
+          "basePairDistance": 6
         }
       },
       "neighbor": {
@@ -1106,13 +1196,19 @@
           "wild": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "recoded": "GUAUGAUAUGUCGUCGUCGUCGUCGUCGGCGUGCUGGCUAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCA",
           "wildMfe": -30.799999237060547,
-          "recodedMfe": -34.29999923706055
+          "wildStructure": ".........(((((((.((....)).))))).))..((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "recodedMfe": -34.29999923706055,
+          "recodedStructure": "...........(((((.((....)).))))).(((.((((((.(.(.(((.((.(((.....))).)).))).).).)))))).)))...",
+          "basePairDistance": 42
         },
         "first100": {
           "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGCUGGCUAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGUAA",
           "wildMfe": -36.29999923706055,
-          "recodedMfe": -32.29999923706055
+          "wildStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "recodedMfe": -32.29999923706055,
+          "recodedStructure": "(.(((.((((((.(.(.(((.((.(((.....))).)).))).).).)))))).))).).......((.(((.....))).))....",
+          "basePairDistance": 60
         }
       },
       "neighbor": {
@@ -1144,13 +1240,19 @@
           "wild": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "wildMfe": -25.5,
-          "recodedMfe": -25.5
+          "wildStructure": "..((((.((...((.(((((((((((....)))).....)))))))))..)).)).))(((((.(((((....))))).)))))......",
+          "recodedMfe": -25.5,
+          "recodedStructure": "..((((.((...((.(((((((((((....)))).....)))))))))..)).)).))(((((.(((((....))))).)))))......",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -40.0,
-          "recodedMfe": -40.0
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.0,
+          "recodedStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -1177,13 +1279,19 @@
           "wild": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
           "wildMfe": -25.5,
-          "recodedMfe": -30.5
+          "wildStructure": "..((((.((...((.(((((((((((....)))).....)))))))))..)).)).))(((((.(((((....))))).)))))......",
+          "recodedMfe": -30.5,
+          "recodedStructure": "(((.....))).((.(((((((((.............)))))))))))((((...((((.((.((((...)))).)).))))...)))).",
+          "basePairDistance": 39
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -40.0,
-          "recodedMfe": -40.20000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.20000076293945,
+          "recodedStructure": "((.((((...((((.((.((((...((((.((.((((...((((....))))...)))).)).))))...)))).)).))))...)))).))....",
+          "basePairDistance": 68
         }
       }
     },
@@ -1210,13 +1318,19 @@
           "wild": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "AGGCCUUACCUCCGACCAGCGCACAUAUAAGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
           "wildMfe": -25.5,
-          "recodedMfe": -33.70000076293945
+          "wildStructure": "..((((.((...((.(((((((((((....)))).....)))))))))..)).)).))(((((.(((((....))))).)))))......",
+          "recodedMfe": -33.70000076293945,
+          "recodedStructure": "(((.....)))..(((..((((((......))).)))..)))((((((.((((((..(((((...)))))..)))))).)))))).....",
+          "basePairDistance": 58
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -40.0,
-          "recodedMfe": -54.70000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -54.70000076293945,
+          "recodedStructure": "....((((((..((((((.((((((..((((((.((((((..(((((...)))))..)))))).))))))..)))))).))))))..))))))...",
+          "basePairDistance": 73
         }
       }
     },
@@ -1239,13 +1353,19 @@
           "wild": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "wildMfe": -31.600000381469727,
-          "recodedMfe": -31.600000381469727
+          "wildStructure": "..........((((.....)))).(((((((((.((((((((((((((.(((((....))))).)))))))))))))).)).))))))).",
+          "recodedMfe": -31.600000381469727,
+          "recodedStructure": "..........((((.....)))).(((((((((.((((((((((((((.(((((....))))).)))))))))))))).)).))))))).",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -40.0,
-          "recodedMfe": -40.0
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.0,
+          "recodedStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -1272,13 +1392,19 @@
           "wild": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
           "wildMfe": -31.600000381469727,
-          "recodedMfe": -30.100000381469727
+          "wildStructure": "..........((((.....)))).(((((((((.((((((((((((((.(((((....))))).)))))))))))))).)).))))))).",
+          "recodedMfe": -30.100000381469727,
+          "recodedStructure": ".(((((((((((...((((((....))))))..((((...((((.((.((((...)))).)).))))...)))).))).)))).))))..",
+          "basePairDistance": 63
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -40.0,
-          "recodedMfe": -40.20000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.20000076293945,
+          "recodedStructure": "((.((((...((((.((.((((...((((.((.((((...((((....))))...)))).)).))))...)))).)).))))...)))).))....",
+          "basePairDistance": 68
         }
       }
     },
@@ -1305,13 +1431,19 @@
           "wild": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "CAUACCUGCCGUACCCAGUGUGCAAAUGCUGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
           "wildMfe": -31.600000381469727,
-          "recodedMfe": -35.599998474121094
+          "wildStructure": "..........((((.....)))).(((((((((.((((((((((((((.(((((....))))).)))))))))))))).)).))))))).",
+          "recodedMfe": -35.599998474121094,
+          "recodedStructure": ".....(((.((.((.((((((....)))))).)))).)))..((((((.((((((..(((((...)))))..)))))).)))))).....",
+          "basePairDistance": 62
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -40.0,
-          "recodedMfe": -54.70000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -54.70000076293945,
+          "recodedStructure": "....((((((..((((((.((((((..((((((.((((((..(((((...)))))..)))))).))))))..)))))).))))))..))))))...",
+          "basePairDistance": 73
         }
       }
     },
@@ -1426,13 +1558,19 @@
           "wild": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUGUUGGCGUAGAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
           "recoded": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUGUUGGCGUAGAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
           "wildMfe": -26.899999618530273,
-          "recodedMfe": -26.899999618530273
+          "wildStructure": ".((((..(((((((.(((((((........))))).)))).))))).((((((((((.(((.....))).))))))).))).))))....",
+          "recodedMfe": -26.899999618530273,
+          "recodedStructure": ".((((..(((((((.(((((((........))))).)))).))))).((((((((((.(((.....))).))))))).))).))))....",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -4.099999904632568,
-          "recodedMfe": -4.099999904632568
+          "wildStructure": "....(((((....)))))...",
+          "recodedMfe": -4.099999904632568,
+          "recodedStructure": "....(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -1551,13 +1689,19 @@
           "wild": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUGUUGGCGUAGAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
           "recoded": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGAGCAGUGUGUUGGCGUAAAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
           "wildMfe": -26.899999618530273,
-          "recodedMfe": -23.100000381469727
+          "wildStructure": ".((((..(((((((.(((((((........))))).)))).))))).((((((((((.(((.....))).))))))).))).))))....",
+          "recodedMfe": -23.100000381469727,
+          "recodedStructure": "(((((........((((.((((((((......)))).)))).)))).....((((((.(((.....))).))))))..))))).......",
+          "basePairDistance": 39
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -4.099999904632568,
-          "recodedMfe": -4.199999809265137
+          "wildStructure": "....(((((....)))))...",
+          "recodedMfe": -4.199999809265137,
+          "recodedStructure": "((.((((...)))).))....",
+          "basePairDistance": 11
         }
       }
     },
@@ -1676,13 +1820,19 @@
           "wild": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUGUUGGCGUAGAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
           "recoded": "AGGUACCCCAAUCUCGAGACACGCUCCGUGGUGUCGUCAGUCCUGGCGUGAAUUCCUAACUGGGUUGGUAAGGAAUCAUACCUGCCGUAC",
           "wildMfe": -26.899999618530273,
-          "recodedMfe": -22.0
+          "wildStructure": ".((((..(((((((.(((((((........))))).)))).))))).((((((((((.(((.....))).))))))).))).))))....",
+          "recodedMfe": -22.0,
+          "recodedStructure": ".((((..........(((((((........))))).))......((.((((.(((((.(((.....))).))))))))).))))))....",
+          "basePairDistance": 18
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -4.099999904632568,
-          "recodedMfe": -4.099999904632568
+          "wildStructure": "....(((((....)))))...",
+          "recodedMfe": -4.099999904632568,
+          "recodedStructure": "....(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -1714,13 +1864,19 @@
           "wild": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "wildMfe": -27.799999237060547,
-          "recodedMfe": -27.799999237060547
+          "wildStructure": "..(((.....))).....((((((.....((((.((((((((((((((.(((((....))))).)))))))))))))).)).))))))))",
+          "recodedMfe": -27.799999237060547,
+          "recodedStructure": "..(((.....))).....((((((.....((((.((((((((((((((.(((((....))))).)))))))))))))).)).))))))))",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -40.0,
-          "recodedMfe": -40.0
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.0,
+          "recodedStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "basePairDistance": 0
         }
       }
     },
@@ -1756,13 +1912,19 @@
           "wild": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUG",
           "wildMfe": -27.799999237060547,
-          "recodedMfe": -31.100000381469727
+          "wildStructure": "..(((.....))).....((((((.....((((.((((((((((((((.(((((....))))).)))))))))))))).)).))))))))",
+          "recodedMfe": -31.100000381469727,
+          "recodedStructure": "..(((.....))).((.(((((((((...........)))))))))))((((...((((.((.((((...)))).)).))))...)))).",
+          "basePairDistance": 54
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -40.0,
-          "recodedMfe": -40.20000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -40.20000076293945,
+          "recodedStructure": "((.((((...((((.((.((((...((((.((.((((...((((....))))...)))).)).))))...)))).)).))))...)))).))....",
+          "basePairDistance": 68
         }
       }
     },
@@ -1798,13 +1960,19 @@
           "wild": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUG",
           "recoded": "AUAGGCCUUACCUCCGACCAGCGCACAUAUGUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUG",
           "wildMfe": -27.799999237060547,
-          "recodedMfe": -33.900001525878906
+          "wildStructure": "..(((.....))).....((((((.....((((.((((((((((((((.(((((....))))).)))))))))))))).)).))))))))",
+          "recodedMfe": -33.900001525878906,
+          "recodedStructure": "..(((.....)))..(((..((((((....))).)))..)))((((((.((((((..(((((...)))))..)))))).)))))).....",
+          "basePairDistance": 55
         },
         "first100": {
           "wild": "GUGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -40.0,
-          "recodedMfe": -54.70000076293945
+          "wildStructure": "....((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).(((((....)))))...",
+          "recodedMfe": -54.70000076293945,
+          "recodedStructure": "....((((((..((((((.((((((..((((((.((((((..(((((...)))))..)))))).))))))..)))))).))))))..))))))...",
+          "basePairDistance": 73
         }
       }
     },
@@ -1827,13 +1995,19 @@
           "wild": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "recoded": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "wildMfe": -32.599998474121094,
-          "recodedMfe": -32.599998474121094
+          "wildStructure": "(.((((((((.((....)).))).))))).).....((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "recodedMfe": -32.599998474121094,
+          "recodedStructure": "(.((((((((.((....)).))).))))).).....((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "basePairDistance": 0
         },
         "first100": {
           "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "wildMfe": -36.29999923706055,
-          "recodedMfe": -36.29999923706055
+          "wildStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "recodedMfe": -36.29999923706055,
+          "recodedStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "basePairDistance": 0
         }
       },
       "neighbor": {
@@ -1869,13 +2043,19 @@
           "wild": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "recoded": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGU",
           "wildMfe": -32.599998474121094,
-          "recodedMfe": -38.70000076293945
+          "wildStructure": "(.((((((((.((....)).))).))))).).....((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "recodedMfe": -38.70000076293945,
+          "recodedStructure": "(.((((((((.((....)).))).))))).)((((.(((((((...((((.((.((((...)))).)).))))...))))))).))))..",
+          "basePairDistance": 42
         },
         "first100": {
           "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGCUAGCUAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGAGCAGUGUGUUGGCGUAA",
           "wildMfe": -36.29999923706055,
-          "recodedMfe": -37.599998474121094
+          "wildStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "recodedMfe": -37.599998474121094,
+          "recodedStructure": "......(((((((...((((.((.((((...((((.((.((((...)))).)).))))...)))).)).))))...)))))))....",
+          "basePairDistance": 62
         }
       },
       "neighbor": {
@@ -1911,13 +2091,19 @@
           "wild": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "recoded": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCA",
           "wildMfe": -32.599998474121094,
-          "recodedMfe": -37.5
+          "wildStructure": "(.((((((((.((....)).))).))))).).....((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "recodedMfe": -37.5,
+          "recodedStructure": "(.((((((((.((....)).))).))))).).....((..((((((..((((((.(((((....))))).))))))..))))))..))..",
+          "basePairDistance": 2
         },
         "first100": {
           "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGCUAGCUUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUCGUCAGUCCUGGCGUGA",
           "wildMfe": -36.29999923706055,
-          "recodedMfe": -45.70000076293945
+          "wildStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "recodedMfe": -45.70000076293945,
+          "recodedStructure": "..........((((((..((((((.((((((..((((((.(((((....))))).))))))..)))))).))))))..))))))...",
+          "basePairDistance": 6
         }
       },
       "neighbor": {
@@ -1953,13 +2139,19 @@
           "wild": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCA",
           "recoded": "CUCCGACAUGUCGUCGUCGUCGUCGUCGGCGUGCUGGCUAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCA",
           "wildMfe": -32.599998474121094,
-          "recodedMfe": -38.70000076293945
+          "wildStructure": "(.((((((((.((....)).))).))))).).....((..((((((((((((((.(((((....))))).))))))))))))))..))..",
+          "recodedMfe": -38.70000076293945,
+          "recodedStructure": "..(((((((..(((((.((....)).))))).(((.((((((.....)))))).)))...))))))).((((((.((....)))))))).",
+          "basePairDistance": 63
         },
         "first100": {
           "wild": "GUGCUAGCUUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUCGUCAGUGUUGGCGUAG",
           "recoded": "GUGCUGGCUAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGAGCUCAGUGUUGGCGUAA",
           "wildMfe": -36.29999923706055,
-          "recodedMfe": -32.29999923706055
+          "wildStructure": ".......((.((((((((((((((.((((((((((((((.(((((....))))).)))))))))))))).)))))))))))))).))",
+          "recodedMfe": -32.29999923706055,
+          "recodedStructure": "(.(((.((((((.(.(.(((.((.(((.....))).)).))).).).)))))).))).).......((.(((.....))).))....",
+          "basePairDistance": 60
         }
       },
       "neighbor": {

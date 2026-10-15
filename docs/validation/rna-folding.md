@@ -18,6 +18,40 @@ rebuild instructions are in
 Preserve the upstream custom ViennaRNA license and attribution. Check hash
 changes and rerun numerical comparisons whenever rebuilding or upgrading.
 
+## Comparing predicted structures
+
+The shortlist folding panel compares the original and active-scheme MFE structures
+for each existing window. Pair identity uses the two **1-based window positions**,
+not a nucleotide letter or a dot-bracket character. Retained pairs occur in both
+structures; lost pairs occur only in the original; gained pairs only in the recoded
+structure. Base-pair distance is lost plus gained. A base changes pairing when its
+partner position changes, including a transition to or from unpaired. Thus a base
+can change partner even when its dot-bracket symbol stays `(` or `)`.
+
+Sequence edits are counted separately. Expanded details show the exact RNA inputs
+and dot-bracket outputs in window order. These positions are local to that folded
+window, not genomic coordinates; the genomic start context can include unmapped
+bases or a spliced CDS. Compare equal-length windows only. Missing, malformed or
+unbalanced structures cannot yield a valid zero-distance result.
+
+This comparison concerns one predicted minimum-energy structure per input. It is
+not an ensemble accessibility probability, a measured structure, a functional
+impact score or a prediction of biological harm. A zero distance does not establish
+that recoding has no biological effect, and a nonzero distance does not establish
+that a change is harmful. Existing model parameters, privacy and sequence-construction
+rules remain the folding contract above.
+
+### Definition receipt
+
+The [ViennaRNA structure-metrics documentation](https://www.tbi.univie.ac.at/RNA/ViennaRNA/doc/html/utils/struct/metrics.html),
+`vrna_bp_distance()` / `vrna_bp_distance_pt()`, defines the distance as:
+“dist = number of base pairs in one structure but not in the other”. The source
+also requires structures of equal length. Retrieved directly and mechanically
+matched by `cyano-regulatory-sites`, 2026-10-15 UTC (2026-10-14 local); HTML
+29,846 bytes, SHA-256
+`a0c43163f9fe076d5f1dbc3c32d69b5c641be6f89d2b1df76260cb143f39454d`.
+This verifies the computational definition; it adds no biological-effect claim.
+
 ## Cache and lifecycle
 
 The tab keeps up to 1,000 successful gene results in memory, evicting the oldest.
@@ -41,7 +75,12 @@ sent to an external service. A stalled worker times out after 30 seconds.
 
 ## Oracle regeneration
 
-`tests/fixtures/rna-folding.json` is a tracked numerical oracle. Regenerate it
+`tests/fixtures/rna-folding.json` is a tracked numerical and structure oracle. It
+includes native ViennaRNA dot-bracket outputs and `RNA.bp_distance` for each
+original/recoded window. The comparison oracle test folds the same inputs with
+the shipped WASM and checks the structures and distances against that native
+reference across both strands, circular boundaries, short and spliced CDSs,
+overlapping genes and multiple schemes. Regenerate it
 only after an intentional, reviewed engine or folding-contract change, then
 inspect and commit the resulting diff. It is not a routine release-gate step.
 
@@ -55,7 +94,7 @@ Use the project's Python environment with ViennaRNA pinned to 2.7.2:
 
 ```bash
 python -m pytest tests/test_rna_context.py tests/test_feature_metrics.py -q
-node --test --experimental-test-coverage tests/js/folding.test.mjs
+node --test --experimental-test-coverage tests/js/folding.test.mjs tests/js/folding-comparison*.test.mjs
 node tests/fixtures/make_fixture.mjs
 node tests/fixtures/make_fixture.mjs --out tests/fixtures/data-expression --with-expression
 node --test tests/js/*.test.mjs
