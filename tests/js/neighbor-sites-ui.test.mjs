@@ -69,7 +69,7 @@ test('legend lists each count present, coloured as drawn, with unknown apart fro
       'opposite-strand sites at one base are two distinct sites; the owner holds none of another gene');
     assert.match(host.textContent, /0 sites \(1 gene\)/);
     assert.match(host.textContent, /2 sites \(1 gene\)/);
-    assert.doesNotMatch(host.textContent, /Evidence unavailable/, 'no row for an empty unknown bucket');
+    assert.match(host.textContent, /Evidence unavailable \(0\)/, 'listed at zero, as the filter lists it');
     const colours = { 0: '#000000', 3: '#333333' };
     renderNeighborSiteLegend(host, { ...model, siteCounts: Float64Array.from([0, 3, 3, Number.NaN]) },
       { hiddenCount: 2112, scale: { color: (value) => colours[value] } });

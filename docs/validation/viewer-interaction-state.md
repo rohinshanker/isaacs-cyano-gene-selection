@@ -373,6 +373,67 @@ and a point disappears or reappears at once, with no fade.
 - Tests: `tests/js/range-slider.test.mjs`, `tests/js/filters-live.test.mjs`,
   and the slider case in `tests/js/length-explorer.test.mjs`.
 
+## Turn filters off
+
+Owner request, 2026-10-13. The collapsed tan **Filter status** section appears
+on the map and in the chromosome view whenever configured filters hide a gene,
+and always while they are bypassed, because it holds the only control that turns
+them back on. One `FilterStatus` (`site/js/ui/filter-status.js`) per view is
+built once and updated in place, so its open state and focus survive redraws.
+
+- **Turn filters off** is a reversible bypass, not Clear all filters. Every
+  criterion and value is kept; only the effective mask changes, to every gene.
+  The summary reads **Filter status (temporarily disabled)** in every view, and
+  the filter panel, the chromosome window readout and its track summaries say
+  filters are temporarily off rather than claiming a count passes them.
+- **Any criteria change ends it; nothing else does.** `computeMask` compares a
+  signature of the reader-chosen criteria (`filterCriteriaSignature` in
+  `site/js/core/filter-bypass.js`) with the one recorded when the bypass began.
+  The signature covers every range, every built-in filter channel and the
+  datasets each filtered data type reads as requested, never as loaded, so a
+  file landing, a repaint, a tab switch, a collapsed panel or Show filtered-out
+  genes cannot end it, and a filter control added later cannot forget to. The
+  ending is announced once, ahead of the edited control's own announcement.
+  Clear all filters also clears the bypass.
+- While bypassed, Show filtered-out genes changes nothing, because nothing is
+  filtered out, and legend previews ignore the bypassed category and
+  essentiality selections. The camera, pinned gene and shortlist are untouched.
+- Shared state: `fo=1`, omitted when filters apply, which is what every earlier
+  link meant, so no version bump. A bypass read from a link adopts that link's
+  criteria. `viewState.filtersBypassed` records it in an export.
+- **An export made while bypassed says so in the gene table itself**, by owner
+  decision of 2026-10-14: every row's `passesCurrentFilters` reads
+  `true (filters turned off at export)`, and `filterState.note` in the manifest
+  explains that the recorded criteria were not applied.
+- Tests: `tests/js/filter-bypass.test.mjs` and the filters-off case in
+  `tests/js/export-manifest.test.mjs`.
+
+## The low-traffic threshold's own datasets
+
+Owner request, 2026-10-13. With **Use same source as colouring** on, the
+threshold reads the colour metric's own registry object, so its datasets and
+pooled values are the colouring's by construction. Off, **Choose datasets** opens
+the Data Sources window in `subset` mode and stores the threshold's own list in
+`trafficSources` (`tds`), resolved with the same contributor resolver the axes
+use and pooled by `buildTypeMetrics`, the colouring's own rules. Colouring and
+its informing choice are never changed by it. A type that does not pool reads
+one dataset and says which. Loading or failed contributors are requested but
+left out of the calculation, and a notice outside the collapsed box says so.
+
+- An omitted `tds` means the threshold reads what the Data Sources selection
+  gives its type, which is what every earlier link drew. Changing the threshold
+  metric drops the list, which belongs to the type it was made for.
+- A threshold is cleared only when its scale kind changes, from one deposit's
+  units to a pooled percentile or back (`trafficScaleKind`). A pooled percentile
+  is the same 0 to 1 scale whatever the pool size, so resizing a pool keeps it.
+- The explanation, every contributing source and condition, units, pooling
+  method, coverage, the borrowed-strain caveat and archive links sit in one tan
+  **Provenance** disclosure, closed by default, with no box nested inside it.
+  Its open state survives rebuilds. The follow switch, metric chooser, dataset
+  summary, Choose datasets, contributor notices, slider and readout stay outside.
+- Exports record the read datasets under `filterState.lowTraffic`.
+- Tests: `tests/js/traffic-pooling.test.mjs`.
+
 ## URL and local persistence
 
 The current encoder is `ver=6`. A viewer-generated hash is a complete shareable

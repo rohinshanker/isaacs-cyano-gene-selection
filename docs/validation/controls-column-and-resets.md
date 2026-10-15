@@ -41,25 +41,42 @@ contracted in
 
 ## The controls column is view state
 
-The column holds three panels, identified in `site/js/core/left-panels.js`:
+The column holds four panels, identified in `site/js/core/left-panels.js`:
 
 | Id | Title | Fresh state |
 | --- | --- | --- |
 | `gene-viewer` | Gene visualizer | First, collapsed |
 | `scheme` | Recoding scheme | Second, expanded |
-| `filters` | Filters | Third, expanded |
+| `custom-filters` | Custom filters | Third, collapsed |
+| `filters` | Filters | Fourth, expanded |
 
 The gene visualizer leads because it says what is being looked at before the
 scheme and filters change what is shown, and it starts collapsed because it is a
 reference view rather than a control: expanded, it would push the scheme editor
 below the fold on a first visit.
 
+Custom filters (owner request, 2026-10-13) holds Add filter, its metric
+selector and the range row each added metric gets. Filters keeps every built-in
+filter, Hide low-traffic genes included, the passing count and Clear all filters,
+which still clears both panels. Both render from one `FilterPanel` writing one
+filter state, so collapsing either panel never disables or clears a filter, and a
+held range thumb is recognised as live in either panel.
+
 Order and collapsed set are shareable state, not browser-local preferences. They
 encode into the URL hash as `po` and `pc` at encoder version 5.
 
+A panel added after links were shared is placed and collapsed by rule, not by
+accident. Its registry entry may declare `insertBefore`; a link whose `po` lacks
+it inserts it directly above that panel, wherever the link put it, and keeps the
+relative order of the panels the link named. Its fresh collapsed state reaches
+an older link through the encoder version: version 9 introduced Custom filters,
+so a `pc` from any earlier or unversioned hash gains `custom-filters`, while a
+version 9 `pc` that omits it means the reader opened it. The panels a link named
+keep their explicit state, `pc=none` included.
+
 Organism navigation does not create or pin a scheme-specific panel. Every
 organism, including Syn61 and any future organism with a declared recoding
-scheme, uses these same three panel ids and the same ordering, collapse,
+scheme, uses these same four panel ids and the same ordering, collapse,
 movement, focus, and URL-state machinery. Recoded genome facts live inside the
 `scheme` panel body, so the facts and editor move and collapse together. A navigation grouping change must
 exercise scheme-panel movement and collapse across reload; it must not move the
@@ -69,7 +86,7 @@ scheme content outside this column.
   fresh order.
 - `pc` is the collapsed set in panel order, written only when it differs from the
   fresh set. **Nothing collapsed encodes as the literal `none`.** An empty value
-  would be dropped by the encoder and read back as the gene visualizer collapsed
+  would be dropped by the encoder and read back as the fresh collapsed set
   again, so a link would not reproduce the column it was copied from.
 - A state object that carries neither field writes neither. Silence about the
   layout is not a claim that every panel is open.

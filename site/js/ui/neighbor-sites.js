@@ -160,12 +160,11 @@ export function renderNeighborSiteLegend(host, model, {
         + `${genes === 1 ? 'gene' : 'genes'})`));
     list.append(row);
   }
-  if (tally.unavailable > 0) {
-    const row = node('li');
-    row.append(makeSwatch('filled-circle', MISSING_COLOR),
-      document.createTextNode(` ${NEIGHBOR_SITE_BUCKETS[2]} (${formatCount(tally.unavailable)})`));
-    list.append(row);
-  }
+  // Always listed, zero included, so the key and the filter's own option agree.
+  const unknown = node('li');
+  unknown.append(makeSwatch('filled-circle', MISSING_COLOR),
+    document.createTextNode(` ${NEIGHBOR_SITE_BUCKETS[2]} (${formatCount(tally.unavailable)})`));
+  list.append(unknown);
   host.append(
     node('p', 'Distinct sites inside each CDS, same and opposite strand counted alike.', 'panel-note'),
     list, node('p', model.reason ?? SITE_CAVEAT, 'panel-note'),

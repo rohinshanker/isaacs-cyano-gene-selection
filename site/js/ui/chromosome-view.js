@@ -767,10 +767,10 @@ export class ChromosomeView {
     this.dataSourcesHost.className = 'map-toolbar-row data-sources-row';
     this.dataSourcesHost.id = 'chromosome-data-sources';
     // The same collapsed Filter status section the map shows, directly under
-    // the row holding Show filtered-out genes; app.js fills it.
+    // the window readout that states the passing count; app.js fills it. The
+    // readout stays the view's first status region.
     this.filterStatus = filterStatusElement('chromosome-filter-status');
-    toolbar.append(fieldsRow, this.scaleNotice, this.colourHelp, this.dataSourcesHost, viewRow,
-      this.filterStatus);
+    toolbar.append(fieldsRow, this.scaleNotice, this.colourHelp, this.dataSourcesHost, viewRow);
 
     this.windowReadout = document.createElement('p');
     this.windowReadout.className = 'chromosome-window';
@@ -882,7 +882,7 @@ export class ChromosomeView {
     this.sequenceHost = document.createElement('div');
     this.sequenceHost.className = 'chromosome-sequence';
 
-    this.figure.append(toolbar, this.windowReadout, this.overlapRow, this.canvasHost,
+    this.figure.append(toolbar, this.windowReadout, this.filterStatus, this.overlapRow, this.canvasHost,
       this.controls, this.detailJump, this.legendHost, this.viewerInfo,
       this.siteInstruction, this.neighborSitePanel.element, this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
