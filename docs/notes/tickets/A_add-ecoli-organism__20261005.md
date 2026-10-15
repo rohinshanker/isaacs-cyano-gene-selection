@@ -26,7 +26,7 @@ retain current membership meanwhile** (2026-10-14). Investigate primary-source
 expression/reference-set support before proposing a membership change.
 The owner's “keep them separate, but allow for
 pooling” answer was explicitly clarified to mean **microarray measurements**,
-recorded in [the array ticket](O_array-expression-reader__20261007.md); it is not
+recorded in [the array ticket](A_array-expression-reader__20261007.md); it is not
 an E. coli source-admission or pooling decision. The E. coli source choices
 (PRECISE-1K/regulatory sources, EQ353 proteomics and Choe essentiality) remain open.
 

@@ -429,7 +429,7 @@ background is listed as such. GSE51112 (Markson et al. 2013) followed the
 same day as 4 layers: the wild-type circadian course and the three
 RpaA-phosphomimetic arms, which are engineered. Its deposit is one
 median- and ORF-length-normalised table with one sample per time point.
-The last three register rows with a per-gene table followed the same day: GSE252562 (6 wild-type photoperiod sets, one of them with a disputed photoperiod), GSE225426 (5) and GSE311172 (7 oxygen endpoints of an engineered strain). With those, every RNA-seq row of the register that deposits a per-gene table is ingested; what remains are the raw-only arrays, now [their own ticket](../notes/tickets/O_array-expression-reader__20261007.md), and the PRIDE deposits that serve no proteome-wide table. GSE45762 is
+The last three register rows with a per-gene table followed the same day: GSE252562 (6 wild-type photoperiod sets, one of them with a disputed photoperiod), GSE225426 (5) and GSE311172 (7 oxygen endpoints of an engineered strain). With those, every RNA-seq row of the register that deposits a per-gene table is ingested; what remains are the raw-only arrays, now [their own ticket](../notes/tickets/A_array-expression-reader__20261007.md), and the PRIDE deposits that serve no proteome-wide table. GSE45762 is
 excluded for contradictory sample labels. Of the CC0 proteomes, PXD062851
 (Russo et al. 2025) shipped on 2026-10-06 as one label-free DIA layer (1,996
 genes; 2,307 protein groups keyed by UniProt accession, mapped through
