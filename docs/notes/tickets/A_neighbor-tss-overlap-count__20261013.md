@@ -1,13 +1,13 @@
-# O_neighbor-tss-overlap-count__20261013 — Open
+# A_neighbor-tss-overlap-count__20261013 — Active
 
 Scope: Show and use the number of distinct neighbouring-gene TSS sites inside each gene's CDS, including both same- and opposite-strand TSSs.
-Status: open
+Status: active
 Opened: 2026-10-13
-Updated: 2026-10-13
+Updated: 2026-10-14
 
 ## Current State
 
-Requested by the owner; implementation is unassigned and has not started.
+Requested by the owner. Claimed 2026-10-14 by session cyano-unblocked-tix, implementing on branch `work/filters-tickets-20261014` in `../worktrees/filters-tickets-20261014`.
 The detail panels already show a distinct-site count, but the neighbouring-gene
 TSS colour mode uses categorical zero versus one-or-more, plus unavailable.
 Reuse the existing `neighbor-sites.js` relation count and admitted site identity;

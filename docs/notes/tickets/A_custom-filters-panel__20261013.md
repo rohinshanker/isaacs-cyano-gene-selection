@@ -1,13 +1,13 @@
-# O_custom-filters-panel__20261013 — Open
+# A_custom-filters-panel__20261013 — Active
 
 Scope: Add a collapsed-by-default Custom filters section above Filters in the left controls column and move the existing Add filter area into it.
-Status: open
+Status: active
 Opened: 2026-10-13
-Updated: 2026-10-13
+Updated: 2026-10-14
 
 ## Current State
 
-Requested by the owner; implementation is unassigned and has not started.
+Requested by the owner. Claimed 2026-10-14 by session cyano-unblocked-tix, implementing on branch `work/filters-tickets-20261014` in `../worktrees/filters-tickets-20261014`.
 `FilterPanel.build()` in `site/js/ui/filters.js` currently places Add filter,
 its metric selector/Add button and custom range rows below the built-in filters.
 The left column currently registers Gene visualizer, Recoding scheme and Filters.
@@ -47,7 +47,7 @@ unchanged filtering results and run the repository's required gates.
 ## Cleanup
 
 Claim ownership before editing shared panel/filter files. Coordinate with the
-[low-traffic pooling/Provenance ticket](O_low-traffic-provenance-disclosure__20261013.md),
+[low-traffic pooling/Provenance ticket](A_low-traffic-provenance-disclosure__20261013.md),
 which also touches FilterPanel; its built-in controls remain in Filters.
 Resolve every finding, distill the revised panel/state contract into validation
 guidance and its index, then remove this ticket and queue row under AGENTS.md.

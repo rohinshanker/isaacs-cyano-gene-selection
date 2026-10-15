@@ -1,13 +1,13 @@
-# O_low-traffic-provenance-disclosure__20261013 — Open
+# A_low-traffic-provenance-disclosure__20261013 — Active
 
 Scope: Allow multiple datasets to inform Hide low-traffic genes through pooling like the colouring controls, and collapse its dataset explanation into a tan Provenance box.
-Status: open
+Status: active
 Opened: 2026-10-13
-Updated: 2026-10-13
+Updated: 2026-10-14
 
 ## Current State
 
-Requested by the owner; implementation is unassigned and has not started.
+Requested by the owner. Claimed 2026-10-14 by session cyano-unblocked-tix, implementing on branch `work/filters-tickets-20261014` in `../worktrees/filters-tickets-20261014`.
 The owner expanded this ticket to include selecting and pooling multiple datasets,
 using the colouring section as the interaction and calculation reference.
 `renderTraffic` in `site/js/ui/filters.js` currently selects a traffic metric;
@@ -64,7 +64,7 @@ Run the repository's required gates before resolving.
 ## Cleanup
 
 Claim ownership and coordinate shared FilterPanel work with the
-[Custom filters panel ticket](O_custom-filters-panel__20261013.md); low-traffic
+[Custom filters panel ticket](A_custom-filters-panel__20261013.md); low-traffic
 controls remain a built-in part of Filters. Resolve all findings, distill the
 pooling/presentation/state contracts into existing validation guidance and its
 index, then remove this ticket and queue row according to AGENTS.md. Leave the

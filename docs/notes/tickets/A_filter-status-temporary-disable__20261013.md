@@ -1,13 +1,13 @@
-# O_filter-status-temporary-disable__20261013 — Open
+# A_filter-status-temporary-disable__20261013 — Active
 
 Scope: Extend Filter status to Chromosome/Gene, add temporary filter disabling with automatic reactivation on edits, and ensure chromosome access to Show filtered-out genes.
-Status: open
+Status: active
 Opened: 2026-10-13
-Updated: 2026-10-13
+Updated: 2026-10-14
 
 ## Current State
 
-Requested by the owner; implementation is unassigned and has not started.
+Requested by the owner. Claimed 2026-10-14 by session cyano-unblocked-tix, implementing on branch `work/filters-tickets-20261014` in `../worktrees/filters-tickets-20261014`.
 The scatter view has a collapsed tan Filter status disclosure (`#filter-banner`)
 for active filters. Chromosome/Gene already has a Show filtered-out genes checkbox
 (`#chromosome-show-hidden`) sharing `state.showHidden` with the scatter view.
@@ -62,8 +62,8 @@ Run the repository's required gates before resolving.
 ## Cleanup
 
 Claim ownership before editing shared filter, view-state or chromosome files.
-Coordinate with the [Custom filters panel](O_custom-filters-panel__20261013.md)
-and [low-traffic pooling/Provenance](O_low-traffic-provenance-disclosure__20261013.md)
+Coordinate with the [Custom filters panel](A_custom-filters-panel__20261013.md)
+and [low-traffic pooling/Provenance](A_low-traffic-provenance-disclosure__20261013.md)
 tickets so their edits participate in automatic reactivation. Resolve every
 finding, distill reusable interaction/state rules into validation guidance and
 its index, then remove this ticket and queue row under AGENTS.md. Leave other
