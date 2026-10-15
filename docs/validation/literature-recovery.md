@@ -290,8 +290,8 @@ access failures, to determine whether a paper still needs recovery.
 GSE103606 is a SuperSeries, not another admitted layer. Its frozen package B rows
 5 and 6 retain the original access-failure wording; the Puszyńska paper was since
 read through LIT-01. No current pair or shipped layer uses those rows. The five
-RNA-seq SubSeries were ingested separately; the two recovered array sources remain
-in the [array-reader queue](../notes/tickets/A_array-expression-reader__20261007.md).
+RNA-seq SubSeries were ingested separately; the two recovered array sources now ship among the separately selectable
+[GEO array samples](geo-array-reader.md).
 GSE50920/GSE50922 flask-temperature and other source-silent details remain in the
 [depositor correspondence scope](../notes/tickets/O_depositor-condition-correspondence__20261007.md).
 The Guerreiro supplement remains optional and unsupplied. The eleven abstract-only
