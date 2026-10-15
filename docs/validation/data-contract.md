@@ -191,12 +191,13 @@ Two limits are not negotiable for these strains:
 
 ### Condition comparability
 
-These thresholds decide whether two datasets may share one displayed layer or a
-combined estimate. They are a starting rule derived from the divergence this
-repository already documents, not a literature-established equivalence bound, and
-they are pending lab sign-off in
-[AAAA-new-bio-decisions-to-review.md](AAAA-new-bio-decisions-to-review.md).
-Two datasets are comparable only when **every** axis the assay responds to agrees.
+These thresholds are a default metadata screen derived from the divergence this
+repository already documents, not a literature-established equivalence bound or
+permission to pool. Passing the screen requires agreement on **every** axis the
+assay responds to. The owner decisions below govern pair review; recorded
+judgements in
+[AAAA-new-bio-decisions-to-review.md](AAAA-new-bio-decisions-to-review.md)
+govern sharing a displayed layer or combined estimate.
 
 | Axis | Comparable when | Why this boundary |
 | --- | --- | --- |
@@ -981,7 +982,11 @@ rules, including how to add a quantity, are in
 
 `meta.pairJudgements` carries the owner's judgements on escalated condition-set
 pairs from `data/expression/pair_judgements.json` (the transcription of the
-2026-10-05 review sheet, three entries extrapolated and marked so). Each names
+2026-10-05 review sheet and subsequent explicit owner decisions). Only pairs 11
+and 30 retain authorized extrapolations, marked in the source. Pairs 7 and 8
+are explicit `separate` decisions dated 2026-10-14; pairs 26 and 27 remain
+`undecided` because the owner's narrower light condition cannot be checked.
+Each names
 both sides by study and condition-table row and one call: `share`, `separate`,
 `conditional` (with its condition), or `undecided`. The site's `comparable()`
 reads a judgement before any threshold; an absent file is no judgement, never a
