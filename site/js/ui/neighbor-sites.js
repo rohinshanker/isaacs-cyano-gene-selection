@@ -1,9 +1,9 @@
 import { makeSwatch } from './legend.js';
 import { formatCount } from './format.js';
-import { GHOST_BORDER, GHOST_COLOR, PINNED_COLOR, SHORTLIST_COLOR } from './colors.js';
+import { GHOST_BORDER, GHOST_COLOR, MISSING_COLOR, PINNED_COLOR, SHORTLIST_COLOR } from './colors.js';
 import {
   describeNeighborSite, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_BUCKETS, NEIGHBOR_SITE_COLORS,
-  SITE_CAVEAT,
+  SITE_CAVEAT, neighborSiteCountTally,
 } from '../core/neighbor-sites.js';
 
 function node(tag, text, className) {
@@ -142,17 +142,34 @@ export function drawNeighborSiteMarks(root, sites, gene, positionX, y, { baseWid
   root.append(group);
 }
 
-export function renderNeighborSiteLegend(host, model, { markerConventions = true, showHidden = true, hiddenCount = 0 } = {}) {
+/**
+ * One row per count present, coloured exactly as the map draws it, so 1, 2 and
+ * many sites read apart; then the genes whose evidence cannot be read, which
+ * are unknown rather than zero.
+ */
+export function renderNeighborSiteLegend(host, model, {
+  scale = null, markerConventions = true, showHidden = true, hiddenCount = 0,
+} = {}) {
   host.replaceChildren();
   const list = node('ul', null, 'legend-notes category-legend neighbor-site-legend');
-  NEIGHBOR_SITE_BUCKETS.forEach((label, i) => {
-    if (!model.available && i !== 2) return;
+  const tally = neighborSiteCountTally(model);
+  for (const { count, genes } of tally.rows) {
     const row = node('li');
-    const swatch = makeSwatch('filled-circle', NEIGHBOR_SITE_COLORS[i]);
-    row.append(swatch, document.createTextNode(` ${label} (${formatCount(model.counts[i])})`));
+    row.append(makeSwatch('filled-circle', scale ? scale.color(count) : NEIGHBOR_SITE_COLORS[count > 0 ? 1 : 0]),
+      document.createTextNode(` ${formatCount(count)} ${count === 1 ? 'site' : 'sites'} (${formatCount(genes)} `
+        + `${genes === 1 ? 'gene' : 'genes'})`));
     list.append(row);
-  });
-  host.append(list, node('p', model.reason ?? SITE_CAVEAT, 'panel-note'));
+  }
+  if (tally.unavailable > 0) {
+    const row = node('li');
+    row.append(makeSwatch('filled-circle', MISSING_COLOR),
+      document.createTextNode(` ${NEIGHBOR_SITE_BUCKETS[2]} (${formatCount(tally.unavailable)})`));
+    list.append(row);
+  }
+  host.append(
+    node('p', 'Distinct sites inside each CDS, same and opposite strand counted alike.', 'panel-note'),
+    list, node('p', model.reason ?? SITE_CAVEAT, 'panel-note'),
+  );
   if (markerConventions) {
     const notes = node('ul', null, 'legend-notes');
     const row = (shape, color, label, fill = color) => {

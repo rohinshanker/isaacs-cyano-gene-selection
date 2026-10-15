@@ -56,7 +56,7 @@ test('a metric range row carries a two-thumb slider in step with its fields', as
     assert.equal(min.dataset.filterKey, 'gc3');
     assert.equal(min.value, '0.3');
     assert.equal(max.value, '0.8', 'no upper bound puts the thumb at the top of the data');
-    const fields = host.querySelectorAll('input').filter((input) => input.type === 'number');
+    const fields = host.querySelectorAll('input').filter((input) => input.type === 'number' && input.id.startsWith('filter-'));
     assert.deepEqual(fields.map((f) => f.value), ['0.3', '']);
 
     // Dragging the upper thumb: the fields and the histogram follow, the page is
@@ -108,7 +108,7 @@ test('a metric with no spread gets fields but no slider', async () => {
     reg.metrics.push(flat); reg.byKey.set('flat', flat);
     panel.update({ ...state({ flat: { min: null, max: null, includeMissing: true } }), registry: reg });
     assert.equal(thumbs(host).length, 0);
-    assert.equal(host.querySelectorAll('input').filter((input) => input.type === 'number').length, 2);
+    assert.equal(host.querySelectorAll('input').filter((input) => input.type === 'number' && input.id.startsWith('filter-')).length, 2);
   });
 });
 

@@ -62,14 +62,21 @@ test('compact marks stay exact, visibility hides targets but retains evidence an
   });
 });
 
-test('legend has separate known absence, overlap and unavailable counts', async () => {
+test('legend lists each count present, coloured as drawn, with unknown apart from zero', async () => {
   await withFakeDocument((document) => {
     const host = document.createElement('div'); renderNeighborSiteLegend(host, model);
-    assert.match(host.textContent, /No recorded neighbouring-gene TSS \(1\)/);
-    assert.match(host.textContent, /Recorded neighbouring-gene TSS \(1\)/);
-    assert.match(host.textContent, /Evidence unavailable \(0\)/);
-    renderNeighborSiteLegend(host, { ...model, counts: [2112,603,0] }, { hiddenCount: 2112 });
-    assert.match(host.textContent, /No recorded neighbouring-gene TSS \(2,112\)/);
+    assert.deepEqual([...model.siteCounts], [2, 0],
+      'opposite-strand sites at one base are two distinct sites; the owner holds none of another gene');
+    assert.match(host.textContent, /0 sites \(1 gene\)/);
+    assert.match(host.textContent, /2 sites \(1 gene\)/);
+    assert.doesNotMatch(host.textContent, /Evidence unavailable/, 'no row for an empty unknown bucket');
+    const colours = { 0: '#000000', 3: '#333333' };
+    renderNeighborSiteLegend(host, { ...model, siteCounts: Float64Array.from([0, 3, 3, Number.NaN]) },
+      { hiddenCount: 2112, scale: { color: (value) => colours[value] } });
+    assert.match(host.textContent, /0 sites \(1 gene\)/);
+    assert.match(host.textContent, /3 sites \(2 genes\)/);
+    assert.match(host.textContent, /Evidence unavailable \(1\)/);
+    assert.match(host.textContent, /same and opposite strand counted alike/);
     assert.match(host.textContent, /2,112 excluded by filters/);
     const root = document.createElementNS('svg','svg');
     drawNeighborSiteMarks(root, model.forGene(focal).sites, focal, () => null, 10);

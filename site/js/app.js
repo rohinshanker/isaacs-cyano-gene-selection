@@ -1,4 +1,7 @@
-import { neighborSiteModel, neighborSiteFilterSummary, passesNeighborSiteFilter, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL, NEIGHBOR_SITE_COLORS } from './core/neighbor-sites.js';
+import {
+  neighborSiteModel, neighborSiteFilterSummary, passesNeighborSiteFilter, passesNeighborSiteCountFilter,
+  neighborSiteCountMetric, NEIGHBOR_SITE_COLOR_KEY, NEIGHBOR_SITE_LABEL,
+} from './core/neighbor-sites.js';
 import { renderNeighborSiteLegend } from './ui/neighbor-sites.js';
 import { GO_TERM_COLOR_KEY, goTermEvidenceModel, passesGoTermFilter } from './core/go-term-evidence.js';
 import { GoTermControls, GO_EVIDENCE_COLORS, renderGoTermLegend } from './ui/go-term-controls.js';
@@ -599,7 +602,8 @@ function computeMask() {
       Boolean(dataset.geneOverlaps))) mask[i] = 0;
   }
   for (let i = 0; i < count; i += 1) {
-    if (mask[i] && !passesNeighborSiteFilter(context.neighborSites, i, state.neighborSiteFilter)) mask[i] = 0;
+    if (mask[i] && !(passesNeighborSiteFilter(context.neighborSites, i, state.neighborSiteFilter)
+      && passesNeighborSiteCountFilter(context.neighborSites, i, state.neighborSiteCountFilter))) mask[i] = 0;
   }
   context.baseMask = mask;
   if (organism.functionalAnnotations && state.goTerm && state.goEvidenceFilter !== 'any') {
@@ -1043,11 +1047,6 @@ function resolveColorScale() {
     const model = goTermEvidenceModel(context.dataset, state.goTerm);
     return { categorical: true, goTerm: model, metric: null, values: model.values, scale: null, availability: null };
   }
-  if (state.colorBy === NEIGHBOR_SITE_COLOR_KEY) {
-    state.colorScale = null;
-    return { categorical: true, neighborSites: true, metric: null,
-      values: (context.neighborSites ?? resolveNeighborSiteModel()).values, scale: null, availability: null };
-  }
   if (state.colorBy === OVERLAP_COLOR_KEY) {
     // No ramp is in effect, so the link and the export manifest say so rather
     // than carrying a scale nothing is drawing.
@@ -1074,7 +1073,10 @@ function resolveColorScale() {
       categorical: true, metric: null, values: categories.values, scale: null, availability: null,
     };
   }
-  const metric = context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
+  // The neighbouring-gene TSS count is drawn on the same numeric ramps as any
+  // registry metric, from the site model the filters and viewers read.
+  const metric = state.colorBy === NEIGHBOR_SITE_COLOR_KEY ? neighborSiteColorMetric()
+    : context.registry.byKey.get(state.colorBy) ?? context.registry.metrics[0];
   state.colorBy = metric.key;
   const values = metricValues(metric, context.dataset.genes.length);
   const options = {
@@ -1118,12 +1120,6 @@ function colorModel() {
       scaleControl: { ...shared.scaleControl, reason: 'GO evidence states have no numeric scale. Each colour names an annotation evidence state, not a broad function category.' },
       metric: { label: resolved.goTerm.label }, values: resolved.goTerm.values,
       scale: buildCategoricalScale(GO_EVIDENCE_COLORS), valueScale: null, derived: null, label: resolved.goTerm.label };
-  }
-  if (resolved.neighborSites) {
-    const model = context.neighborSites ?? resolveNeighborSiteModel();
-    return { ...shared, categories: null, neighborSites: model, categorical: true,
-      metric: { label: NEIGHBOR_SITE_LABEL }, values: model.values,
-      scale: buildCategoricalScale(NEIGHBOR_SITE_COLORS), valueScale: null, derived: null, label: NEIGHBOR_SITE_LABEL };
   }
   if (resolved.overlap) {
     const overlaps = overlapModel();
@@ -1187,7 +1183,14 @@ function colorModel() {
     valueScale: resolved.scale,
     derived: resolved.categorical ? categories.derived : null,
     label: metric.label,
+    ...(metric.key === NEIGHBOR_SITE_COLOR_KEY ? { neighborSites: context.neighborSites ?? resolveNeighborSiteModel() } : {}),
   };
+}
+
+/** The count colour metric, naming a site file still loading so its scale is re-chosen on arrival. */
+function neighborSiteColorMetric() {
+  const loading = ['tssEvidence', 'regulatoryTss'].find((key) => isLoading(context.dataset, key)) ?? null;
+  return neighborSiteCountMetric(context.neighborSites ?? resolveNeighborSiteModel(), loading);
 }
 
 /**
@@ -1269,7 +1272,7 @@ function renderColorLegend(host, colors, { markerConventions = true, controlsHos
   if (colors.goTerm) { renderGoTermLegend(host, colors.goTerm); return; }
   const { categorical, categories, metric, values, scale } = colors;
   if (colors.neighborSites) {
-    renderNeighborSiteLegend(host, colors.neighborSites, { markerConventions, showHidden: state.showHidden, hiddenCount: context.dataset.genes.length - context.passing });
+    renderNeighborSiteLegend(host, colors.neighborSites, { scale, markerConventions, showHidden: state.showHidden, hiddenCount: context.dataset.genes.length - context.passing });
     return;
   }
   if (colors.overlap) {
@@ -1950,6 +1953,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     proteinEvidencePending: pendingState(context.dataset, 'lengthCohorts'),
     neighborSites: context.neighborSites,
     neighborSiteFilter: state.neighborSiteFilter,
+    neighborSiteCountFilter: state.neighborSiteCountFilter,
     overlapClassFilter: state.overlapClassFilter,
     overlapLengthFilter: state.overlapLengthFilter,
     overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
@@ -1974,7 +1978,8 @@ function renderAll({ schemeErrors = [] } = {}) {
       ranges: state.filters,
       overlapLength: state.overlapLengthFilter,
       neighborSiteFilter: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter).effective,
-      neighborSiteFilterStatus: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter),
+      neighborSiteFilterStatus: neighborSiteFilterSummary(context.neighborSites, state.neighborSiteFilter,
+        state.neighborSiteCountFilter),
       overlapClasses: state.overlapClassFilter,
       categoryFilter: state.categoryFilter,
       ...(organism.functionalAnnotations ? { goTerm: state.goTerm, goEvidenceFilter: state.goEvidenceFilter } : {}),
@@ -1989,6 +1994,7 @@ function renderAll({ schemeErrors = [] } = {}) {
       bypassed: state.filtersBypassed === true,
     },
     filterMask: context.mask,
+    neighborSiteCounts: context.neighborSites?.available ? context.neighborSites.siteCounts : null,
     viewState: () => ({
       ...viewStateOf(state, organism), dataSources: sourceSelection(), typeSources: state.typeSources,
       axisContributors: {
@@ -3399,7 +3405,7 @@ function refreshProteinRecords() {
 function promotedFileKeys(view) {
   const keys = new Set();
   if (view.goTerm || view.colorBy === GO_TERM_COLOR_KEY) { keys.add('annotations'); keys.add('goTerms'); }
-  if (view.colorBy === NEIGHBOR_SITE_COLOR_KEY || view.neighborSiteFilter !== 'any' || view.pinnedId || view.panel === 'chromosome') { keys.add('tssEvidence'); keys.add('regulatoryTss'); }
+  if (view.colorBy === NEIGHBOR_SITE_COLOR_KEY || view.neighborSiteFilter !== 'any' || Boolean(view.neighborSiteCountFilter) || view.pinnedId || view.panel === 'chromosome') { keys.add('tssEvidence'); keys.add('regulatoryTss'); }
   if (overlapLengthFilterActive(view.overlapLengthFilter) || view.overlapClassFilter?.length > 0) keys.add('geneOverlaps');
   if (view.categoryFilter.length > 0) keys.add('sourceDerivedCategories');
   // The essentiality colour and filter read the candidate evidence alone.
@@ -4018,6 +4024,14 @@ async function boot() {
       announce(`All filters cleared. Showing all ${formatCount(context.dataset.genes.length)} genes.`);
     },
     onNeighborSiteFilterChange: (mode) => { state.neighborSiteFilter = mode; renderAll(); persist(); },
+    onNeighborSiteCountFilterChange: (range) => {
+      state.neighborSiteCountFilter = range;
+      renderAll();
+      announce(range
+        ? `Neighbouring-gene TSS sites in CDS: keeping ${range.min ?? 0} to ${range.max ?? 'any number of'} sites. `
+          + `${formatCount(context.passing)} of ${formatCount(context.dataset.genes.length)} genes pass.`
+        : 'Neighbouring-gene TSS count range cleared.');
+    },
     onOverlapFilterChange: (mode) => {
       setOverlapSelection(overlapSelectionFor(mode));
     },

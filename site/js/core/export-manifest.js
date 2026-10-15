@@ -53,7 +53,7 @@ export const IDENTITY_COLUMNS = Object.freeze([
   'translationalException', 'cdsSegmentCount', 'cdsSegments', 'overlapsNeighbor',
   'overlapClass', 'overlapPartnerCount', 'overlapSharedBases', 'overlapPartners', 'operonId',
   'expressionBasis', 'expressionSourceId', 'tssInitiationBasis',
-  'tssInitiationBasisReason', 'tssMappedSiteCount', 'passesCurrentFilters',
+  'tssInitiationBasisReason', 'tssMappedSiteCount', 'neighborTssSitesInCds', 'passesCurrentFilters',
   'pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag', 'pcc7942MappingStatus',
   'essentialityEvidenceTier', 'goIeaEssentialityContext', 'goIeaCoreProcessProbability',
   'annotationDiscrepancies',
@@ -65,7 +65,8 @@ const LAYER_COLUMNS = Object.freeze({
     'functionCategoryEvidence', 'functionCategoryConflict'],
   sourceDerivedCategories: ['pcc7942DerivedCategory', 'pcc7942DerivedProbability',
     'goIeaDerivedCategory', 'goIeaDerivedProbability'],
-  tssEvidence: ['tssInitiationBasis', 'tssInitiationBasisReason', 'tssMappedSiteCount'],
+  tssEvidence: ['tssInitiationBasis', 'tssInitiationBasisReason', 'tssMappedSiteCount',
+    'neighborTssSitesInCds'],
   candidateEvidence: ['pcc7942Essentiality', 'pcc7942EssentialityBucket', 'pcc7942LocusTag',
     'pcc7942MappingStatus'],
   goIeaEssentiality: ['essentialityEvidenceTier', 'goIeaEssentialityContext',
@@ -368,7 +369,7 @@ export const FILTERS_OFF_EXPORT_NOTE = 'Filters were temporarily turned off when
 
 export function buildExport({
   dataset, registry, ids, schemes, generatedAt = new Date(),
-  filterState = null, filterMask = null, viewState = null,
+  filterState = null, filterMask = null, viewState = null, neighborSiteCounts = null,
   colorSources = undefined, trRosettaRnaHandoffs = [],
 }) {
   const blocked = exportBlockedReason(dataset);
@@ -477,6 +478,10 @@ export function buildExport({
         tssInitiationBasis: tssBasis.short,
         tssInitiationBasisReason: tssBasis.text,
         tssMappedSiteCount: tssBasis.siteCount ?? '',
+        // Distinct neighbouring-gene TSS sites inside the CDS, both strands, as
+        // the colour, filter and viewers count them; blank while unavailable.
+        neighborTssSitesInCds: Number.isFinite(neighborSiteCounts?.[index])
+          ? neighborSiteCounts[index] : '',
         passesCurrentFilters: !filterMask ? ''
           : filtersOff ? FILTERS_OFF_PASS_VALUE : String(Boolean(filterMask[index])),
         pcc7942Essentiality: pccCall?.status ?? '',

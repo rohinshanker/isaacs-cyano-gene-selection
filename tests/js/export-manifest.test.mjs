@@ -77,6 +77,22 @@ test('exports preserve the current cohort filter and each shortlisted row pass s
   assert.deepEqual(result.rows.map((row) => row.passesCurrentFilters), ['true', 'false']);
 });
 
+test('the neighbouring-gene TSS count is exported as the viewers count it, blank when unknown', async () => {
+  const { dataset, registry } = await shippedContext();
+  const pair = ['M744_RS00030', 'M744_RS00010'];
+  const ids = [...pair, dataset.genes.find((gene) => !pair.includes(gene.id)).id];
+  const counts = new Float64Array(dataset.genes.length).fill(Number.NaN);
+  counts[dataset.indexById.get(ids[0])] = 0;
+  counts[dataset.indexById.get(ids[1])] = 5;
+  const result = buildExport({ dataset, registry, ids, schemes: [{ map: {} }], neighborSiteCounts: counts });
+  assert.ok(result.columns.includes('neighborTssSitesInCds'));
+  assert.equal(result.columns.indexOf('neighborTssSitesInCds'), result.columns.indexOf('tssMappedSiteCount') + 1);
+  assert.deepEqual(result.rows.map((row) => row.neighborTssSitesInCds), [0, 5, '']);
+  const unavailable = buildExport({ dataset, registry, ids, schemes: [{ map: {} }] });
+  assert.deepEqual(unavailable.rows.map((row) => row.neighborTssSitesInCds), ['', '', ''],
+    'unavailable evidence is blank, not zero');
+});
+
 test('an export made with filters turned off says so in the table and the manifest', async () => {
   const { dataset, registry } = await context();
   const ids = dataset.genes.slice(0, 2).map((gene) => gene.id);

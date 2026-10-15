@@ -1,4 +1,6 @@
-import { NEIGHBOR_SITE_FILTERS, NEIGHBOR_SITE_LABEL, SITE_CAVEAT } from '../core/neighbor-sites.js';
+import {
+  NEIGHBOR_SITE_FILTERS, NEIGHBOR_SITE_LABEL, SITE_CAVEAT, normalizeNeighborSiteCountFilter,
+} from '../core/neighbor-sites.js';
 import { OverlapLengthFilter } from './overlap-length-filter.js';
 import { OVERLAP_LENGTH_METRICS, overlapLengthFilterActive } from '../core/overlap-length.js';
 /**
@@ -157,6 +159,7 @@ export function clearedFilterState() {
     trafficSources: null,
     proteinFilter: 'any',
     neighborSiteFilter: 'any',
+    neighborSiteCountFilter: null,
     overlapClassFilter: [],
     overlapLengthFilter: null,
     pccEssentialityFilter: [],
@@ -370,6 +373,7 @@ export class FilterPanel {
       && (state.proteinFilter ?? 'any') === 'any'
       && !overlapLengthFilterActive(state.overlapLengthFilter) && this.overlapLength.clear.disabled
       && (state.neighborSiteFilter ?? 'any') === 'any'
+      && !state.neighborSiteCountFilter
       && (state.overlapClassFilter ?? []).length === 0
       && (state.pccEssentialityFilter ?? []).length === 0
       && (state.goEvidenceFilter ?? 'any') === 'any'
@@ -809,7 +813,9 @@ export class FilterPanel {
   }
 
   renderNeighborSiteFilter(state) {
-    const held = this.neighborSiteHost.contains(document.activeElement) ? document.activeElement.value : null;
+    const heldElement = this.neighborSiteHost.contains(document.activeElement) ? document.activeElement : null;
+    const held = heldElement?.type === 'radio' ? heldElement.value : null;
+    const heldField = heldElement?.type === 'number' ? heldElement.id : null;
     this.neighborSiteHost.replaceChildren();
     const fieldset = document.createElement('fieldset');
     fieldset.className = 'flag-filter neighbor-site-filter';
@@ -835,12 +841,67 @@ export class FilterPanel {
       label.textContent = `${labels[i]}${value === 'any' || count == null ? '' : ` (${formatCount(count)})`}`;
       row.append(input, label); fieldset.append(row);
     });
-    if (!model?.available && ['with', 'without'].includes(state.neighborSiteFilter)) {
+    fieldset.append(this.neighborSiteCountRange(state, model));
+    if (!model?.available && (['with', 'without'].includes(state.neighborSiteFilter)
+      || normalizeNeighborSiteCountFilter(state.neighborSiteCountFilter))) {
       const suspended = document.createElement('p'); suspended.className = 'panel-note'; suspended.setAttribute('role', 'status');
       suspended.textContent = 'Saved neighbouring-site filter suspended until evidence is available.'; fieldset.append(suspended);
     }
     this.neighborSiteHost.append(fieldset);
     if (held) [...fieldset.querySelectorAll('input')].find((input) => input.value === held && !input.disabled)?.focus();
+    if (heldField) [...fieldset.querySelectorAll('input')].find((input) => input.id === heldField)?.focus();
+  }
+
+  /**
+   * The inclusive count range: distinct neighbouring-gene TSS sites inside the
+   * CDS, from either strand. It applies with the choice above; With recorded
+   * overlap is the same as at least 1, and Without the same as at most 0.
+   */
+  neighborSiteCountRange(state, model) {
+    const range = normalizeNeighborSiteCountFilter(state.neighborSiteCountFilter);
+    const group = document.createElement('div');
+    group.className = 'filter-inputs neighbor-site-count';
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-labelledby', 'neighbor-site-count-label');
+    const label = document.createElement('p');
+    label.className = 'panel-note';
+    label.id = 'neighbor-site-count-label';
+    const max = model?.available ? Math.max(0, ...Array.from(model.siteCounts ?? []).filter(Number.isFinite)) : null;
+    label.textContent = 'Distinct sites in the CDS, both strands'
+      + (max === null ? '' : ` (0 to ${formatCount(max)} here)`);
+    group.append(label);
+    const fields = {};
+    for (const bound of ['min', 'max']) {
+      const wrapper = document.createElement('span');
+      wrapper.className = 'filter-input';
+      const fieldLabel = document.createElement('label');
+      fieldLabel.htmlFor = `neighbor-site-count-${bound}`;
+      fieldLabel.textContent = bound === 'min' ? 'At least' : 'At most';
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.id = `neighbor-site-count-${bound}`;
+      input.min = '0';
+      input.step = '1';
+      input.inputMode = 'numeric';
+      input.value = range?.[bound] == null ? '' : String(range[bound]);
+      input.addEventListener('change', () => {
+        const read = (field) => (field.value === '' ? null : Number(field.value));
+        this.handlers.onNeighborSiteCountFilterChange?.(normalizeNeighborSiteCountFilter({
+          min: read(fields.min), max: read(fields.max),
+        }));
+      });
+      fields[bound] = input;
+      wrapper.append(fieldLabel, input);
+      group.append(wrapper);
+    }
+    if (range && range.min !== null && range.max !== null && range.min > range.max) {
+      const note = document.createElement('p');
+      note.className = 'panel-note';
+      note.setAttribute('role', 'status');
+      note.textContent = 'At least is above at most, so no gene passes this range.';
+      group.append(note);
+    }
+    return group;
   }
 
   /**

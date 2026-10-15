@@ -1,4 +1,7 @@
-import { NEIGHBOR_SITE_FILTERS } from './neighbor-sites.js';
+import {
+  NEIGHBOR_SITE_FILTERS, decodeNeighborSiteCountFilter, encodeNeighborSiteCountFilter,
+  normalizeNeighborSiteCountFilter,
+} from './neighbor-sites.js';
 import { overlapLengthFilterActive, parseOverlapLengthFilter } from './overlap-length.js';
 /**
  * URL hash serialization.
@@ -43,7 +46,7 @@ const KEYS = {
   strainFitnessSources: 'fds',
   axisXSources: 'xds', axisYSources: 'yds', trafficSources: 'tds',
   hiddenMarkers: 'mk',
-  neighborSiteFilter: 'ns', overlapClassFilter: 'og', overlapLengthFilter: 'ol',
+  neighborSiteFilter: 'ns', neighborSiteCountFilter: 'nc', overlapClassFilter: 'og', overlapLengthFilter: 'ol',
   pccEssentialityFilter: 'pe', filtersBypassed: 'fo',
 };
 
@@ -155,6 +158,11 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // before the field existed drew, so its absence has exactly one meaning
     // and the encoder version did not move for it.
     neighborSiteFilter: 'any',
+    // An inclusive range on the count of neighbouring-gene TSS sites in a CDS.
+    // An omitted `nc` means no range, which is also what every earlier link
+    // drew, so the encoder version did not move for it. The categorical `ns`
+    // choices keep their meaning beside it and are never rewritten as counts.
+    neighborSiteCountFilter: null,
     overlapClassFilter: [],
     overlapLengthFilter: null,
     // The PCC 7942 essentiality buckets the reader is keeping, written by the
@@ -263,6 +271,7 @@ export function viewStateOf(state, organism = DEFAULT_ORGANISM) {
     categoryFilter: state.categoryFilter,
     ...(organism.functionalAnnotations ? { goTerm: state.goTerm ?? '', goEvidenceFilter: state.goEvidenceFilter ?? 'any' } : {}),
     neighborSiteFilter: state.neighborSiteFilter ?? 'any',
+    neighborSiteCountFilter: normalizeNeighborSiteCountFilter(state.neighborSiteCountFilter),
     overlapLengthFilter: state.overlapLengthFilter ?? null,
     // The configured filters are recorded either way; this says whether they
     // were in force or temporarily off when the view was saved.
@@ -371,6 +380,8 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
     push(KEYS.overlapLengthFilter, `${end},${min ?? ''},${max ?? ''}`);
   }
   if (state.neighborSiteFilter && state.neighborSiteFilter !== 'any') push(KEYS.neighborSiteFilter, state.neighborSiteFilter);
+  const countRange = encodeNeighborSiteCountFilter(state.neighborSiteCountFilter);
+  if (countRange) push(KEYS.neighborSiteCountFilter, countRange);
   push(KEYS.overlapClassFilter, [...(state.overlapClassFilter ?? [])].sort().join(','));
   if (publishesPccCalls(organism)) {
     push(KEYS.pccEssentialityFilter,
@@ -489,6 +500,9 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
     }
   }
   if (NEIGHBOR_SITE_FILTERS.includes(values.get(KEYS.neighborSiteFilter))) state.neighborSiteFilter = values.get(KEYS.neighborSiteFilter);
+  if (values.has(KEYS.neighborSiteCountFilter)) {
+    state.neighborSiteCountFilter = decodeNeighborSiteCountFilter(values.get(KEYS.neighborSiteCountFilter));
+  }
   if (values.has(KEYS.overlapClassFilter)) {
     const ids = values.get(KEYS.overlapClassFilter).split(',')
       .filter((id) => OVERLAP_CLASS_IDS.includes(id));
