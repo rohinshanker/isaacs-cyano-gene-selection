@@ -358,6 +358,17 @@ export class TrnaViewer {
     return item;
   }
 
+  /**
+   * Select a locus by its locus tag, as search does for a tRNA annotation
+   * record. False when the loaded inventory has no such locus or is not ready.
+   */
+  selectById(id) {
+    const locus = this.payload?.loci?.find((entry) => entry.id === id || entry.locusTag === id) ?? null;
+    if (!locus) return false;
+    this.selectLocus(locus);
+    return true;
+  }
+
   selectLocus(locus, focusTarget = null) {
     this.selectedId = locus.id;
     this.renderContent();

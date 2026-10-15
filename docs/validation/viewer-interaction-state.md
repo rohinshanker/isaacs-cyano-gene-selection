@@ -67,6 +67,36 @@ the first Pin or Shortlist activation. Repeated searches for the already rendere
 query are therefore idempotent. Validate both actions with one click immediately
 after typing, as well as with keyboard activation.
 
+## Noncoding genes and pseudogenes in search
+
+Owner decision D10, 2026-10-14. Find a gene also searches the annotation
+catalogue's records that are not plotted CDSs, in every organism: tRNA, rRNA and
+other RNA genes, and pseudogenes, from the `features` and `contextFeatures` of
+`gene_overlaps.json` (`annotationRecordsOf` in `site/js/core/annotation-records.js`).
+They match by locus tag, gene name, or kind (`tRNA`, `rRNA`, `pseudogene`,
+`noncoding`), ranked like CDS hits, and are listed as their own labelled group
+under the CDS hits, never mixed into them.
+
+- **A record is never a CDS.** It has no Pin or Shortlist action, and it never
+  enters the gene list, so no codon, protein or recoding metric, filter,
+  shortlist, export of CDS rows or projection can reach it. **Open** expands a
+  read-only card in place (`aria-expanded`, `aria-controls`): gene type,
+  pseudogene flag, replicon, strand, exact segments, overlap partners from the
+  OG layer, and the same flanking-gene disclosure the gene viewers use. A partner
+  or flank that is a plotted CDS opens as that CDS; a tRNA record can open the
+  tRNA browser at that locus. Opened cards survive redraws of the same list.
+- A catalogue still loading or failed is said in the status line, because a miss
+  is then not a miss. A release with no catalogue is not announced on every
+  search.
+- **Hypothetical proteins are CDSs of unknown function, never noncoding.** A CDS
+  whose product is, exactly, NCBI's "hypothetical protein", a UniProt-style
+  "(putative) uncharacterized protein" with an optional symbol, or Syn57's
+  "uncharacterized design CDS" carries the note *Predicted protein-coding gene of
+  unknown function; not a noncoding gene* in search results, the detail panel,
+  both gene viewers and the shortlist, and "(function unknown)" in the comparison
+  table (`hasUnknownFunction`). No other wording is guessed at. UTEX 2973 has 394.
+- Tests: `tests/js/annotation-records.test.mjs`.
+
 ## Function-category legend filter
 
 When **Colour by** is Function category, every legend row is a control with

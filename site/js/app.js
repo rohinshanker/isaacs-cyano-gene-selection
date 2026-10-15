@@ -1783,6 +1783,25 @@ function renderTrnaView() {
  * The reveal follows the render, since a reader who came straight to the tRNA
  * tab has never built the chromosome model the reveal reads.
  */
+/**
+ * Open the tRNA tab at a tRNA gene found by search. Like the tRNA tab itself it
+ * changes no pin, shortlist, filter or colour: a tRNA is not a CDS.
+ */
+function showTrnaRecord(id) {
+  const tab = ALL_TABS.find((panel) => panel.id === TRNA_TAB.id);
+  if (!tab) return;
+  state.panel = TRNA_TAB.id;
+  updatePanelTabs();
+  renderCurrentView();
+  persist();
+  const selected = trnaViewer?.selectById(id) ?? false;
+  element('map-section').scrollIntoView({ block: 'start' });
+  if (!selected) {
+    announce(`The tRNA browser is open, but its loaded list has no ${id}. The pinned gene and the `
+      + 'shortlist are unchanged.');
+  }
+}
+
 function showTrnaOnChromosome(locus) {
   state.panel = CHROMOSOME_TAB.id;
   updatePanelTabs();
@@ -2964,6 +2983,9 @@ function buildGeneSearch() {
     onShortlist: (index) => toggleShortlist(index),
     isShortlisted: (id) => state.shortlist.includes(id),
     isPinned: (id) => state.pinnedId === id,
+    // A record's overlap partner or flank that is a plotted CDS opens as that CDS.
+    onOpenPartner: (id, index) => openOverlapPartner(id, index),
+    onShowTrna: (id) => showTrnaRecord(id),
   });
   searchResults.setGenes(context.dataset.genes, context.dataset.goTerms?.terms, context.dataset);
 
@@ -2971,9 +2993,12 @@ function buildGeneSearch() {
   const run = () => {
     const result = searchResults.search(input.value);
     if (!result) return;
-    announce(result.total === 0
+    const records = result.records?.total ?? 0;
+    const recordText = records
+      ? ` ${records} noncoding ${records === 1 ? 'gene or pseudogene' : 'genes and pseudogenes'} also match.` : '';
+    announce(result.total === 0 && records === 0
       ? `Nothing matches ${input.value.trim()}.`
-      : `${result.total} gene${result.total === 1 ? '' : 's'} match ${input.value.trim()}.`);
+      : `${result.total} gene${result.total === 1 ? '' : 's'} match ${input.value.trim()}.${recordText}`);
   };
   input.addEventListener('input', () => searchResults.search(input.value));
   input.addEventListener('change', run);

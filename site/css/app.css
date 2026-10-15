@@ -743,6 +743,23 @@ input[type="range"] { width: 100%; }
   overflow-wrap: anywhere;
 }
 .search-result-actions { display: flex; gap: 0.3rem; flex: 0 0 auto; flex-wrap: wrap; }
+/* Noncoding genes and pseudogenes: annotation records, opened in place, never CDSs. */
+.search-records-heading { margin-top: 0.6rem; }
+.search-record > .annotation-record { flex: 1 1 100%; }
+/* An opened record is read in full, not inside the list's scroll box. */
+.search-records:has(.annotation-record) { max-height: none; }
+.annotation-record {
+  margin: 0.4rem 0 0; padding: 0.45rem 0.55rem; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--surface-sunken); font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+.annotation-record > .panel-note:first-child { margin-top: 0; }
+.annotation-record-facts {
+  display: grid; grid-template-columns: max-content 1fr; gap: 0.15rem 0.6rem; margin: 0.4rem 0;
+}
+.annotation-record-facts dt { color: var(--ink-muted); }
+.annotation-record-facts dd { margin: 0; }
+.gene-function-status { color: var(--ink-muted); font-style: italic; }
 
 /* Map ------------------------------------------------------------------- */
 

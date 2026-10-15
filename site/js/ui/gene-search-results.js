@@ -12,6 +12,23 @@ import { formatCount } from './format.js';
 import { createLocusTag } from './locus-tag.js';
 import { geneIdentity, geneIdentityDescription } from '../core/gene-identity.js';
 import { tanDisclosure } from './disclosures.js';
+import {
+  annotationRecordsOf, biotypeLabel, functionStatusNote, searchAnnotationRecords,
+} from '../core/annotation-records.js';
+import { renderAnnotationRecord } from './annotation-record.js';
+
+/**
+ * Why noncoding genes and pseudogenes cannot match yet, or ''. Only a file in
+ * flight or failed is said: then a miss is not a miss. A release that has no
+ * catalogue at all is not announced on every search.
+ */
+export function annotationRecordsNote(status) {
+  return status === 'loading'
+    ? ' Noncoding genes and pseudogenes are still loading, so they cannot match yet.'
+    : status === 'failed'
+      ? ' Noncoding genes and pseudogenes could not be loaded, so they cannot match.'
+      : '';
+}
 
 /** A repeated blur/change event must not replace a result while it is being clicked. */
 export function shouldRenderSearch(currentQuery, nextQuery, currentResult) {
@@ -68,6 +85,7 @@ export function searchRowModel(hit, handlers) {
       ? 'Native GenBank GO · ' : gene.annotationEvidence?.functionalTransfer ? 'Inherited reference GO · ' : '')
       + goMatchLine(hit.goMatch) : null,
     categoryLine: hit.categoryMatch ? `Lab-reviewed category: ${hit.categoryMatch}` : null,
+    functionLine: functionStatusNote(gene),
     transferLine: gene.annotationEvidence?.functionalTransfer?.inheritedFields?.length
       ? 'Includes inherited reference annotation; see gene detail for the exact protein crosswalk. Not a recoded measurement or lab review.' : null,
     pinned,
@@ -93,6 +111,8 @@ export class GeneSearchResults {
     this.goTerms = null;
     this.dataset = null;
     this.query = '';
+    // Opened non-CDS records, kept across redraws of the same list.
+    this.openRecords = new Set();
     this.host.hidden = true;
   }
 
@@ -143,7 +163,12 @@ export class GeneSearchResults {
     const result = searchGenes(this.genes, this.query, {
       limit: SEARCH_RESULT_LIMIT, goTerms: this.goTerms, aliases: organism.searchAliases,
     });
-    this.result = result;
+    // Noncoding genes and pseudogenes, from the annotation catalogue: found and
+    // opened as records, never as CDSs (owner decision D10, 2026-10-14).
+    const annotations = annotationRecordsOf(this.dataset);
+    const records = searchAnnotationRecords(annotations.records, this.query, { limit: SEARCH_RESULT_LIMIT });
+    const recordsNote = annotationRecordsNote(annotations.status);
+    this.result = { ...result, records, recordStatus: annotations.status };
 
     const status = document.createElement('p');
     status.className = 'search-status';
@@ -155,19 +180,27 @@ export class GeneSearchResults {
       : goPending === 'failed'
         ? ' GO annotations could not be loaded, so GO IDs and GO term names cannot match.'
         : ' GO annotations are still loading, so GO IDs and GO term names cannot match yet.';
-    if (result.total === 0) {
+    if (result.total === 0 && records.total === 0) {
       // Never a silent empty state: say what was searched and what to try.
       status.textContent = `Nothing matches “${this.query.trim()}”. Search covers locus `
-        + 'tags, gene names, product descriptions, reviewed categories, GO IDs and GO term names. Try a shorter '
+        + 'tags, gene names, product descriptions, reviewed categories, GO IDs and GO term names, '
+        + 'and noncoding genes and pseudogenes by locus tag, name or type. Try a shorter '
         + 'word or the name the annotation uses.';
-      status.textContent += goPendingNote;
+      status.textContent += goPendingNote + recordsNote;
       host.append(status);
       return;
     }
-    status.textContent = `${formatCount(result.total)} gene`
-      + `${result.total === 1 ? '' : 's'} match`
-      + `${result.total === 1 ? 'es' : ''} “${this.query.trim()}”.${goPendingNote}`;
+    status.textContent = result.total === 0
+      ? `No protein-coding gene matches “${this.query.trim()}”.${goPendingNote}`
+      : `${formatCount(result.total)} gene`
+        + `${result.total === 1 ? '' : 's'} match`
+        + `${result.total === 1 ? 'es' : ''} “${this.query.trim()}”.${goPendingNote}`;
+    status.textContent += recordsNote;
     host.append(status);
+    if (result.total === 0) {
+      this.renderRecords(records);
+      return;
+    }
 
     if (result.aliasesUsed.length > 0) {
       // A match reached through an alias is not what the user literally typed, so
@@ -206,6 +239,85 @@ export class GeneSearchResults {
         + 'Type more of the name to narrow it down.';
       host.append(more);
     }
+    this.renderRecords(records);
+  }
+
+  /** The noncoding genes and pseudogenes that match, as their own labelled group. */
+  renderRecords(records) {
+    if (records.total === 0) return;
+    const heading = document.createElement('p');
+    heading.className = 'search-status search-records-heading';
+    heading.id = 'search-records-heading';
+    heading.textContent = `${formatCount(records.total)} noncoding `
+      + `${records.total === 1 ? 'gene or pseudogene matches' : 'genes and pseudogenes match'}. `
+      + 'These are annotation records, not CDSs.';
+    const list = document.createElement('ul');
+    list.className = 'search-results search-records';
+    list.setAttribute('aria-labelledby', heading.id);
+    for (const hit of records.shown) list.append(this.renderRecordRow(hit));
+    this.host.append(heading, list);
+    if (records.hiddenCount > 0) {
+      const more = document.createElement('p');
+      more.className = 'search-status';
+      more.textContent = `${formatCount(records.hiddenCount)} more records not shown. `
+        + 'Type more of the name to narrow it down.';
+      this.host.append(more);
+    }
+  }
+
+  renderRecordRow({ record, matchedOn }) {
+    const item = document.createElement('li');
+    item.className = 'search-result search-record';
+    const text = document.createElement('div');
+    text.className = 'search-result-text';
+    const heading = document.createElement('p');
+    heading.className = 'search-result-name';
+    const tag = createLocusTag({ id: record.id, name: record.name });
+    tag.dataset.geneId = record.id;
+    tag.dataset.searchAction = 'record-identity';
+    heading.append(tag);
+    if (record.name) {
+      const name = document.createElement('b');
+      name.textContent = ` ${record.name}`;
+      heading.append(name);
+    }
+    const matched = document.createElement('span');
+    matched.className = 'search-result-field';
+    matched.textContent = ` matched ${matchedOn}`;
+    heading.append(matched);
+    const kind = document.createElement('p');
+    kind.className = 'search-result-product';
+    kind.textContent = biotypeLabel(record);
+    text.append(heading, kind);
+
+    const actions = document.createElement('div');
+    actions.className = 'search-result-actions';
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'chip-button';
+    const opened = this.openRecords.has(record.id);
+    open.textContent = opened ? 'Close' : 'Open';
+    open.dataset.geneId = record.id;
+    open.dataset.searchAction = 'open-record';
+    open.setAttribute('aria-expanded', String(opened));
+    open.setAttribute('aria-controls', `annotation-record-${record.id}`);
+    open.setAttribute('aria-label', `${opened ? 'Close' : 'Open'} the annotation record for ${record.id}, `
+      + `${biotypeLabel(record)}`);
+    open.addEventListener('click', () => {
+      if (this.openRecords.has(record.id)) this.openRecords.delete(record.id);
+      else this.openRecords.add(record.id);
+      this.refresh();
+    });
+    actions.append(open);
+    item.append(text, actions);
+    if (opened) {
+      item.append(renderAnnotationRecord(record, {
+        index: this.dataset?.geneOverlaps ?? null,
+        onOpenPartner: this.handlers.onOpenPartner ?? null,
+        onShowTrna: this.handlers.onShowTrna ?? null,
+      }));
+    }
+    return item;
   }
 
   renderRow(hit) {
@@ -235,7 +347,7 @@ export class GeneSearchResults {
     product.className = 'search-result-product';
     product.textContent = row.product;
     text.append(heading, product);
-    for (const line of [row.goLine, row.categoryLine, row.transferLine]) {
+    for (const line of [row.functionLine, row.goLine, row.categoryLine, row.transferLine]) {
       if (!line) continue;
       const note = document.createElement('p');
       note.className = 'search-result-product';

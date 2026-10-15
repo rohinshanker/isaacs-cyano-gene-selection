@@ -1,3 +1,4 @@
+import { functionStatusNote } from '../core/annotation-records.js';
 import { NeighborSitePanel, drawNeighborSiteMarks } from './neighbor-sites.js';
 import { sequenceColumns } from '../core/gene-sequence-model.js';
 import { controlsDisclosure } from './disclosures.js';
@@ -779,7 +780,8 @@ export class GeneSequenceView {
     this.identity.textContent = model.name ? `${model.id} ${model.name}` : model.id;
     this.facts.textContent = `${model.strand === '-' ? 'minus' : 'plus'} strand, `
       + `${formatCount(model.lengthNt)} nt, ${formatCount(model.lengthCodons)} codons`;
-    this.product.textContent = model.product ?? '';
+    const functionNote = functionStatusNote(model);
+    this.product.textContent = model.product ? `${model.product}${functionNote ? ` · ${functionNote}` : ''}` : '';
     this.product.hidden = !model.product;
     this.writeUpstreamControl();
     if (!this.camera) this.camera = openingCamera(model.domain, this.width());
