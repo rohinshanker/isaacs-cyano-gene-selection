@@ -63,6 +63,27 @@ async (page) => {
       });
     });
     check(labelsContained, `complete row labels stay within alignment and padding at ${width}`);
+    const alignmentNode = region.locator('.folding-alignment').first();
+    await alignmentNode.scrollIntoViewIfNeeded();
+    const labelsCoverEdge = await alignmentNode.evaluate((element) => {
+      const originalScroll = element.scrollLeft;
+      const maxScroll = element.scrollWidth - element.clientWidth;
+      const bounds = element.getBoundingClientRect();
+      const edgeX = bounds.left + parseFloat(getComputedStyle(element).borderLeftWidth) + 2;
+      try {
+        for (const offset of [0, 17, 73, 500, maxScroll * 0.65, maxScroll]) {
+          element.scrollLeft = offset;
+          for (const label of element.querySelectorAll('.folding-alignment-row > span:first-child')) {
+            const rect = label.getBoundingClientRect();
+            if (document.elementFromPoint(edgeX, (rect.top + rect.bottom) / 2) !== label) return false;
+          }
+        }
+        return true;
+      } finally {
+        element.scrollLeft = originalScroll;
+      }
+    });
+    check(labelsCoverEdge, `sticky labels cover the left edge at every sampled scroll offset at ${width}`);
     await page.screenshot({ path: `${artifacts}/comparison-page-${width}.png`, fullPage: true });
     await region.screenshot({ path: `${artifacts}/comparison-${width}.png` });
     snapshots.push({ width, snapshot: await region.ariaSnapshot() });
@@ -82,6 +103,8 @@ async (page) => {
     await region.screenshot({ path: `${artifacts}/comparison-scrolled-${width}.png` });
   }
   const partners = region.locator('.folding-partners').first();
+  check((await partners.locator('summary').getAttribute('aria-label'))
+    .includes(await partners.locator('summary').innerText()), 'partner name contains the complete visible label');
   await partners.locator('summary').focus();
   await page.keyboard.press('Enter');
   check((await partners.innerText()).includes('WT pairs:') && (await partners.innerText()).includes('Recoded pairs:'), 'keyboard exposes exact partner pairs');

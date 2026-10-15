@@ -108,6 +108,9 @@ test('panel renders both windows, exact positions, text markers and explicit una
     assert.match(results.textContent, /WT pairs: none/);
     assert.match(results.textContent, /All other positions are unpaired/);
     assert.equal(results.querySelectorAll('.folding-partners').length, 2);
+    const partnerSummary = results.querySelector('.folding-partners').querySelector('summary');
+    assert.equal(partnerSummary.getAttribute('aria-label'),
+      'Pair partners (window positions): <gene>: Start −30:+60');
     assert.equal(results.querySelectorAll('.folding-comparison').length, 2);
     assert.match(results.querySelector('.folding-pair-change').title, /WT partner 4, recoded partner 5/);
     assert.ok(results.querySelector('.folding-sequence-edit'));

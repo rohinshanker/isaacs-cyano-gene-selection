@@ -42,6 +42,12 @@ The parent ticket retains remote-compute access/service decisions and larger wor
 - N-2 — open: correct the definition receipt's paraphrase of upstream's
   same-length recommendation; the local equal-length validation remains strict.
 
+- R-5 — open: characters could bleed into the left padding beside sticky row
+  labels while horizontally scrolling. Move that padding onto the opaque sticky
+  labels and test hit coverage at the left edge across scroll offsets.
+- N-3 — open: the partner disclosure's accessible name must contain its complete
+  visible label. Retain the gene/window identity after that label.
+
 ## Verification
 
 Implementation `add2bd1`, native oracles `039176e`, preload `1ba4ba5`.

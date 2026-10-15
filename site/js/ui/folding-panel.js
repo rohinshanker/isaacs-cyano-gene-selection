@@ -18,7 +18,7 @@ function comparisonDetails(value, comparison, label, geneId) {
   partners.className = 'folding-partners';
   const partnerSummary = document.createElement('summary');
   partnerSummary.textContent = 'Pair partners (window positions)';
-  partnerSummary.setAttribute('aria-label', `${geneId}: ${label}: pair partners`);
+  partnerSummary.setAttribute('aria-label', `Pair partners (window positions): ${geneId}: ${label}`);
   const partnerNote = document.createElement('p');
   partnerNote.textContent = 'Pairs use 1-based window positions. All other positions are unpaired.';
   partners.append(partnerSummary, partnerNote);
