@@ -29,7 +29,8 @@ The rendered artifact is `article.innerText`, stripped at its outer edges,
 encoded as UTF-8 with one trailing newline. The quote matched exactly once in
 each saved artifact. Source response metadata: `Last-Modified: Wed, 14 Oct 2026
 11:34:57 GMT`, `ETag: "6acf68e1-1bb4"`. These are observations, not immutable
-versions. The page's GitHub edit link returned 404 and is not used as a source pin.
+versions. An API lookup of the linked GitHub source returned 404; no Git commit
+is used as a policy version pin.
 
 Private source copies and `receipt.json` are retained outside the repository at
 `../private-literature/pride-policy-20261015/`, relative to the canonical checkout.
