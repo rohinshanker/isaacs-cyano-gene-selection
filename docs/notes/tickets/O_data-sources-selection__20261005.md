@@ -9,7 +9,7 @@
   `data/`, `tests/`, and `docs/validation/`.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-14
+- **Updated:** 2026-10-15
 
 ## Current state
 
@@ -19,6 +19,37 @@ evidence types. Neither is protein abundance, and neither is admitted by this
 decision alone. Source-specific readers, identifier/condition checks and the
 PXD044412 peptide-to-protein aggregation contract remain implementation work.
 The owner has settled whether these evidence types are wanted.
+
+Owner decisions, 2026-10-15 (D12): PXD036717 browser release requires a
+reconstruction from raw LFQ intensities before admission; expose twelve
+replicate comparisons plus optional averages within each of the four baits.
+The bounded reader/reconstruction is complete; its reusable
+[contract](../../validation/pxd036717-enrichment.md) pins the publisher workbook,
+retains original cells/formulas and distinguishes reconstructed values from the
+authors' imputed ratios. LFQ intensities are processed MaxQuant outputs, not raw
+mass spectra. Complete-case means require all three valid ratios.
+
+Remaining PXD036717 admission findings (open):
+
+- **PXD-JOIN:** exact protein-to-locus join and eleven multi-accession row groups;
+  no gene-alias guessing or duplicate attribution of group intensities.
+- **PXD-IDENT:** retain peptide/identification evidence and resolve any admission
+  filtering contract; the reader itself does not infer protein identification.
+- **PXD-CONDITION:** finish the condition record and preserve the PRIDE protocol's
+  "both" versus workbook/article three-replicate discrepancy.
+- **PXD-RELEASE:** separate enrichment quantity, twelve replicate layers plus
+  four optional complete-case means, original/reconstruction provenance,
+  source-specific citation/terms and rendered validation. No PXD036717 browser
+  values have been admitted by the reader work.
+- **PXD-DETECTION (implementation open; owner decision settled 2026-10-15):**
+  show a separate detection category alongside numeric ratios. Preserve
+  bait-only/control-only/neither states; a missing numerical ratio is not
+  absence of evidence. There are 784 bait-only comparisons, and
+  101 of 107 author-selected three-replicate bait/protein entries lack a
+  complete non-imputed mean. The reader preserves these states explicitly;
+  this category concerns browser presentation, not imputation or new interactor
+  calls. Ratios remain missing when either intensity is missing; detection does
+  not claim a confirmed interaction. Decision recorded by cyano-lit-unreach.
 
 The existing-report portion of S6 is implemented and independently reviewed by
 `cyano-ui-fixes`; its [browser contract](../../validation/expression-agreement.md#browser-presentation)
@@ -284,7 +315,7 @@ on 2026-10-12. Metadata only; nothing was downloaded.
 | PXD023591 | PCC 7942 | 3 files: one mzIdentML (`hf2019103123.mzid.gz`), its MGF, one raw | the existing `mzidentml` reader, one spectral-count layer | its condition record. Growth details are unreported and the depositor query is drafted and deferred by the owner |
 | PXD027430 | PCC 7942 | 9 files: three mzIdentML with their MGFs and raws | the same reader, three runs | its condition record, and that this is a TMT study whose reporter-ion quantification is not in the deposit, so counts are the only quantity it can yield. Conditions and the 0 h baseline assignments are open depositor questions, deferred |
 | PXD014590 | **UTEX 2973, native** | 135 files: 27 top-down runs as `.raw`, 27 `.ms1ft` MS1 feature files, 27 search archives and 54 `*_MSAlign_Results_XML.zip` | no protein-level table; an MSAlign result-XML reader would be new | top-down results identify proteoforms, not gene-level amounts. Roadmap item 7 directs a presence overlay first; define/validate that output contract before a layer ships |
-| PXD036717 | PCC 7942 CscB-SPS, engineered | 24 files: APEX2 proximity labelling, four baits (CikB, ManS, NblS, RpaA) each against the CscB-SPS parent; every search and peak result inside `.rar` | a `.rar` reader, and the layer would be an enrichment ratio | the 2026-10-07 ratio rule: a bait-against-parent enrichment is not an amount; owner approved it as a separate ratio evidence type on 2026-10-14; reader/admission checks remain |
+| PXD036717 | PCC 7942 CscB-SPS, engineered | 24 archive files; four APEX2 baits against CscB-SPS. Owner-supplied publisher `mmc1.xlsx` provides LFQ intensities and ratios directly, without extracting the search/peak RARs | pinned workbook reader and non-imputed reconstruction; identifier/condition/release checks above remain | separate enrichment approved D11; D12 requires raw-LFQ reconstruction, twelve replicate comparisons and optional within-bait means; not protein abundance |
 | PXD044412 | multi-organism; PCC 7942 among them | 2,002 files. The PCC 7942 arms serve `quant_report_7942_*.elib.peptides.txt` only; the *Cupriavidus* arms serve `.elib.proteins.txt`. Arms are metabolites: 2PG, ADP, AcCoA, G6P, Mal, Ru5P, RuBP | peptide-level EncyclopeDIA reports, with an SDRF experimental design | owner approved a separate interaction evidence type on 2026-10-14; define/validate the peptide-to-protein roll-up, retaining interaction rather than abundance semantics |
 
 Unchanged and still outside the shortlist: PXD019731 and PXD074299 deposit no
