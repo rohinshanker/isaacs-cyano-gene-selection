@@ -25,7 +25,7 @@ const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8
 test('the STATE_VERSION explanation does not claim an old link drew the same picture', async () => {
   const source = await read('site/js/core/url-state.js');
   const explanation = source.slice(0, source.indexOf('export const STATE_VERSION'));
-  assert.equal(STATE_VERSION, 8, 'the condition-specific Tan default owns the version bump');
+  assert.equal(STATE_VERSION, 9, 'the Custom filters panel owns the latest version bump');
   // What it used to say: that the colour buckets were already issued in
   // ascending order, so a link shared before `dt` existed showed the picture
   // `dt=highest` shows now. It did not: the chromosome view put whichever CDS

@@ -10,13 +10,16 @@
  * Every panel the controls column can show, in the order a fresh view uses.
  *
  * The gene visualizer leads because it answers "what am I looking at" before
- * the scheme and filters change what is shown. It is the one panel that starts
- * collapsed: it is a reference view rather than a control, so it should not
- * push the scheme editor below the fold on a first visit.
+ * the scheme and filters change what is shown, and it starts collapsed: it is a
+ * reference view rather than a control, so it should not push the scheme editor
+ * below the fold on a first visit. Custom filters also starts collapsed and sits
+ * directly above Filters (owner request, 2026-10-13); `insertBefore` is where a
+ * link written before the panel existed places it.
  */
 export const LEFT_PANELS = Object.freeze([
   Object.freeze({ id: 'gene-viewer', title: 'Gene visualizer' }),
   Object.freeze({ id: 'scheme', title: 'Recoding scheme' }),
+  Object.freeze({ id: 'custom-filters', title: 'Custom filters', insertBefore: 'filters' }),
   Object.freeze({ id: 'filters', title: 'Filters' }),
 ]);
 
@@ -25,8 +28,8 @@ export const LEFT_PANEL_IDS = Object.freeze(LEFT_PANELS.map((panel) => panel.id)
 /** Fresh-view order. */
 export const DEFAULT_PANEL_ORDER = Object.freeze([...LEFT_PANEL_IDS]);
 
-/** Fresh-view collapsed set: the gene visualizer only. */
-export const DEFAULT_PANEL_COLLAPSED = Object.freeze(['gene-viewer']);
+/** Fresh-view collapsed set: the gene visualizer and Custom filters. */
+export const DEFAULT_PANEL_COLLAPSED = Object.freeze(['gene-viewer', 'custom-filters']);
 
 /** Sentinel for "no panel is collapsed", which is not the default and so must encode. */
 export const NO_PANELS_COLLAPSED = 'none';
@@ -44,7 +47,9 @@ export function panelTitle(id) {
  * Unknown ids are dropped and missing ids are appended in default order, so a
  * link written by an older or newer build still produces every panel exactly
  * once. A panel silently vanishing because a link predates it would hide a
- * control the user cannot then find.
+ * control the user cannot then find. A missing panel that declares
+ * `insertBefore` goes immediately above that panel instead, wherever the link
+ * put it, so the relative order of the panels the link did name is kept.
  */
 export function normalizePanelOrder(value) {
   const requested = Array.isArray(value) ? value : [];
@@ -52,8 +57,16 @@ export function normalizePanelOrder(value) {
   for (const id of requested) {
     if (LEFT_PANEL_IDS.includes(id) && !order.includes(id)) order.push(id);
   }
-  for (const id of DEFAULT_PANEL_ORDER) {
-    if (!order.includes(id)) order.push(id);
+  const anchored = [];
+  for (const panel of LEFT_PANELS) {
+    if (order.includes(panel.id)) continue;
+    if (panel.insertBefore) anchored.push(panel);
+    else order.push(panel.id);
+  }
+  for (const panel of anchored) {
+    const at = order.indexOf(panel.insertBefore);
+    if (at < 0) order.push(panel.id);
+    else order.splice(at, 0, panel.id);
   }
   return order;
 }

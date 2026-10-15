@@ -3820,7 +3820,7 @@ async function boot() {
       state.proteinFilter = mode;
       renderAll();
     },
-  });
+  }, { customHost: element('custom-filters') });
 
   lengthExplorer = new LengthExplorer(element('length-view'), {
     onCohortChange: (cohort) => {

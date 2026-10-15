@@ -181,8 +181,12 @@ export class FilterPanel {
    *   onTrafficFollowChange?: (follow: boolean) => void,
    *   onSelectSource?: (dataType: string|null, current: string|null, opener: HTMLElement) => void}} handlers
    */
-  constructor(host, handlers) {
+  constructor(host, handlers, { customHost = host } = {}) {
     this.host = host;
+    // Add filter and the range rows it creates render into the Custom filters
+    // panel; built-in filters, the summary and Clear all filters stay in `host`.
+    // Both read and write the one filter state passed to `update()`.
+    this.customHost = customHost;
     this.handlers = handlers;
     // Mirrors `state.trafficKey` between updates; `update()` resyncs it from
     // the passed-in state so a value round-tripped through the URL wins over
@@ -193,6 +197,7 @@ export class FilterPanel {
 
   build() {
     this.host.replaceChildren();
+    if (this.customHost !== this.host) this.customHost.replaceChildren();
 
     this.trafficHost = document.createElement('section');
     this.trafficHost.className = 'traffic-filter';
@@ -241,9 +246,9 @@ export class FilterPanel {
     this.host.append(
       this.trafficHost, this.proteinHost, this.basisHost, this.exceptionHost,
       this.essentialityHost, this.neighborSiteHost, this.overlapHost, this.overlapLength.element,
-      addRow, this.list, this.summary,
-      this.clearButton,
     );
+    this.customHost.append(addRow, this.list);
+    this.host.append(this.summary, this.clearButton);
   }
 
   addFilter() {
@@ -400,7 +405,7 @@ export class FilterPanel {
    */
   liveControl() {
     const active = document.activeElement;
-    if (!active || !this.host.contains(active)) return null;
+    if (!active || !(this.host.contains(active) || this.customHost.contains(active))) return null;
     if (active.id === 'traffic-threshold') return { host: 'traffic', key: this.trafficKey };
     if (active.className?.includes?.('range-slider-thumb') && active.dataset?.filterKey) {
       return { host: 'row', key: active.dataset.filterKey };

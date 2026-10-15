@@ -59,7 +59,10 @@ const KEYS = {
  * comparison metrics (`cm`) is why version 4 became 5, moving those chosen
  * metrics out of the link into browser storage is why version 5 became 6, and
  * independent X/Y dataset contributor lists are why version 6 became 7.
- * The condition-specific Tan default is why version 7 became 8.
+ * The condition-specific Tan default is why version 7 became 8. The Custom
+ * filters panel is why version 8 became 9: an explicit `pc` from an older
+ * encoder never names it, which must read as collapsed, while a version 9 `pc`
+ * that omits it means the reader opened it.
  *
  * The colour scale `csc` deliberately did not bump it. A version number is only
  * useful where the absence of a field has to mean two different things to two
@@ -96,8 +99,10 @@ const KEYS = {
  * were visible by default then and had no persisted state at all. So an
  * omitted `mk` has exactly one meaning and no older one to preserve.
  */
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 export const TAN_CONDITION_SELECTION_VERSION = 8;
+/** The first encoder version whose explicit `pc` can leave Custom filters open. */
+export const CUSTOM_FILTERS_PANEL_VERSION = 9;
 
 /**
  * The first encoder version whose omitted `ax`/`ay` mean measured fresh-view
@@ -541,6 +546,12 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   if (values.has(KEYS.panelCollapsed)) {
     const raw = values.get(KEYS.panelCollapsed);
     state.panelCollapsed = raw === NO_PANELS_COLLAPSED ? [] : normalizeCollapsed(raw.split(','));
+    // Only this encoder from version 9 knew the panel, so any other collapsed set
+    // predates it and gets the panel's fresh collapsed state. Every panel the
+    // link did name keeps its explicit state.
+    if (!(state.version >= CUSTOM_FILTERS_PANEL_VERSION)) {
+      state.panelCollapsed = normalizeCollapsed([...state.panelCollapsed, 'custom-filters']);
+    }
   }
   // Dataset ids are validated against the loaded sources by the app; here only
   // the shape is read, and an empty or malformed field means the default.
