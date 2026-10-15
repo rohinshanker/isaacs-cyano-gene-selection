@@ -41,7 +41,7 @@ const KEYS = {
   typeSources: 'src',
   fitnessDatasetId: 'fd',
   strainFitnessSources: 'fds',
-  axisXSources: 'xds', axisYSources: 'yds',
+  axisXSources: 'xds', axisYSources: 'yds', trafficSources: 'tds',
   hiddenMarkers: 'mk',
   neighborSiteFilter: 'ns', overlapClassFilter: 'og', overlapLengthFilter: 'ol',
   pccEssentialityFilter: 'pe', filtersBypassed: 'fo',
@@ -168,6 +168,11 @@ export function defaultState(organism = DEFAULT_ORGANISM) {
     // its absence has one meaning and the encoder version did not move for it.
     filtersBypassed: false,
     trafficKey: null,
+    // The low-traffic threshold's own datasets, chosen with Use same source as
+    // colouring off. An omitted `tds` means the threshold reads the datasets
+    // the Data Sources selection gives its type, which is what every earlier
+    // link drew, so the encoder version did not move for it.
+    trafficSources: null,
     lengthCohort: 'annotated',
     proteinFilter: 'any',
     axisX: organism.freshAxes.x,
@@ -424,6 +429,9 @@ export function encodeState(state, organism = DEFAULT_ORGANISM) {
   if (Array.isArray(state.axisXSources) && state.axisXSources.length > 0) {
     push(KEYS.axisXSources, state.axisXSources.join(','));
   }
+  if (Array.isArray(state.trafficSources) && state.trafficSources.length > 0) {
+    push(KEYS.trafficSources, state.trafficSources.join(','));
+  }
   if (Array.isArray(state.axisYSources) && state.axisYSources.length > 0) {
     push(KEYS.axisYSources, state.axisYSources.join(','));
   }
@@ -590,6 +598,10 @@ export function decodeState(hash, organism = DEFAULT_ORGANISM) {
   if (values.has(KEYS.axisXSources)) {
     state.axisXSources = values.get(KEYS.axisXSources).split(',')
       .filter((id) => /^[\w.-]+$/.test(id));
+  }
+  if (values.has(KEYS.trafficSources)) {
+    const ids = values.get(KEYS.trafficSources).split(',').filter((id) => /^[\w.-]+$/.test(id));
+    state.trafficSources = ids.length ? ids : null;
   }
   if (values.has(KEYS.axisYSources)) {
     state.axisYSources = values.get(KEYS.axisYSources).split(',')

@@ -101,7 +101,8 @@ import { colorAnnouncement, installColorControls } from './ui/color-controls.js'
 import { ScatterPlot, togglePinTarget } from './ui/scatter.js';
 import { SchemeEditor } from './ui/scheme-editor.js';
 import {
-  FilterPanel, clearedFilterState, followColourTrafficState, orderTrafficCandidates,
+  FilterPanel, clearedFilterState, followColourTrafficState, orderTrafficCandidates, trafficScale,
+  trafficScaleKind,
 } from './ui/filters.js';
 import { SidePanel } from './ui/side-panel.js';
 import { ShortlistPanel } from './ui/shortlist.js';
@@ -123,7 +124,7 @@ import { createSourceSelectionResolver } from './core/source-selection.js';
 import {
   availableAxisDatasets, axisDatasetSelectionLabel, defaultAxisDatasetSelection,
   legacyAxisDatasetSelection, normalizeAxisDatasetSelection, requestedAxisFileKeys,
-  createAxisContributorResolver,
+  createAxisContributorResolver, resolveAxisContributors,
 } from './core/axis-sources.js';
 import {
   buildTypeMetrics, contributingDatasets, defaultDatasetsOfType, informingDataset, isDatasetOwnKey, isTypeKey,
@@ -277,6 +278,9 @@ const context = {
   projections: new Map(),
   percentiles: new Map(),
   axisTypeMetrics: { x: null, y: null },
+  // The low-traffic threshold's own pooled type metrics, read only while it
+  // has its own dataset selection; see `metricForTraffic`.
+  trafficTypeMetrics: null,
   // A colour scale defaulted while its metric's file was loading, re-chosen on landing.
   scaleAwaitsFile: null,
   timings: { scheme: NaN, projection: NaN, codons: 0 },
@@ -521,7 +525,9 @@ function computeMask() {
   const mask = new Uint8Array(count).fill(1);
   const missingHidden = new Map();
   const entries = Object.entries(state.filters)
-    .map(([key, range]) => ({ key, metric: registry.byKey.get(key), range }))
+    .map(([key, range]) => ({
+      key, range, metric: key === state.trafficKey ? metricForTraffic(key) : registry.byKey.get(key),
+    }))
     .filter((entry) => entry.metric);
 
   for (const { key, metric, range } of entries) {
@@ -622,7 +628,7 @@ function computeMask() {
   // includes every gene. Any criterion the reader changes ends the bypass.
   const bypass = reconcileFilterBypass(
     { bypassed: state.filtersBypassed === true, recorded: context.bypassSignature },
-    filterCriteriaSignature(state),
+    state.filtersBypassed === true ? criteriaSignature() : null,
   );
   state.filtersBypassed = bypass.bypassed;
   context.bypassSignature = bypass.recorded;
@@ -635,11 +641,27 @@ function computeMask() {
   context.missingHidden = missingHidden;
 }
 
+/**
+ * The criteria a bypass is held against, with the datasets each filtered type
+ * reads as the reader requested them, so changing a filter's source or pool
+ * switches filters back on while a file landing does not.
+ */
+function criteriaSignature() {
+  return filterCriteriaSignature(state, {
+    contributorsOf: (key) => {
+      if (!isTypeKey(key) || !context.datasets?.length) return null;
+      if (key === state.trafficKey) return trafficContributorState(key).requested.map((d) => d.id);
+      return contributingDatasets(key, state.typeSources, context.datasets, sourceSelection())
+        .map((dataset) => dataset.id);
+    },
+  });
+}
+
 /** Turn every configured filter off or back on, keeping each criterion. */
 function setFiltersBypassed(bypassed) {
   if ((state.filtersBypassed === true) === bypassed) return;
   state.filtersBypassed = bypassed;
-  context.bypassSignature = bypassed ? filterCriteriaSignature(state) : null;
+  context.bypassSignature = bypassed ? criteriaSignature() : null;
   renderAll();
   const total = context.dataset.genes.length;
   announce(bypassed
@@ -887,6 +909,7 @@ let goTermControls = null;
 let dataSourcesPanel = null;
 let chromosomeDataSourcesPanel = null;
 const axisDataSourcesPanels = { x: null, y: null };
+let trafficDataSourcesPanel = null;
 let sidePanel = null;
 let shortlistPanel = null;
 let searchResults = null;
@@ -1910,6 +1933,8 @@ function renderAll({ schemeErrors = [] } = {}) {
     passing: context.passing,
     filtersBypassed: state.filtersBypassed === true,
     configuredPassing: context.configuredPassing,
+    trafficMetricFor: (key) => metricForTraffic(key),
+    trafficSelectionFor: (key) => trafficSelectionFor(key),
     missingHidden: context.missingHidden,
     exceptionFilter: state.exceptionFilter,
     exceptionCount: context.exceptionCount,
@@ -1957,8 +1982,10 @@ function renderAll({ schemeErrors = [] } = {}) {
       proteinEvidence: state.proteinFilter,
       expression: state.expressionFilter,
       translationalException: state.exceptionFilter,
+      // Which datasets the low-traffic threshold read, when one is set.
+      lowTraffic: state.trafficKey && state.filters[state.trafficKey] ? trafficManifest() : null,
       // Every criterion above is kept while filters are temporarily off; the
-      // per-gene pass column then reads true for every gene.
+      // per-gene pass column then says so for every gene.
       bypassed: state.filtersBypassed === true,
     },
     filterMask: context.mask,
@@ -2424,6 +2451,138 @@ function axisContributorState(axis, key = state[axisMetricField(axis)]) {
     resourceStateOf: (metric) => (metric.fileKey
       ? pendingState(context.dataset, metric.fileKey) : null),
   });
+}
+
+const resolveTrafficMembership = createAxisContributorResolver();
+
+/** How a contributor's values are read and whether its file has settled. */
+function contributorReaders() {
+  return {
+    metricOf: (dataset) => context.registry.byKey.get(dataset.metricKey) ?? null,
+    resourceStateOf: (metric) => (metric.fileKey ? pendingState(context.dataset, metric.fileKey) : null),
+  };
+}
+
+/**
+ * Whether the threshold reads its own datasets: only for a data type, only
+ * when it is not following the colour metric, and only once some are chosen.
+ * Otherwise it reads the registry's type metric, which is the very object the
+ * colouring reads, so the two pool identically.
+ */
+function trafficOwnSelectionActive(key = state.trafficKey) {
+  if (!isTypeKey(key) || !context.datasets?.length || !Array.isArray(state.trafficSources)) return false;
+  if (context.trafficFollowsColor && key === state.colorBy) return false;
+  return (normalizeAxisDatasetSelection(key, state.trafficSources, context.datasets) ?? []).length > 0;
+}
+
+/** The metric the low-traffic threshold judges activity by. */
+function metricForTraffic(key) {
+  return trafficOwnSelectionActive(key)
+    ? context.trafficTypeMetrics?.get(key) ?? context.registry.byKey.get(key)
+    : context.registry.byKey.get(key);
+}
+
+/** Requested and readable contributors for the threshold, its own or the Data Sources ones. */
+function trafficContributorState(key = state.trafficKey) {
+  if (trafficOwnSelectionActive(key)) {
+    return resolveTrafficMembership(key, state.trafficSources, context.datasets, contributorReaders());
+  }
+  const ids = contributingDatasets(key, state.typeSources, context.datasets, sourceSelection())
+    .map((dataset) => dataset.id);
+  return resolveAxisContributors(key, ids, context.datasets, contributorReaders());
+}
+
+/** What the threshold section says about its datasets, or null for a metric with none. */
+function trafficSelectionFor(key) {
+  if (!isTypeKey(key) || !context.datasets?.length) return null;
+  const group = typeGroups(context.datasets).get(key);
+  if (!group) return null;
+  const resolved = trafficContributorState(key);
+  const own = trafficOwnSelectionActive(key);
+  const pools = typePools(key, context.datasets);
+  const ids = resolved.selected.length ? resolved.selected : resolved.requested.map((d) => d.id);
+  const following = context.trafficFollowsColor && key === state.colorBy;
+  const loading = resolved.affected.filter((entry) => entry.state === 'loading').length;
+  const failed = resolved.affected.filter((entry) => entry.state === 'failed').length;
+  const notice = loading || failed
+    ? `${[loading ? `${formatCount(loading)} still loading` : '', failed ? `${formatCount(failed)} failed to load` : '']
+      .filter(Boolean).join(' and ')} of the ${formatCount(resolved.requested.length)} datasets; `
+      + `the threshold uses the ${formatCount(resolved.available.length)} that can be read.`
+    : null;
+  return {
+    label: axisDatasetSelectionLabel(key, ids, context.datasets, pools),
+    choosable: group.datasets.length > 1,
+    notice,
+    explanation: following
+      ? 'Use same source as colouring is on, so the threshold reads the colouring metric itself: '
+        + 'the same datasets, pooled the same way.'
+      : own
+        ? `These datasets were chosen for this threshold alone; colouring keeps its own selection. ${pools
+          ? 'Several are pooled the way colouring pools them; choose just one to read its own values.'
+          : 'This quantity does not pool, so one is read.'}`
+        : 'The threshold reads the datasets the Data Sources selection gives this type, as colouring '
+          + 'does. Choose datasets to give the threshold its own.',
+  };
+}
+
+/** The threshold's datasets as an export records them. */
+function trafficManifest() {
+  const key = state.trafficKey;
+  const metric = metricForTraffic(key);
+  const resolved = isTypeKey(key) && context.datasets?.length ? trafficContributorState(key) : null;
+  return {
+    metric: key,
+    followsColour: Boolean(context.trafficFollowsColor && key === state.colorBy),
+    ownSelection: trafficOwnSelectionActive(key) ? [...state.trafficSources] : null,
+    requestedContributors: resolved ? resolved.requested.map((d) => d.id) : [],
+    contributors: resolved ? resolved.available.map((d) => d.id) : [],
+    unavailableContributors: resolved ? resolved.affected.map(({ dataset }) => dataset.id) : [],
+    pooled: Boolean(metric?.pooled),
+    scale: trafficScale(metric),
+    provenanceId: metric?.provenance?.id ?? null,
+  };
+}
+
+/**
+ * Choose the threshold's own datasets. Colouring and its informing choice are
+ * untouched. A threshold whose scale changes with the choice, from one
+ * deposit's units to a pooled percentile or back, is cleared rather than
+ * reapplied as a number on a scale it was never set on.
+ */
+async function openTrafficDatasetSelection(key, opener) {
+  const group = typeGroups(context.datasets).get(key);
+  if (!group || group.datasets.length < 2) return;
+  trafficDataSourcesPanel ??= new DataSourcesPanel(document.createElement('div'), {
+    datasets: context.datasets,
+    judgements: context.dataset.meta.pairJudgements ?? [],
+    section: false,
+  });
+  const beforeScale = trafficScaleKind(metricForTraffic(key));
+  const result = await trafficDataSourcesPanel.open({
+    mode: 'subset',
+    dataType: group.datasets[0].record.dataType,
+    candidateIds: group.datasets.map((dataset) => dataset.id),
+    current: trafficContributorState(key).selected,
+    opener,
+    title: `Low-traffic threshold — ${group.label}: choose datasets`,
+  });
+  if (result === null) return;
+  state.trafficSources = normalizeAxisDatasetSelection(key, result, context.datasets);
+  const after = metricForTraffic(key);
+  let reset = '';
+  if (state.filters[key] && trafficScaleKind(after) !== beforeScale) {
+    const filters = { ...state.filters };
+    delete filters[key];
+    state.filters = filters;
+    reset = ' The threshold was cleared because its scale changed.';
+  }
+  renderAll();
+  // The section was rebuilt, so the window's opener is gone; its replacement
+  // takes focus back.
+  element('filters').querySelector('.traffic-choose-datasets')?.focus({ preventScroll: true });
+  announce(`Low-traffic threshold, ${group.label}: ${axisDatasetSelectionLabel(
+    key, state.trafficSources, context.datasets, typePools(key, context.datasets),
+  )}.${reset}`);
 }
 
 /** Loading state and counts used by the axis copy and scale controls. */
@@ -3087,6 +3246,17 @@ function installTypeMetrics() {
     },
     geneCount: context.dataset.genes.length,
   });
+  context.trafficTypeMetrics ??= new Map(buildTypeMetrics(context.datasets, {
+    contributing: (typeKey) => resolveTrafficMembership(typeKey, state.trafficSources, context.datasets,
+      contributorReaders()).available,
+    metricOf: (dataset) => registry.byKey.get(dataset.metricKey) ?? null,
+    selected: (typeKey) => {
+      const chosen = new Set(state.trafficSources ?? []);
+      return (typeGroups(context.datasets).get(typeKey)?.datasets ?? [])
+        .filter((dataset) => chosen.has(dataset.id));
+    },
+    geneCount: context.dataset.genes.length,
+  }).map((metric) => [metric.key, metric]));
   for (const axis of ['x', 'y']) {
     if (!context.axisTypeMetrics[axis]) {
       context.axisTypeMetrics[axis] = new Map(
@@ -3257,6 +3427,14 @@ function promotedMetricFileKeys(view, registry) {
   for (const key of named) {
     const fileKey = registry.byKey.get(key)?.fileKey;
     if (fileKey) keys.add(fileKey);
+  }
+  if (isTypeKey(view.trafficKey) && Array.isArray(view.trafficSources) && context.datasets?.length) {
+    for (const fileKey of requestedAxisFileKeys(
+      resolveAxisContributors(view.trafficKey, view.trafficSources, context.datasets, {
+        metricOf: (dataset) => registry.byKey.get(dataset.metricKey), resourceStateOf: () => null,
+      }),
+      (dataset) => registry.byKey.get(dataset.metricKey),
+    )) keys.add(fileKey);
   }
   for (const [axis, key] of [['x', view.axisX], ['y', view.axisY]]) {
     const metric = registry.metricForAxis?.(axis, key) ?? registry.byKey.get(key);
@@ -3867,6 +4045,8 @@ async function boot() {
     onTrafficKeyChange: (key, filters) => {
       state.trafficKey = key;
       state.filters = filters;
+      // A dataset selection belongs to the type it was made for.
+      state.trafficSources = null;
       ensureTypeSelected(key);
       renderAll();
     },
@@ -3877,22 +4057,7 @@ async function boot() {
         ? 'The low-traffic threshold now judges activity by the colouring metric.'
         : 'The low-traffic threshold now keeps its own source.');
     },
-    onSelectSource: async (dataType, current, opener) => {
-      const key = await dataSourcesPanel.open({
-        mode: 'single', dataType, current, opener, title: 'Select the source the filter judges activity by',
-      });
-      if (!key) return;
-      const dataset = context.datasets.find((d) => d.metricKey === key);
-      if (!dataset) return;
-      const typeKey = typeKeyFor(dataset);
-      if (state.trafficKey !== typeKey) {
-        const filters = { ...state.filters };
-        if (state.trafficKey) delete filters[state.trafficKey];
-        state.trafficKey = typeKey;
-        state.filters = filters;
-      }
-      setInforming(typeKey, dataset.id);
-    },
+    onChooseTrafficDatasets: (typeKey, opener) => openTrafficDatasetSelection(typeKey, opener),
     onProteinFilterChange: (mode) => {
       state.proteinFilter = mode;
       renderAll();

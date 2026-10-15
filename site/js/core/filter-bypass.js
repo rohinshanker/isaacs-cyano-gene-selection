@@ -23,17 +23,23 @@ const sortedCopy = (value) => (Array.isArray(value) ? [...value].map(String).sor
  * The traffic metric key alone is left out: following the colour metric can
  * set it while no threshold exists, which changes nothing that is filtered. A
  * threshold is a range in `filters` under that key, so moving it, or moving it
- * to another metric, is caught there. A type metric's informing dataset and
- * pool are included for each filtered key, because changing the source a
- * range is judged by changes which genes it keeps.
+ * to another metric, is caught there. The datasets each filtered type metric
+ * reads are included, because changing the source or pool a range is judged by
+ * changes which genes it keeps. `contributorsOf(key)` names them as the reader
+ * requested them, never as loaded, so a file landing is not a change; without
+ * it, the informing choice recorded in `typeSources` stands in.
+ *
+ * @param {object} state
+ * @param {{contributorsOf?: (key: string) => string[]|null}} [options]
  */
-export function filterCriteriaSignature(state) {
+export function filterCriteriaSignature(state, { contributorsOf } = {}) {
   const filters = state.filters ?? {};
   const keys = Object.keys(filters).sort();
   const ranges = keys.map((key) => {
     const range = filters[key] ?? {};
+    const sources = contributorsOf ? contributorsOf(key) : state.typeSources?.[key] ?? null;
     return [key, range.min ?? null, range.max ?? null, range.includeMissing !== false,
-      state.typeSources?.[key] ?? null, sortedCopy(state.trafficPools?.[key])];
+      Array.isArray(sources) ? sortedCopy(sources) : sources ?? null];
   });
   const goActive = (state.goEvidenceFilter ?? 'any') !== 'any';
   return JSON.stringify({

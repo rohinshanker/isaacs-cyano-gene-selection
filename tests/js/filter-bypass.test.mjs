@@ -41,7 +41,7 @@ test('the signature moves for every criterion and for nothing else', () => {
     { filters: {} },
     { filters: { ...base.filters, cai: { min: null, max: null, includeMissing: true } } },
     { typeSources: { gc3: 'OTHER_SOURCE' } },
-    { trafficPools: { gc3: ['A', 'B'] } },
+    { typeSources: { gc3: 'OTHER_SOURCE', cai: 'X' } },
     { exceptionFilter: 'any' }, { expressionFilter: 'measured' }, { proteinFilter: 'refseq' },
     { neighborSiteFilter: 'with' }, { neighborSiteCountFilter: { min: 2, max: null } },
     { overlapClassFilter: ['convergent'] },
@@ -51,6 +51,10 @@ test('the signature moves for every criterion and for nothing else', () => {
   ]) {
     assert.notEqual(filterCriteriaSignature({ ...base, ...change }), signature, JSON.stringify(change));
   }
+  // The requested datasets a filtered type reads, in any order, are part of it.
+  const pools = (ids) => ({ contributorsOf: (key) => (key === 'gc3' ? ids : null) });
+  assert.notEqual(filterCriteriaSignature(base, pools(['A'])), filterCriteriaSignature(base, pools(['A', 'B'])));
+  assert.equal(filterCriteriaSignature(base, pools(['B', 'A'])), filterCriteriaSignature(base, pools(['A', 'B'])));
   // Set order is not a change.
   assert.equal(
     filterCriteriaSignature({ ...base, categoryFilter: ['b', 'a'] }),

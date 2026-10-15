@@ -101,15 +101,49 @@ export function followColourTrafficState({
   return { trafficKey: colorKey, filters: nextFilters };
 }
 
+/**
+ * The scale the threshold is set on. A pooled abundance is a mean within-dataset
+ * percentile, whatever units its deposits used, so it is named as that rather
+ * than by the long pooling description its unit carries.
+ */
+export function trafficScale(metric) {
+  if (!metric?.pooled) return metric?.unit ?? '';
+  const pooling = metric.provenance?.pooling;
+  return pooling?.kind === 'percentile'
+    ? `pooled percentile, 0 to 1, over ${pooling.datasetCount} datasets`
+    : `pooled mean over ${pooling?.datasetCount ?? 'several'} datasets`;
+}
+
+/**
+ * What a threshold number means: a pooled percentile is the same 0 to 1 scale
+ * however many datasets are pooled, while one deposit's values are in its own
+ * units. A threshold set on one kind is not reapplied to another.
+ */
+export function trafficScaleKind(metric) {
+  if (metric?.pooled) return `pooled:${metric.provenance?.pooling?.kind ?? 'unknown'}`;
+  return `unit:${metric?.unit ?? ''}`;
+}
+
 /** Reader-facing copy for a registry metric without destroying scientific capitalization. */
 export function trafficThresholdLabel(metric) {
-  return `Hide genes below: ${metric.label}${metric.unit ? ` (${metric.unit})` : ''}`;
+  const scale = trafficScale(metric);
+  return `Hide genes below: ${metric.label}${scale ? ` (${scale})` : ''}`;
 }
 
 /** The threshold population is every finite value, which is not always a measurement. */
 export function trafficThresholdReadout(metric, value, kept, total) {
-  return `${formatValue(metric, value)} ${metric.unit} — keeps ${formatCount(kept)} of `
+  return `${formatValue(metric, value)} ${trafficScale(metric)} — keeps ${formatCount(kept)} of `
     + `${formatCount(total)} genes with a value`;
+}
+
+/** Every distinct archive or citation link a provenance record names. */
+export function provenanceLinks(provenance) {
+  if (!provenance) return [];
+  const links = [...(provenance.sourceLinks ?? [])];
+  const record = provenance.record;
+  if (record?.archiveUrl) links.push({ label: record.studyId ?? provenance.id, url: record.archiveUrl });
+  return [...new Map(links.filter((link) => /^https?:\/\//.test(link?.url ?? ''))
+    .map((link) => [link.url, link])).values()];
 }
 
 /** Every independent filter channel reset by the control labelled "Clear all filters". */
@@ -120,6 +154,7 @@ export function clearedFilterState() {
     exceptionFilter: 'any',
     expressionFilter: 'any',
     trafficKey: null,
+    trafficSources: null,
     proteinFilter: 'any',
     neighborSiteFilter: 'any',
     overlapClassFilter: [],
@@ -180,7 +215,7 @@ export class FilterPanel {
    *   onExpressionFilterChange: (mode: string) => void,
    *   onTrafficKeyChange: (key: string) => void,
    *   onTrafficFollowChange?: (follow: boolean) => void,
-   *   onSelectSource?: (dataType: string|null, current: string|null, opener: HTMLElement) => void}} handlers
+   *   onChooseTrafficDatasets?: (typeKey: string, opener: HTMLElement) => void}} handlers
    */
   constructor(host, handlers, { customHost = host } = {}) {
     this.host = host;
@@ -457,9 +492,9 @@ export class FilterPanel {
     heading.textContent = 'Hide low-traffic genes';
 
     // "Use same source as colouring": on, the threshold judges activity by the
-    // metric colouring the map whenever that metric can stand in for activity;
-    // off, the reader picks the source here, in the chooser below or through
-    // the data selection peek (owner decision, 2026-10-05).
+    // metric colouring the map, with exactly its datasets and pool, whenever
+    // that metric can stand in for activity; off, the reader picks the metric
+    // and its datasets here (owner decisions, 2026-10-05 and 2026-10-13).
     const followRow = document.createElement('label');
     followRow.className = 'checkbox-row traffic-follow';
     const follow = document.createElement('input');
@@ -471,6 +506,7 @@ export class FilterPanel {
     followText.textContent = 'Use same source as colouring';
     followRow.append(follow, followText);
     const colourCandidate = candidates.find((metric) => metric.key === this.colorMetricKey) ?? null;
+    const following = this.followColor && Boolean(colourCandidate);
 
     const chooser = document.createElement('div');
     chooser.className = 'field-row';
@@ -479,7 +515,7 @@ export class FilterPanel {
     chooserLabel.textContent = 'Judge activity by';
     const select = document.createElement('select');
     select.id = 'traffic-metric';
-    select.disabled = this.followColor && Boolean(colourCandidate);
+    select.disabled = following;
     if (!this.trafficKey) {
       const placeholder = document.createElement('option');
       placeholder.value = '';
@@ -508,17 +544,6 @@ export class FilterPanel {
       this.trafficHost.append(note);
     }
     this.trafficHost.append(chooser);
-    if (!(this.followColor && colourCandidate) && this.handlers.onSelectSource) {
-      const pick = document.createElement('button');
-      pick.type = 'button';
-      pick.className = 'chip-button traffic-select-source';
-      pick.textContent = 'Select source';
-      pick.addEventListener('click', () => {
-        const metric = this.registry.byKey.get(this.trafficKey);
-        this.handlers.onSelectSource(metric?.provenance?.record?.dataType ?? null, this.trafficKey, pick);
-      });
-      chooser.append(pick);
-    }
 
     if (!this.trafficKey) {
       const note = document.createElement('p');
@@ -528,26 +553,44 @@ export class FilterPanel {
       this.trafficHost.append(note);
       return;
     }
-    const metric = this.registry.byKey.get(this.trafficKey);
+    const metric = state.trafficMetricFor?.(this.trafficKey) ?? this.registry.byKey.get(this.trafficKey);
+    const selection = state.trafficSelectionFor?.(this.trafficKey) ?? null;
 
-    if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
-      const notice = expressionSourceNote(metric.provenance,
-        metric.provenance?.isTargetOrganism === false ? 'provenance-warning' : 'panel-note');
-      if (!notice.childNodes.length) {
-        notice.textContent = 'This expression measurement carries no recorded provenance, so treat it with care.';
+    // Which datasets inform the threshold stays outside the explanation, with
+    // the control that changes them: it is what the reader acts on.
+    if (selection) {
+      const row = document.createElement('div');
+      row.className = 'field-row traffic-datasets';
+      const summary = document.createElement('p');
+      summary.className = 'traffic-datasets-summary';
+      summary.id = 'traffic-datasets-summary';
+      summary.textContent = `${following ? 'Same datasets as colouring' : 'Datasets'}: ${selection.label}`;
+      row.append(summary);
+      if (!following && selection.choosable && this.handlers.onChooseTrafficDatasets) {
+        const pick = document.createElement('button');
+        pick.type = 'button';
+        pick.className = 'chip-button traffic-choose-datasets';
+        pick.textContent = 'Choose datasets';
+        pick.setAttribute('aria-describedby', summary.id);
+        pick.addEventListener('click', () => this.handlers.onChooseTrafficDatasets(this.trafficKey, pick));
+        row.append(pick);
       }
-      this.trafficHost.append(metric.provenance?.isTargetOrganism === false
-        ? tanDisclosure(notice, 'Source') : notice);
-    } else if (isExpressionProxyMetric(metric)) {
-      const notice = document.createElement('p');
-      notice.className = 'panel-note';
-      notice.textContent = 'A rank derived from codon adaptation in this genome, not a '
-        + 'measurement. It is in a different unit from any abundance value.';
-      this.trafficHost.append(notice);
+      this.trafficHost.append(row);
+      // Loading or failed contributors change what the threshold can use, so
+      // they are said outside the collapsed explanation.
+      if (selection.notice) {
+        const notice = document.createElement('p');
+        notice.className = 'panel-note';
+        notice.setAttribute('role', 'status');
+        notice.textContent = selection.notice;
+        this.trafficHost.append(notice);
+      }
     }
 
     const values = metricValues(metric, state.count);
     const finite = sortedFinite(values);
+    this.trafficHost.append(this.trafficProvenance(metric, selection, following, finite.length, state.count));
+
     const range = state.filters[this.trafficKey];
     const current = range?.min ?? finite[0] ?? 0;
 
@@ -604,6 +647,60 @@ export class FilterPanel {
     if (missing > 0) {
       this.trafficHost.append(this.missingControl(state, this.trafficKey, missing, metric));
     }
+  }
+
+  /**
+   * One tan Provenance box, closed by default, holding why these datasets
+   * inform the threshold and everything recorded about them. Its open state is
+   * kept across rebuilds, which happen on every unrelated update.
+   */
+  trafficProvenance(metric, selection, following, withValue, count) {
+    const body = document.createElement('div');
+    body.className = 'traffic-provenance';
+    const add = (text, className = null) => {
+      const paragraph = document.createElement('p');
+      if (className) paragraph.className = className;
+      paragraph.textContent = text;
+      body.append(paragraph);
+    };
+    if (selection?.explanation) add(selection.explanation);
+    else if (following) add('The threshold reads the colouring metric itself, with the same datasets and pool.');
+    if (metric.selectionNote) add(metric.selectionNote);
+    if (isExpressionMetric(metric) && !isExpressionProxyMetric(metric)) {
+      // Plain text inside the box: the borrowed-strain sentence is the first
+      // paragraph, and a warning class would draw a second box inside this one.
+      const notice = expressionSourceNote(metric.provenance, 'traffic-source');
+      if (!notice.childNodes.length) {
+        notice.textContent = 'This expression measurement carries no recorded provenance, so treat it with care.';
+      }
+      body.append(notice);
+    } else if (isExpressionProxyMetric(metric)) {
+      add('A rank derived from codon adaptation in this genome, not a measurement. It is in a '
+        + 'different unit from any abundance value.');
+    }
+    add(`Threshold scale: ${trafficScale(metric)}. With this selection ${formatCount(withValue)} of `
+      + `${formatCount(count)} genes have a threshold value; the rest are unknown, not zero.`);
+    const links = provenanceLinks(metric.provenance);
+    if (links.length) {
+      const list = document.createElement('ul');
+      list.className = 'traffic-provenance-links';
+      for (const link of links) {
+        const item = document.createElement('li');
+        const anchor = document.createElement('a');
+        anchor.href = link.url;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener';
+        anchor.textContent = link.label;
+        item.append(anchor);
+        list.append(item);
+      }
+      body.append(list);
+    }
+    const details = tanDisclosure(body, 'Provenance');
+    details.classList.add('traffic-provenance-disclosure');
+    details.open = Boolean(this.trafficProvenanceOpen);
+    details.addEventListener('toggle', () => { this.trafficProvenanceOpen = details.open; });
+    return details;
   }
 
   /** The explicit include-or-drop control for genes with no measurement. */
