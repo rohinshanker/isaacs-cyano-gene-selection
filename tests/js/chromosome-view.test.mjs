@@ -3717,7 +3717,10 @@ test('crowded neighbouring sites leave gene bars clickable but remain keyboard-i
 });
 
 test('RF01116 is a native family interval independent of genes, measured ticks and each view visibility', () => {
-  const { view, restore, flush } = mount();
+  const viewports = [];
+  const { view, restore, flush } = mount({
+    handlers: { onViewportChange: (viewport) => viewports.push(viewport) },
+  });
   try {
     const row = { id: 'RF01116:NZ_CP006471.1:1364716:1364778:+', type: 'rnaFamily',
       replicon: CHROMOSOME, position: 1364716, endPosition: 1364778, strand: '+',
@@ -3734,6 +3737,20 @@ test('RF01116 is a native family interval independent of genes, measured ticks a
     view.paintRfam(ctx, view.bands()[0]);
     assert.equal(computed.length, 1);
     assert.equal(ctx.globalAlpha, 0.62);
+    assert.equal(ctx.fillStyle, '#13786b');
+    for (const tssPending of [null, 'loading', 'failed']) {
+      view.update({ ...view.model, tssPending });
+      view.setStartSitesVisible(false);
+      assert.doesNotMatch(view.markerConventions(), /row.*is empty/);
+      assert.match(view.markerConventions(), /teal interval bars.*purple measured start-site ticks/);
+    }
+    view.rfamPanel.onInspect(row); flush();
+    assert.deepEqual(view.windowFor(view.primaryTrack()), { from: 1364216, to: 1365278 });
+    assert.match(view.windowReadout.textContent, /1,364,216–1,365,278/);
+    assert.equal(view.panLeft.disabled, false);
+    assert.equal(view.panRight.disabled, false);
+    assert.doesNotMatch(view.trackSummaries.children[0].text(), /Showing the whole replicon/);
+    assert.deepEqual(viewports.at(-1), view.trnaViewport());
     assert.equal(view.rfamPanel.toggle.checked, true);
     assert.match(view.canvas.getAttribute('aria-label'), /RF01116 family homology: 1 computed/);
     const beforeTss = view.showStartSites;

@@ -1378,7 +1378,7 @@ export class GeneSequenceView {
     // whether the reader is showing it: the geometry a reader is reading must
     // not move when they put the marks away.
     const hasNeighborSites = this.neighborSites?.forGene(this.gene)?.count > 0;
-    const hasFamily = this.rfamVisible && !this.rfamPending
+    const hasFamily = !this.rfamPending
       && rfamMarkers(this.rfamEvidence).some((row) => rfamPlacement(this.model, row).status === 'placed');
     const markers = this.markerRowShown() || hasNeighborSites || hasFamily ? 0 : null;
     const bases = (markers === null ? 0 : MARKER_ROW_HEIGHT) + RULER_HEIGHT;

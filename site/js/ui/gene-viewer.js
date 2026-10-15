@@ -1078,7 +1078,7 @@ export function renderGeneViewer(host, gene, {
     sitePanel.update(neighborSites, gene, onOpenPartner, null, visible);
     const contextLabel = document.createElement('label');
     contextLabel.className = 'gene-view-marker-control';
-    contextLabel.textContent = 'Upstream genomic context ';
+    contextLabel.textContent = 'Minimum upstream genomic context ';
     const contextSelect = document.createElement('select');
     contextSelect.dataset.detailAction = 'gene-view-context';
     for (const extent of [60, 120, 240, 500, 1000]) {

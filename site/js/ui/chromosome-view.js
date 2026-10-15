@@ -1,4 +1,4 @@
-import { RfamSitesPanel } from './rfam-sites.js';
+import { RFAM_COLOR, RfamSitesPanel } from './rfam-sites.js';
 import { rfamMarkers, rfamNativeRuns } from '../core/rfam-evidence.js';
 import { sameReplicon as rfamSameReplicon } from '../core/chromosome-model.js';
 import { NeighborSitePanel } from './neighbor-sites.js';
@@ -1080,18 +1080,12 @@ export class ChromosomeView {
     } else if (tssPending) {
       parts.push(`${brackets} `
         + (tssPending === 'failed'
-          ? `The ${study} gene-linked start sites could not be loaded, so the tick row above `
-            + 'each axis is empty.'
-          : `The ${study} gene-linked start sites are still loading, so the tick row above `
-            + 'each axis is empty for now.'));
+          ? `The ${study} gene-linked start sites could not be loaded; their purple ticks are unavailable.`
+          : `The ${study} gene-linked start sites are still loading; their purple ticks are not shown yet.`));
     } else if (!this.showStartSites) {
-      // Hidden by the reader, which is a fourth state and not one of the other
-      // three: the file has landed, the sites are unchanged, and the row is
-      // empty because the control says so. Left unsaid, an empty row would read
-      // as a genome with no start sites, which is the thing this view must
-      // never imply.
+      // Hiding measured sites does not hide independently controlled family intervals.
       parts.push(`${brackets} The ${study} gene-linked start sites are hidden by `
-        + `“Show ${study} start sites”, so the tick row above each axis is empty; the sites `
+        + `“Show ${study} start sites”; the sites `
         + 'themselves are unchanged, and no CDS is filtered by hiding them.');
     } else {
       parts.push('Operon brackets from the annotation’s adjacent same-strand call, and '
@@ -1100,6 +1094,11 @@ export class ChromosomeView {
         + 'positions were measured on this assembly and are drawn where that study published them; '
         + 'the gene view draws the same sites at the published upstream distance instead, and for '
         + 'a minority of sites the two placements differ, which that view names per site.');
+    }
+    if (layerOf(this.organism ?? DEFAULT_ORGANISM, 'rfamEvidence')) {
+      parts.push('RF01116 family homology uses separately controlled translucent teal interval bars with '
+        + 'triangular display heads above each axis; these computed intervals are distinct from the '
+        + 'purple measured start-site ticks. The heads add no genomic bases.');
     }
     return parts.join(' ');
   }
@@ -1873,6 +1872,7 @@ export class ChromosomeView {
         const run = rfamNativeRuns(row)[0];
         this.windows.set(track.accession, { from: Math.max(1, run.from - 500),
           to: Math.min(track.lengthBp, run.to + 500) });
+        this.renderSummaries();
         this.draw();
         this.canvas.focus({ preventScroll: true });
         this.handlers.onAnnounce?.(`RF01116 family interval ${row.position}–${row.endPosition} bp; computed homology only.`);
@@ -1884,7 +1884,7 @@ export class ChromosomeView {
     if (!this.rfamVisible || rows.length === 0) return;
     ctx.save();
     ctx.globalAlpha = 0.62;
-    ctx.fillStyle = TSS_COLOR;
+    ctx.fillStyle = RFAM_COLOR;
     for (const row of rows) {
       for (const run of rfamNativeRuns(row)) {
         const from = Math.max(run.from, band.window.from);

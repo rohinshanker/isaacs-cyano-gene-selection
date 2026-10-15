@@ -2,6 +2,8 @@ import { layerOf } from '../core/organisms.js';
 import { rfamSiteText } from '../core/rfam-evidence.js';
 import { markerPresentation } from '../core/marker-layers.js';
 
+export const RFAM_COLOR = '#13786b';
+
 function element(tag, text = null) {
   const node = document.createElement(tag);
   if (text !== null) node.textContent = text;
@@ -19,7 +21,11 @@ export class RfamSitesPanel {
     this.toggle.type = 'checkbox';
     this.toggle.dataset.detailAction = 'rfam-visibility';
     this.toggle.dataset.sequenceAction = 'rfam-visibility';
-    this.toggleRow.append(this.toggle, element('span', ' Show RF01116 / Yfr1 family homology'));
+    const swatch = element('span');
+    swatch.className = 'rfam-legend-swatch';
+    swatch.style.color = RFAM_COLOR;
+    swatch.setAttribute('aria-hidden', 'true');
+    this.toggleRow.append(this.toggle, swatch, element('span', ' Show RF01116 / Yfr1 family homology'));
     this.toggle.addEventListener('change', () => this.onChange?.(this.toggle.checked));
     this.status = element('p');
     this.status.className = 'panel-note';
@@ -52,7 +58,7 @@ export class RfamSitesPanel {
     }
     this.status.textContent = rows.length
       ? `${rows.length} computed RF01116 family interval${rows.length === 1 ? '' : 's'} in the displayed context; `
-        + (visible ? 'translucent marks shown.' : 'marks hidden in this view.')
+        + (visible ? 'teal interval bars with triangular heads shown (computed homology).' : 'marks hidden in this view.')
       : 'No RF01116 match at GA in the displayed context. This does not establish no regulation.';
     const contentKey = `${visible}:${rows.map((row) => row.id).join(',')}`;
     if (this.lastPayload === payload && this.contentKey === contentKey) return;
@@ -61,7 +67,7 @@ export class RfamSitesPanel {
     this.content.replaceChildren();
     const overview = element('p', `Rfam ${payload.family.release} ${payload.family.accession} / `
       + `${payload.family.name}; GA ${payload.family.gaBits} bits; assembly ${payload.assembly}. `
-      + 'Triangular heads are display indicators, not additional bp. Computed native family homology only. Full transcript ends, targets and activity remain unknown. These predictions describe the original native sequence and have not been recomputed for the active recoding scheme.');
+      + 'Triangular heads are display indicators, not additional bp. Full search and circular-junction details are included in the JSON export.');
     overview.className = 'panel-note';
     this.content.append(overview);
     for (const row of rows) {
@@ -76,10 +82,7 @@ export class RfamSitesPanel {
         this.content.append(button);
       }
     }
-    const provenance = payload.provenance;
-    for (const text of [provenance.searchCoverage?.statement,
-      provenance.originJunctionSearch?.coverageNote, provenance.coverageBoundary,
-      ...payload.limitations].filter(Boolean)) {
+    for (const text of payload.limitations) {
       const note = element('p', text);
       note.className = 'panel-note';
       this.content.append(note);
@@ -98,6 +101,7 @@ export function drawRfamIntervals(root, rows, payload, x, y, height = 7) {
     const group = document.createElementNS(ns, 'g');
     group.setAttribute('class', 'rfam-marker');
     if (typeof group.className === 'string') group.className = 'rfam-marker';
+    group.setAttribute('fill', RFAM_COLOR);
     group.setAttribute('data-marker-id', row.id);
     group.setAttribute('data-marker-origin', row.origin);
     group.setAttribute('tabindex', '0');

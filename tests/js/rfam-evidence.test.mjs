@@ -5,7 +5,7 @@ import { DEFAULT_ORGANISM, organismById } from '../../site/js/core/organisms.js'
 import { markerSpanNt, markerVisible, withMarkerVisible } from '../../site/js/core/marker-layers.js';
 import { DATA_APPLIERS } from '../../site/js/core/dataset.js';
 import { geneViewModel } from '../../site/js/core/gene-view-model.js';
-import { RfamSitesPanel } from '../../site/js/ui/rfam-sites.js';
+import { RFAM_COLOR, RfamSitesPanel } from '../../site/js/ui/rfam-sites.js';
 import { renderGeneViewer } from '../../site/js/ui/gene-viewer.js';
 import { withFakeDocument } from './fake-dom.mjs';
 
@@ -22,7 +22,8 @@ export function familyPayload() {
     provenance: { searchCoverage: { statement: 'All three native replicons searched on both strands.' },
       originJunctionSearch: { coverageNote: 'Circular junctions searched with the model window.' },
       coverageBoundary: 'Only RF01116 was evaluated.' },
-    limitations: ['Family homology does not establish transcript boundaries or activity.'],
+    limitations: ['Family homology does not establish transcript boundaries or activity.',
+      'Sites describe the original native sequence. They are not recomputed for an active recoding scheme.'],
   };
 }
 const gene = { id: 'M744_RS07010', name: 'trxA', seqid: 'NZ_CP006471.1',
@@ -131,6 +132,8 @@ test('both gene mounts draw native family context without assigning CDS ownershi
     renderGeneViewer(left, gene, { rfamEvidence: payload, upstreamNt: 240 });
     renderGeneViewer(right, gene, { rfamEvidence: payload, upstreamNt: 240 });
     assert.equal(left.querySelectorAll('.rfam-marker').length, 1);
+    assert.equal(left.querySelector('.rfam-marker').getAttribute('fill'), RFAM_COLOR);
+    assert.match(left.querySelector('.rfam-sites').textContent, /teal interval bars with triangular heads/);
     assert.equal(right.querySelectorAll('.rfam-marker').length, 1);
     assert.match(left.querySelector('.rfam-marker').getAttribute('aria-label'), /1364716–1364778.*No CDS ownership assigned/);
     const control = left.querySelector('[data-detail-action="rfam-visibility"]');
@@ -166,7 +169,7 @@ test('sequence uses actual columns and camera, preserves measured sites when RF0
     assert.equal(host.querySelectorAll('.rfam-marker').length, 0);
     assert.equal(host.querySelectorAll('.gene-sequence-marker').length, measured);
     assert.match(view.rfamPanel.status.textContent, /hidden/);
-    assert.match(view.rfamPanel.content.textContent, /not been recomputed for the active recoding scheme/);
+    assert.match(view.rfamPanel.content.textContent, /not recomputed for an active recoding scheme/);
   });
 });
 
@@ -186,4 +189,35 @@ test('compact viewer retains RF01116 checkbox focus across caller rebuilds and r
     renderGeneViewer(host, null, options);
     assert.equal(document.activeElement, host);
   });
+});
+
+
+test('RF01116-only sequence row keeps its geometry, camera and held control when marks are hidden', async () => {
+  const { GeneSequenceView } = await import('../../site/js/ui/gene-sequence-view.js');
+  const { standardTable } = await import('./helpers.mjs');
+  for (const markerPending of [null, 'loading', 'failed']) {
+    await withFakeDocument((document) => {
+      const host = document.createElement('div'); document.body.append(host);
+      const table = standardTable();
+      const sequenceGene = { ...gene, codons: table.encode(Array(107).fill(table.indexOf('ATG'))),
+        extendedUpstream: 'A'.repeat(240), rnaContext: { upstream: 'A'.repeat(30) } };
+      const view = new GeneSequenceView(host);
+      view.update({ gene: sequenceGene, table, scheme: null, schemeVersion: 0,
+        markerPending, rfamEvidence: familyPayload() });
+      view.setUpstreamNt(240); view.fitGene();
+      assert.equal(host.querySelectorAll('.rfam-marker').length, 1);
+      assert.equal(host.querySelectorAll('.gene-sequence-marker').length, 0);
+      const layout = view.rowLayout();
+      const camera = { ...view.camera };
+      const toggle = view.rfamPanel.toggle;
+      toggle.focus(); toggle.checked = false; toggle.dispatch('change');
+      assert.equal(host.querySelectorAll('.rfam-marker').length, 0);
+      assert.deepEqual(view.rowLayout(), layout, `row held with Tan state ${markerPending}`);
+      assert.deepEqual(view.camera, camera);
+      assert.equal(document.activeElement, toggle);
+      toggle.checked = true; toggle.dispatch('change');
+      assert.equal(host.querySelectorAll('.rfam-marker').length, 1);
+      assert.deepEqual(view.rowLayout(), layout);
+    });
+  }
 });
