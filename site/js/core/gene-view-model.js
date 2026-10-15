@@ -334,14 +334,15 @@ export function paddedHitRange(ranges, index, padding) {
  * @param {object} gene a record from `genes.json`, with `tssEvidence` joined.
  * @returns {object|null} null when the record has no usable coordinates.
  */
-export function geneViewModel(gene) {
+export function geneViewModel(gene, { upstreamNt = 60 } = {}) {
   if (!gene || !Number.isFinite(gene.start) || !Number.isFinite(gene.end)) return null;
   const segments = orientedSegments(gene);
   const codingEnd = segments[segments.length - 1].to;
   const sites = tssSiteRows(gene);
   const marks = tssMarks(gene);
   const furthestUpstream = marks.length > 0 ? -marks[0].offset : 0;
-  const upstream = Math.max(MIN_UPSTREAM_NT, UPSTREAM_CONTEXT_NT, furthestUpstream);
+  const upstream = Math.max(MIN_UPSTREAM_NT, UPSTREAM_CONTEXT_NT, furthestUpstream,
+    Number.isFinite(upstreamNt) ? Math.min(1000, Math.max(60, upstreamNt)) : 60);
   const span = codingEnd + upstream;
   const domain = {
     min: -upstream,

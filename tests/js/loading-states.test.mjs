@@ -287,8 +287,8 @@ test('the chromosome note does not promise start sites that have not been loaded
   const note = (tssPending, showStartSites = true) => ChromosomeView.prototype.markerConventions
     .call({ model: { ...model, tssPending }, showStartSites });
   assert.match(note(null), /Tan 2018 gene-linked start sites on the tick row above each axis, appear once/);
-  assert.match(note(LOADING), /start sites are still loading, so the tick row above each axis is empty for now/);
-  assert.match(note(FAILED), /start sites could not be loaded, so the tick row above each axis is empty\./);
+  assert.match(note(LOADING), /start sites are still loading; their purple ticks are not shown yet/);
+  assert.match(note(FAILED), /start sites could not be loaded; their purple ticks are unavailable\./);
   for (const pending of [LOADING, FAILED]) {
     assert.ok(!/drawn where that study published them/.test(note(pending)));
     assert.match(note(pending), /Operon brackets .* fill in as you zoom/);
@@ -298,7 +298,7 @@ test('the chromosome note does not promise start sites that have not been loaded
   // Collapsing it into any of the other three would either promise sites that
   // are loading or report an absence nobody measured.
   const hidden = note(null, false);
-  assert.match(hidden, /hidden by “Show Tan 2018 start sites”, so the tick row above each axis is empty/);
+  assert.match(hidden, /hidden by “Show Tan 2018 start sites”; the sites themselves are unchanged/);
   assert.match(hidden, /the sites themselves are unchanged, and no CDS is filtered by hiding them/);
   assert.ok(!/still loading|could not be loaded/.test(hidden));
   assert.ok(!/drawn where that study published them/.test(hidden));

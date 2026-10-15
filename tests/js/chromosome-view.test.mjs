@@ -3715,3 +3715,54 @@ test('crowded neighbouring sites leave gene bars clickable but remain keyboard-i
     assert.equal(view.drawnNeighborSitesInBand(view.bands()[0]).length, 11, 'zoom restores separate marks');
   } finally { restore(); }
 });
+
+test('RF01116 is a native family interval independent of genes, measured ticks and each view visibility', () => {
+  const viewports = [];
+  const { view, restore, flush } = mount({
+    handlers: { onViewportChange: (viewport) => viewports.push(viewport) },
+  });
+  try {
+    const row = { id: 'RF01116:NZ_CP006471.1:1364716:1364778:+', type: 'rnaFamily',
+      replicon: CHROMOSOME, position: 1364716, endPosition: 1364778, strand: '+',
+      origin: 'computed', measurement: 'predicted', producer: 'Infernal 1.1.5 / Rfam 15.1 RF01116',
+      scoreBits: 62.1, evalue: 6.7e-12, truncation: 'no', modelStart: 1, modelEnd: 59 };
+    const payload = { family: { accession: 'RF01116', name: 'Yfr1', release: '15.1', gaBits: 38 },
+      assembly: 'GCF_000817325.1_ASM81732v1', sites: [row], provenance: {}, limitations: ['Homology only.'] };
+    view.update({ ...view.model, rfamEvidence: payload, rfamVisible: true });
+    flush();
+    assert.equal(view.rfamRowsInBand(view.bands()[0])[0].position, 1364716);
+    const computed = [];
+    const ctx = { save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, fill() {},
+      fillRect: (...args) => computed.push(args) };
+    view.paintRfam(ctx, view.bands()[0]);
+    assert.equal(computed.length, 1);
+    assert.equal(ctx.globalAlpha, 0.62);
+    assert.equal(ctx.fillStyle, '#13786b');
+    for (const tssPending of [null, 'loading', 'failed']) {
+      view.update({ ...view.model, tssPending });
+      view.setStartSitesVisible(false);
+      assert.doesNotMatch(view.markerConventions(), /row.*is empty/);
+      assert.match(view.markerConventions(), /teal interval bars.*purple measured start-site ticks/);
+    }
+    view.rfamPanel.onInspect(row); flush();
+    assert.deepEqual(view.windowFor(view.primaryTrack()), { from: 1364216, to: 1365278 });
+    assert.match(view.windowReadout.textContent, /1,364,216–1,365,278/);
+    assert.equal(view.panLeft.disabled, false);
+    assert.equal(view.panRight.disabled, false);
+    assert.doesNotMatch(view.trackSummaries.children[0].text(), /Showing the whole replicon/);
+    assert.deepEqual(viewports.at(-1), view.trnaViewport());
+    assert.equal(view.rfamPanel.toggle.checked, true);
+    assert.match(view.canvas.getAttribute('aria-label'), /RF01116 family homology: 1 computed/);
+    const beforeTss = view.showStartSites;
+    view.rfamPanel.toggle.checked = false;
+    view.rfamPanel.onChange(false);
+    flush();
+    assert.equal(view.showStartSites, beforeTss);
+    computed.length = 0; view.paintRfam(ctx, view.bands()[0]);
+    assert.equal(computed.length, 0);
+    assert.match(view.rfamPanel.status.textContent, /hidden in this view/);
+    view.windows.set(CHROMOSOME, { from: 1, to: 1000 });
+    view.draw(); flush();
+    assert.match(view.rfamPanel.status.textContent, /No RF01116 match at GA/);
+  } finally { restore(); }
+});

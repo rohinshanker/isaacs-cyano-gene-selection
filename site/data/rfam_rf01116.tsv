@@ -1,0 +1,6 @@
+# RF01116 / Yfr1 family homology (rfam-rf01116): computed predicted sites on GCF_000817325.1_ASM81732v1, one-based inclusive.
+# native_start > native_end is an origin-spanning wrap. raw_seq_from/raw_seq_to are as cmsearch emitted them on search_target.
+# Family homology only: not a transcript, regulatory function or gene assignment.
+# Full provenance, controls and limitations: rfam_rf01116.json
+site_id	source	assembly	rfam_release	model_accession	model_name	ga_bits	replicon	strand	native_start	native_end	native_length	origin_spanning	search_space	search_target	raw_seq_from	raw_seq_to	mdl_from	mdl_to	truncation	score_bits	evalue	origin	measurement
+RF01116:NZ_CP006471.1:1364716:1364778:+	Infernal 1.1.5 / Rfam 15.1 RF01116	GCF_000817325.1_ASM81732v1	15.1	RF01116	Yfr1	38.0	NZ_CP006471.1	+	1364716	1364778	63	false	native_linear	NZ_CP006471.1	1364716	1364778	1	59	no	62.1	6.7e-12	computed	predicted

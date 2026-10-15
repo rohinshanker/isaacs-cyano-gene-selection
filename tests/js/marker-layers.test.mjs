@@ -212,14 +212,16 @@ test('coverage and span read the circular replicon, and never cross to another o
 
 test('a layer exists for an organism only where its record declares one', () => {
   const [tan, ...rest] = markerLayersOf(DEFAULT_ORGANISM);
-  assert.equal(rest.length, 0, 'one admitted marker layer today');
+  assert.equal(rest.length, 1, 'measured TSS and computed RF01116 layers');
+  assert.equal(rest[0].id, 'rfam');
+  assert.equal(rest[0].origin, 'computed');
   assert.equal(tan.id, 'tss');
   assert.equal(tan.key, 'tssEvidence');
   assert.equal(tan.label, 'Tan 2018', 'the study name comes from the organism record');
   assert.equal(tan.citation, 'Tan et al. 2018');
   assert.deepEqual([...tan.types], ['gTSS']);
   assert.ok(Object.isFrozen(tan));
-  assert.deepEqual([...MARKER_LAYER_IDS], ['tss']);
+  assert.deepEqual([...MARKER_LAYER_IDS], ['tss', 'rfam']);
 
   // The organism with no such study gets no layer, so nothing can offer to
   // show or hide a feature nobody looked for there.
@@ -276,6 +278,7 @@ test('the four views are the four the owner named, and each holds its own choice
 test('the hidden set is canonical, so one choice writes one link', () => {
   assert.deepEqual(markerKeys(), [
     'tss.chromosome', 'tss.gene-controls', 'tss.gene-detail', 'tss.sequence',
+    'rfam.chromosome', 'rfam.gene-controls', 'rfam.gene-detail', 'rfam.sequence',
   ]);
   assert.equal(markerKey('tss', 'sequence'), 'tss.sequence');
 

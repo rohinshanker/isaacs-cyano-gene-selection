@@ -1716,6 +1716,9 @@ function renderChromosomeView() {
     hasSelection: pinnedIndex() >= 0 || context.activeIndex >= 0 || context.hoveredIndex >= 0,
     tssPending: pendingState(context.dataset, 'tssEvidence'),
     showStartSites: markersVisibleIn('chromosome'),
+    rfamEvidence: context.dataset.rfamEvidence,
+    rfamPending: pendingState(context.dataset, 'rfamEvidence'),
+    rfamVisible: markersVisibleIn('chromosome', 'rfam'),
     // The overlap index itself, not a derived list: the view reads the shared
     // stretches and the partner identities straight out of it and recomputes
     // nothing per frame.
@@ -1738,6 +1741,7 @@ function renderChromosomeView() {
   geneSequenceView ??= new GeneSequenceView(chromosomeView.sequenceElement(), {
     onAnnounce: (message) => announce(message),
     onMarkersVisibleChange: (visible) => setMarkersVisibleIn('sequence', visible),
+    onRfamVisibleChange: (visible) => setMarkersVisibleIn('sequence', visible, 'rfam'),
     onOpenPartner: (id, index) => openOverlapPartner(id, index),
   });
   const pinned = pinnedIndex();
@@ -1749,6 +1753,9 @@ function renderChromosomeView() {
     organism,
     neighborSites: context.neighborSites,
     markerPending: pendingState(context.dataset, 'tssEvidence'),
+    rfamEvidence: context.dataset.rfamEvidence,
+    rfamPending: pendingState(context.dataset, 'rfamEvidence'),
+    rfamVisible: markersVisibleIn('sequence', 'rfam'),
     sequenceContextPending: pendingState(context.dataset, 'sequenceContext'),
     markersVisible: markersVisibleIn('sequence'),
     overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
@@ -1855,6 +1862,7 @@ function renderDetail() {
     colorSources: state.colorSources,
     neighborSites: context.neighborSites,
     startSitesVisible: markersVisibleIn('gene-detail'),
+    rfamVisible: markersVisibleIn('gene-detail', 'rfam'),
   });
   renderControlsGeneViewer(index);
 }
@@ -1897,6 +1905,10 @@ function renderControlsGeneViewer(index) {
     overlapsPending: pendingState(context.dataset, 'geneOverlaps'),
     organism,
     startSitesVisible: markersVisibleIn('gene-controls'),
+    rfamEvidence: context.dataset.rfamEvidence,
+    rfamPending: pendingState(context.dataset, 'rfamEvidence'),
+    rfamVisible: markersVisibleIn('gene-controls', 'rfam'),
+    onRfamVisibleChange: (visible) => setMarkersVisibleIn('gene-controls', visible, 'rfam'),
     onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('gene-controls', visible),
     onOpenPartner: (id, partnerIndex) => openOverlapPartner(id, partnerIndex),
     table: context.dataset.table,
@@ -4209,6 +4221,7 @@ async function boot() {
     // focus on the checkbox, so this records the choice and writes the link
     // rather than re-rendering over the top of it.
     onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('chromosome', visible),
+    onRfamVisibleChange: (visible) => setMarkersVisibleIn('chromosome', visible, 'rfam'),
     onViewportChange: (viewport) => trnaViewer?.setViewport(viewport),
     onDetailJump: () => jumpToDetail(),
     onAnnounce: announce,
@@ -4258,6 +4271,7 @@ async function boot() {
     onShortlistToggle: (index) => toggleShortlist(index),
     onUnpin: () => setPinned(-1),
     onStartSitesVisibleChange: (visible) => setMarkersVisibleIn('gene-detail', visible),
+    onRfamVisibleChange: (visible) => setMarkersVisibleIn('gene-detail', visible, 'rfam'),
     onOpenPartner: (id, index) => openOverlapPartner(id, index),
   });
 

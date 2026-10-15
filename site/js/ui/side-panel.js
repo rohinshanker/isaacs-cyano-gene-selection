@@ -892,6 +892,12 @@ export class SidePanel {
     const viewerBody = document.createElement('div');
     renderGeneViewer(viewerBody, gene, {
       neighborSites: state.neighborSites,
+      upstreamNt: this.upstreamNt ?? 60,
+      onUpstreamNtChange: (extent) => { this.upstreamNt = extent; },
+      rfamEvidence: dataset.rfamEvidence,
+      rfamPending: pendingState(dataset, 'rfamEvidence'),
+      rfamVisible: state.rfamVisible,
+      onRfamVisibleChange: (visible) => this.handlers.onRfamVisibleChange?.(visible),
       tssPending: pendingState(dataset, 'tssEvidence'),
       overlapsPending: pendingState(dataset, 'geneOverlaps'),
       organism,
@@ -905,6 +911,7 @@ export class SidePanel {
     });
     this.rememberDisclosure(viewerBody.querySelector('details.gene-neighbours'), 'gene-neighbours');
     this.rememberDisclosure(viewerBody.querySelector('details.neighbor-site-details'), 'neighbor-sites');
+    this.rememberDisclosure(viewerBody.querySelector('details.rfam-evidence'), 'rfam-evidence');
     viewer.append(viewerSummary, viewerBody);
     this.host.append(viewer);
 

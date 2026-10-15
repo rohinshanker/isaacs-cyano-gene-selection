@@ -135,7 +135,7 @@ All are `open` unless marked.
 | BIO-02 | The `SYNEL` assembly is undetermined (D2) |
 | BIO-03 | BioCyc and KEGG terms on how pages and APIs are read are unquoted; authenticated download untested. This is an access-terms item, not a redistribution gate |
 | BIO-05 | The recurring release watch (recheck at each BioCyc version past 30.0) is not adopted or declined |
-| BIO-06 | 46 `product` values in the ortholog table keep the GFF escape `%2C` |
+| BIO-06 — resolved by `3c5fac8` | The pinned reader decodes the 46 escaped product commas at use time, retaining raw text and the unchanged returned table. See [reader contract](../../validation/biocyc-annotations.md#ortholog-product-text-reader). No source admission or join is implied |
 | OWN-03 — answered | D1 and D2 select viewer inclusion of both UTEX and `SYNEL`, with lower-priority *E. coli* gap-fill and disclosed disagreements. No additional visible-versus-export-only approval is required; preserve the same provenance in exports |
 
 Answered by the 2026-10-14 decisions: OWN-01 (D4) and OWN-02 (D3). BIO-04 is

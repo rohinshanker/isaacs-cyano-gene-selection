@@ -21,12 +21,12 @@ ACC-01, ACC-02, ACC-04, ACC-06, BIO-01 to BIO-03, BIO-07, LIC-01, LIC-02.
 | Source | What refuses | Manual workaround | Automated workaround |
 | --- | --- | --- | --- |
 | GEO disclaimer and FAQ pages | reCAPTCHA, confirmed again 2026-10-05 | Owner saves the two pages with the date | None. A CAPTCHA is not automated. Low value: the parent NCBI policies page is already quoted and checksummed |
-| PRIDE data policy page | script-rendered; a plain fetch gets an empty shell, confirmed 2026-10-05 | Owner saves the page | The agents' browser tooling renders the public page and saves its text with date and checksum. No login, no check to pass |
+| PRIDE data policy page | ACC-02 resolved: ordinary public render and its Markdown source verified 2026-10-15 UTC | No owner action needed for this page | [Dated source receipt and recheck route](../../validation/pride-policy-access.md); exact quotation matched in both saved artifacts, no account or challenge |
 | NUPACK 2.0 licence page | script-rendered | Owner saves the page | Same browser render. Gates the RBS Calculator ticket's licence decision |
 | BioCyc summary pages | page-view metering redirects to an account page | Owner logs in with their own account in their own browser, checks whether Yale holds a subscription, and exports the wanted pages or files | None. No agent creates an account or drives a logged-in session. If the owner later wants an agent to use a session, that is a separate, disclosed decision, after the BioCyc terms are quoted |
 | BioCyc and KEGG reuse terms | never quoted | — | The public licence pages are readable. Queue a terms-quotation claim; the permission decision is the ledger's |
 | GtRNAdb, GSE225426, GSE311172 | no terms published anywhere | Owner writes to the maintainers or depositors; a draft is prepared for each. A reply is quoted with its date | None |
-| Deployed site against the audited tree | never compared | — | The agents fetch the deployed bundle and compare file hashes with the tree. Entirely in-repository work |
+| Deployed site against the audited tree | independent of source access; comparison tooling complete | — | `tools/check_deployed_content.py` compares selected live files with an immutable commit. The [release gate](../../validation/release-gate.md#publish-and-smoke-test) documents its use and the separate workflow/browser checks |
 
 ## Decisions for the owner
 
@@ -42,7 +42,10 @@ ACC-01, ACC-02, ACC-04, ACC-06, BIO-01 to BIO-03, BIO-07, LIC-01, LIC-02.
 
 ## Verification
 
-Not started. A rendered page is saved outside the working tree with its retrieval
+PRIDE policy access (ACC-02) is verified under the linked receipt. Other
+source-access findings remain open. The independent deployment checker has
+automated failure tests and a successful live-file comparison. A rendered
+source page is saved outside the working tree with its retrieval
 date and SHA-256, and any quotation from it is re-matched against the saved text.
 Any step needing a credential is named to the owner first, with the exact action
 and reason. A ledger row changes only on quoted terms.

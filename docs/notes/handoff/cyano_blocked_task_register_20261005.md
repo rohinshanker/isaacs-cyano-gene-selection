@@ -2,8 +2,11 @@
 
 Current BioCyc dispositions supersede this dated register: [the consolidated
 ticket](../tickets/O_biocyc-ortholog-annotations__20261014.md) records the
-2026-10-14 owner answers and carries BIO-01/02/03/05/06 forward. OWN-01/02/03
-are answered; MET-13 is superseded. The original register/TSV remain dated
+2026-10-14 owner answers and carries BIO-01/02/03/05 forward. BIO-06 is
+resolved by the [pinned product-text reader](../../validation/biocyc-annotations.md#ortholog-product-text-reader):
+46 product commas are decoded at use time while the original table stays
+unchanged. The TSV's intake fields record this disposition; its original
+observation remains. OWN-01/02/03 are answered; MET-13 is superseded. The original register/TSV remain dated
 evidence, not the live queue.
 
 Compiled 2026-10-05 by a read-only Claude Science session. Evidence and recommendation only: nothing here admits data, grants a licence, performs a locus join, settles a lab decision, or recommends closing or retiring any ticket. A blocked item is evidence plus an owner-facing question. Every location is `file:line` in the repository at commit `70bc590` plus the working tree as mounted; machine-readable form is `cyano_blocked_task_register_20261005.tsv` (one row per item, same ids).
@@ -46,6 +49,15 @@ source uncertainty and separately tracked implementation remain explicit.
 | MET-11 | J9 answered and fitness type implemented | [Fitness-screen contract](../../validation/fitness-screen-data.md); proposed P4 sweep remains separate under OWN-13 below |
 | OWN-11 | Default selection/conflict display settled; D10 retains PCA and authorizes annotation search/open | [Cross-strain implementation](../tickets/O_cross-strain-data-scan__20260927.md) remains open |
 | OWN-12 | Default-screen versus lab-decision contract reconciled | [Pair-decision intake](../../validation/pair-review-intake.md#applying-an-explicit-owner-decision); pairs 7/8 separate, 26/27 undecided, J2 conditional |
+
+## Access intake dispositions
+
+The original access rows below remain dated observations. ACC-02 is resolved
+as of 2026-10-15 UTC: the public rendered PRIDE policy and the Markdown it loads
+were read, checksummed and quote-matched without an account or challenge. See
+[the reproducible receipt](../../validation/pride-policy-access.md). This changes
+only the retrieval finding; other access findings and dataset decisions remain
+separate. The TSV's intake columns carry the same disposition.
 
 ## Sources read
 
