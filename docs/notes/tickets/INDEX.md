@@ -11,7 +11,6 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
-| [A_pxd036717-enrichment-reader__20261015](A_pxd036717-enrichment-reader__20261015.md) | cyano-lit-unreach: isolated source-preserving supplement reader and raw-LFQ reconstruction; browser release requires reconstruction, 12 replicate comparisons plus optional per-bait means; admission stays in the data-sources ticket |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
 | [O_yfr1-transcript-interaction-evidence__20261014](O_yfr1-transcript-interaction-evidence__20261014.md) | I-SCI-1 remains open: establish full native Yfr1 transcript boundaries and target evidence before any such claim; separate from the admitted RF01116 family interval |
 | [A_add-ecoli-organism__20261005](A_add-ecoli-organism__20261005.md) | MG1655 view shipped; show/flag selenoproteins, review newest CDS and publication evidence, and review CAI membership evidence while retaining current membership. Additional E. coli source choices remain open; SRI notification was sent 2026-10-07 |
@@ -27,7 +26,7 @@ finding is reverted rather than argued about.
 | [O_gated-pages-and-accounts__20261005](O_gated-pages-and-accounts__20261005.md) | Sources refused by a CAPTCHA, a script-rendered page, metering, or a missing account: which a browser render solves, which need an email for terms, and BioCyc, where the owner signs in to their own account in an opened browser and an agent reads the wanted pages with the owner present |
 | [O_depositor-condition-correspondence__20261007](O_depositor-condition-correspondence__20261007.md) | Owner/labmate sends prepared queries; remaining unknowns/conflicts are accepted outcomes and replies do not block the completed engineering/recovery scopes |
 | [A_raw-read-pilot-execution__20261007](A_raw-read-pilot-execution__20261007.md) | Active non-release execution of the pinned GSE122841 four-library raw-read pilot; preparation and eight-file input verification are complete, but full pipeline outputs remain in progress |
-| [O_data-sources-selection__20261005](O_data-sources-selection__20261005.md) | Existing selection/agreement UI shipped; additional admission remains. PXD036717 enrichment and PXD044412 interaction approved as separate evidence types; new readers and aggregation contracts needed |
+| [O_data-sources-selection__20261005](O_data-sources-selection__20261005.md) | Existing selection/agreement UI shipped; PXD036717 reader/reconstruction complete, with gene mapping, detection presentation and browser admission open; PXD044412 interaction reader/aggregation remain |
 | [O_ui-clutter-human-audit__20261005](O_ui-clutter-human-audit__20261005.md) | Prepared 20 renders/text inventory; owner will enter keep/move/merge/remove marks on this ticket itself; leave open and hold implementation |
 
 ## Pending Claude Science

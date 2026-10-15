@@ -23,8 +23,7 @@ The owner has settled whether these evidence types are wanted.
 Owner decisions, 2026-10-15 (D12): PXD036717 browser release requires a
 reconstruction from raw LFQ intensities before admission; expose twelve
 replicate comparisons plus optional averages within each of the four baits.
-The bounded reader/reconstruction is owned by `cyano-lit-unreach` in
-`A_pxd036717-enrichment-reader__20261015`; its reusable
+The bounded reader/reconstruction is complete; its reusable
 [contract](../../validation/pxd036717-enrichment.md) pins the publisher workbook,
 retains original cells/formulas and distinguishes reconstructed values from the
 authors' imputed ratios. LFQ intensities are processed MaxQuant outputs, not raw
