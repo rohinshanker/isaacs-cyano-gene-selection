@@ -1,3 +1,6 @@
+import { RfamSitesPanel, drawRfamIntervals } from './rfam-sites.js';
+import { rfamMarkers } from '../core/rfam-evidence.js';
+import { markerPlacement as rfamPlacement } from '../core/gene-sequence-model.js';
 import { NeighborSitePanel, drawNeighborSiteMarks } from './neighbor-sites.js';
 import { sequenceColumns } from '../core/gene-sequence-model.js';
 import { controlsDisclosure } from './disclosures.js';
@@ -382,6 +385,7 @@ export class GeneSequenceView {
     gene, table, scheme, schemeVersion, organism = DEFAULT_ORGANISM,
     markerPending = null, sequenceContextPending = null, markersVisible = true,
     overlapsPending = null, neighborSites = null,
+    rfamEvidence = null, rfamPending = null, rfamVisible = true,
   }) {
     if (!this.built) this.build();
     const id = gene?.id ?? null;
@@ -391,6 +395,8 @@ export class GeneSequenceView {
     const contextChanged = nextAvailableUpstream !== this.availableUpstream
       || sequenceContextPending !== this.sequenceContextPending;
     const [layer = null] = markerLayersOf(organism);
+    const rfamChanged = rfamEvidence !== this.rfamEvidence || rfamPending !== this.rfamPending
+      || rfamVisible !== this.rfamVisible;
     const markerChanged = layer?.id !== this.markerLayer?.id
       || markerPending !== this.markerPending
       || markersVisible !== this.markersVisible;
@@ -403,9 +409,12 @@ export class GeneSequenceView {
     const overlapChanged = overlapsPending !== this.overlapsPending
       || Array.isArray(gene?.overlapPartners) !== Array.isArray(this.partners);
     // Hover re-renders the tab; nothing here depends on hover, so they cost nothing.
-    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged && !neighbourChanged && !neighborSitesChanged) {
+    if (!geneChanged && !schemeChanged && !markerChanged && !contextChanged && !overlapChanged && !neighbourChanged && !neighborSitesChanged && !rfamChanged) {
       return;
     }
+    this.rfamEvidence = rfamEvidence;
+    this.rfamPending = rfamPending;
+    this.rfamVisible = rfamVisible;
     this.neighbourContext = gene?.flankingNeighbours;
     this.neighborSites = neighborSites;
     this.gene = gene;
@@ -667,6 +676,7 @@ export class GeneSequenceView {
     // list of its published rows. Both are filled per gene, so they live in
     // hosts the build keeps and the render empties: a control that came and
     // went with the whole figure could not be found again after a repaint.
+    this.rfamPanel = new RfamSitesPanel();
     this.markerControlHost = element('div', 'gene-sequence-marker-row');
     this.markerListHost = element('div');
 
@@ -715,7 +725,7 @@ export class GeneSequenceView {
     this.controls.id = 'gene-sequence-controls';
 
     this.figure.append(this.heading, toolbar, this.readout, this.strip, this.markerControlHost,
-      this.selection, this.controls, this.markerListHost, this.partnerListHost, this.neighbourDetails, this.neighborSitePanel.element);
+      this.rfamPanel.element, this.selection, this.controls, this.markerListHost, this.partnerListHost, this.neighbourDetails, this.neighborSitePanel.element);
     this.host.append(this.empty, this.figure);
     this.bindEvents();
     if (typeof ResizeObserver !== 'undefined') {
@@ -1329,6 +1339,23 @@ export class GeneSequenceView {
     this.drawJunctions(area, rows, x, firstVisible, lastVisible);
     this.drawPartners(area, rows, x, firstVisible, lastVisible, width, perNt);
     // Last, so a mark sits over the letter it names rather than under it.
+    const familyRows = !this.rfamPending ? rfamMarkers(this.rfamEvidence).flatMap((row) => {
+      const placement = rfamPlacement(model, row);
+      const runs = (placement.runs ?? []).flatMap((run) => {
+        const from = Math.max(window.from, run.fromOffset);
+        const to = Math.min(window.to, run.toOffset + 1);
+        return to > from ? [{ from, to }] : [];
+      });
+      return runs.length ? [{ ...row, runs }] : [];
+    }) : [];
+    if (this.rfamVisible) drawRfamIntervals(area, familyRows, this.rfamEvidence, x, (rows.markers ?? 0) + 2);
+    this.rfamPanel.update({ organism: this.organism, payload: this.rfamEvidence,
+      pending: this.rfamPending, rows: familyRows, visible: this.rfamVisible,
+      onChange: (visible) => {
+        this.rfamVisible = visible;
+        this.handlers.onRfamVisibleChange?.(visible);
+        this.draw();
+      } });
     this.drawMarkers(area, rows, x, crowding);
     const columns = sequenceColumns(model);
     const sites = this.neighborSites?.forGene(this.gene)?.sites ?? [];
@@ -1351,7 +1378,9 @@ export class GeneSequenceView {
     // whether the reader is showing it: the geometry a reader is reading must
     // not move when they put the marks away.
     const hasNeighborSites = this.neighborSites?.forGene(this.gene)?.count > 0;
-    const markers = this.markerRowShown() || hasNeighborSites ? 0 : null;
+    const hasFamily = !this.rfamPending
+      && rfamMarkers(this.rfamEvidence).some((row) => rfamPlacement(this.model, row).status === 'placed');
+    const markers = this.markerRowShown() || hasNeighborSites || hasFamily ? 0 : null;
     const bases = (markers === null ? 0 : MARKER_ROW_HEIGHT) + RULER_HEIGHT;
     const recoded = active ? bases + ROW_HEIGHT + ROW_GAP : null;
     const residues = (active ? recoded : bases) + ROW_HEIGHT + ROW_GAP;

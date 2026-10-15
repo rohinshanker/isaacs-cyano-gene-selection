@@ -61,6 +61,7 @@ export const DATA_FILES = Object.freeze([
   file('codonPcaReference', 'codon_pca_reference.json', 2,
     'parent-reference codon-space coordinates', { organismField: 'referenceCodonPca' }),
   file('excluded', 'excluded.json', 2, 'excluded loci'),
+  file('rfamEvidence', 'rfam_rf01116.json', 3, 'computed RF01116 family intervals'),
   file('tssEvidence', 'tss_evidence.json', 3, 'start sites'),
   file('trnaLoci', 'trna-loci-v1.json', 3, 'tRNA loci'),
   file('sequenceContext', 'sequence_context.json', 3, 'expanded upstream sequence', {

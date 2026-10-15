@@ -4,7 +4,10 @@
 RF01116 query windows and three annotated CDS-start contexts. It records
 computational window interactions, not established sRNA targets. No output is
 admitted to the browser. See [regulatory-methods.md](regulatory-methods.md) and
-the [RF01116 homology contract](regulatory-rfam.md).
+the [RF01116 homology contract](regulatory-rfam.md). The unresolved full-transcript
+and target-evidence dependency remains **I-SCI-1**, owned by the
+[Yfr1 evidence ticket](../notes/tickets/O_yfr1-transcript-interaction-evidence__20261014.md);
+shipping the family interval does not resolve it.
 
 ## Input and coordinate contract
 

@@ -2602,3 +2602,18 @@ input[type="range"] { width: 100%; }
 .neighbor-site-provenance dl { font-size: 0.8rem; }
 .neighbor-site-provenance dt { font-weight: 600; }
 .neighbor-site-provenance dd { margin: 0 0 0.35rem; }
+
+/* Computed family intervals retain a head at small scales; exact bp stay in detail. */
+.rfam-sites { min-width: 0; }
+.rfam-sites .help-content { overflow-wrap: anywhere; }
+.rfam-inspect { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.rfam-marker { cursor: pointer; }
+.rfam-legend-swatch {
+  display: inline-block; width: 16px; height: 7px; background: currentColor;
+  opacity: 0.62; position: relative; margin-inline: 3px;
+}
+.rfam-legend-swatch::after {
+  content: ''; position: absolute; top: 0; left: 5px;
+  border-inline: 3px solid transparent; border-top: 10px solid currentColor;
+}
+.rfam-marker:focus, .rfam-marker:hover { outline: none; stroke: var(--ink); stroke-width: 2; }

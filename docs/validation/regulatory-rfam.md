@@ -1,4 +1,4 @@
-# Rfam/Infernal regulatory-family pilot on the native UTEX assembly
+# Rfam/Infernal native RF01116 family-homology layer
 
 A reproducible single-family covariance-model search: Rfam 15.1 `RF01116`
 (`Yfr1`, "Cyanobacterial functional RNA 1") against the pinned UTEX 2973
@@ -6,9 +6,10 @@ assembly `GCF_000817325.1_ASM81732v1`, with a deterministic shuffled-background
 control. `tools/regulatory_rfam.py` runs it, `tests/test_regulatory_rfam.py`
 pins its behaviour.
 
-This is a **method pilot**, not a published layer. Nothing here admits a new
-annotation source, publishes a browser marker, or changes the selected-method
-boundaries in [regulatory-methods.md](regulatory-methods.md). It complements
+The browser admission selects **RF01116 alone**, under the
+[source ledger](source-ledger.md#rf01116-native-family-homology-layer).
+The reproducible pilot remains the computation contract; publication does not
+change its evidence boundaries or select any other family. It complements
 the existing Infernal context in
 [trna-annotation-validation.md](trna-annotation-validation.md), which runs a
 different tool over the same genome.
@@ -25,8 +26,9 @@ different tool over the same genome.
   model fit and the search space. Neither is a probability that the interval is
   a functional regulatory element in this organism.
 - **Not comprehensive detection.** Exactly one family is searched. A position
-  with no hit is *uncovered by this pilot*, not a negative. Elements unrelated
-  to the pinned family are invisible to it by construction.
+  with no hit has no RF01116 match at the gathering threshold; other families
+  are not evaluated. Elements unrelated to the pinned family are invisible to
+  it by construction. Neither statement establishes absence of regulation.
 - **Searched is not discovered.** A searched region without a hit produced no
   match at or above the GA threshold under cmsearch's filter pipeline. That
   does not establish that no element of the family is there.
@@ -92,10 +94,11 @@ mechanically against the retrieved bytes after collapsing whitespace runs.
 `1378dd5927b4991d32956920f7b7bb1906bd04428b44ec6b2d8ae7c4895fba6d`. R3 is the same
 bytes as receipt S6 of [the transfer contract](regulatory-transfer.md).
 
-**Terms.** R2 is the source's own statement of its terms, quoted. It is not a
-licence or permission decision for this project; that stays with the
-[source ledger](source-ledger.md) and the owner. No third-party model or
-executable is committed either way: the runbook fetches them.
+**Terms.** R1–R4 were re-fetched on 2026-10-15 UTC (2026-10-14 local), with
+matching hashes; R2's quotation was re-matched mechanically. R2 is source
+evidence; the separate project admission is in the
+[source ledger](source-ledger.md#rf01116-native-family-homology-layer).
+No third-party model or executable is committed: the runbook fetches them.
 
 R4 supports calculating `-Z` for both strands in millions of bases; R3 supports
 `--cut_ga`. The same document prescribes the Rfam search mode and covariance-model
@@ -366,12 +369,76 @@ regulatory function. A different Infernal build can move bit scores at the
 margins, as [trna-annotation-validation.md](trna-annotation-validation.md) notes
 for its own run.
 
-## Before any of this becomes a published layer
+## Rebuilding the browser payload
 
-It is not one yet, and nothing in this document admits it. A browser layer
-would need, under the existing [data contract](data-contract.md) and
-[source ledger](source-ledger.md): the model version and family identity, the
-native input identity, the exact parameters, the coordinate basis, the score
-meaning, the computed record origin with its translucent lower-precedence
-rendering, and the applicable validation. A family match would still be
-labelled `exploratory prediction`, never a measured site.
+`tools/build_rfam_layer.py` runs the pinned pilot afresh; it has no option to
+admit an arbitrary saved report or a hand-entered interval. It writes
+`site/data/rfam_rf01116.json` and `site/data/rfam_rf01116.tsv`. JSON preserves
+the complete pilot provenance and unchanged raw hit rows; local tool/model
+paths become basenames while their hashes remain intact. TSV exports native
+and raw coordinates, strand, model interval, truncation, score, E-value and
+search space, with the JSON provenance identified in its header.
+
+After fetching the model and genome as above, reproduce into fresh scratch
+instead of overwriting the release:
+
+```sh
+RUN=".playwright-cli/rfam-release-$(date +%Y%m%dT%H%M%S)"
+.venv/bin/python tools/build_rfam_layer.py \
+  --cm .playwright-cli/regulatory-rfam/source/RF01116.cm \
+  --cmsearch /opt/miniconda3/envs/trna-validate/bin/cmsearch \
+  --workdir "$RUN/work" \
+  --json-out "$RUN/rfam_rf01116.json" \
+  --tsv-out "$RUN/rfam_rf01116.tsv"
+cmp "$RUN/rfam_rf01116.json" site/data/rfam_rf01116.json
+cmp "$RUN/rfam_rf01116.tsv" site/data/rfam_rf01116.tsv
+.venv/bin/python -m pytest -q tests/test_build_rfam_layer.py tests/test_regulatory_rfam.py
+node --test tests/js/rfam-evidence.test.mjs tests/js/marker-layers.test.mjs
+.venv/bin/python tools/build_data_manifest.py build
+```
+
+Output files and the run directory must not already exist. The executable
+hash is recorded rather than pinned: another Infernal build may legitimately
+change that hash or marginal scores and needs review before replacing the
+release. Do not silently refresh an oracle to fit a changed build. Keep
+synthetic wrap/truncation/no-hit tests separate from the real native oracle.
+
+## Browser admission boundary
+
+Publish only the native family-homology intervals, with the model version,
+family identity, native input identity, exact parameters, coordinate basis,
+score meaning and search coverage intact. Keep the `computed` origin and its
+translucent lower-precedence rendering: teal interval bars with triangular
+display heads and a visible per-view legend. The heads add no genomic bases.
+Measured Tan TSSs retain their purple marks and separate evidence type. An
+intergenic interval may appear in a CDS's displayed genomic context but is not
+assigned to that CDS by proximity.
+
+The overlay describes the original native assembly, even while a recoding
+scheme is displayed. It is not recomputed for that scheme. The independent
+recoding-comparison scope must establish any changed or added site count.
+
+For rendered validation, open `M744_RS07010` (`trxA`) with at least 240 nt of
+upstream context. The interval is 138–200 nt before that CDS start and must
+occupy exactly its 63 native bases in both gene visualizers and the sequence
+close-up. Check chromosome placement, independent per-view visibility,
+keyboard/hover detail, missing/loading/failed states, a no-match region and
+an organism where RF01116 was not evaluated. Hiding RF01116 must preserve the
+sequence row geometry, camera and held control, including when Tan sites are
+loading or failed. Chromosome Inspect must update the coordinate readout, pan
+buttons, accessible track summary and linked tRNA viewport together. A hidden or
+unavailable Tan layer must not describe the shared marker lane as empty.
+
+The compact viewers' **Minimum upstream genomic context** control sets a
+minimum; a published gene-linked TSS can extend their domain farther. The
+sequence view uses its separate upstream window. Verify loading-state captures
+while the response is still pending rather than inferring state from a filename.
+Inspect mobile, tablet, desktop and wide layouts, plus relevant responsive breakpoints. Exports must retain
+the native interval and cannot infer a neighboring-gene owner.
+
+**[I-SCI-1 remains scientifically unresolved](../notes/tickets/O_yfr1-transcript-interaction-evidence__20261014.md):** neither this family interval nor
+the admitted annotation and retrieved Tan/Richter evidence establishes the full
+native Yfr1 transcript ends or the proposed IntaRNA targets. The family layer
+must not claim either. Any future interaction or full-transcript admission must
+resolve this dependency or explicitly retain approximate computational windows
+and their boundary sensitivity. The computation alone cannot resolve it.

@@ -190,6 +190,11 @@ export const UTEX2973 = {
       fileLabel: 'processed-expression agreement',
       label: 'Processed-expression agreement',
     },
+    rfamEvidence: {
+      label: 'RF01116 / Yfr1 family homology',
+      fileLabel: 'computed RF01116 family intervals',
+      citation: 'Rfam 15.1 / Infernal 1.1.5',
+    },
     regulatoryTss: {
       intro: 'Tan et al. measured transcription initiation in UTEX 2973. These 2,333 '
         + 'antisense, internal, and orphan or novel sites are separate from the gene-linked TSSs '

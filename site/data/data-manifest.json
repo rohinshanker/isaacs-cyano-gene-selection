@@ -9,8 +9,8 @@
       "sha256": "896d01639c9c7c2ea9c2019ea62cd129ec704bfe661ddfe4592e99b653c4de74"
     },
     "citations.json": {
-      "bytes": 196466,
-      "sha256": "18b2dd32f7ad0e9e7de314363edcc8de4624604930f77c912c1660bcdee296b1"
+      "bytes": 198652,
+      "sha256": "283c1678783bc9665b42567bb25334cb01dfac7f4b0389466b2dcd93c2701e83"
     },
     "codon_pca.json": {
       "bytes": 5327,
@@ -67,6 +67,10 @@
     "regulatory_tss.json": {
       "bytes": 1572876,
       "sha256": "cb531b048b90db491f263417d1d6bd25839463df9aa4433f5d5fa57769d7e3cc"
+    },
+    "rfam_rf01116.json": {
+      "bytes": 19617,
+      "sha256": "b07727f9049d8e7b5e30f4a4b781e1faed7236599aa751a84417e85866338d77"
     },
     "sequence_context.json": {
       "bytes": 2764024,

@@ -66,7 +66,7 @@ Reusable contracts and runbooks for this repository.
 | [regulatory-methods.md](regulatory-methods.md) | Selected regulatory prediction methods, record origin, viewer precedence and source/runtime boundaries |
 | [regulatory-promoter.md](regulatory-promoter.md) | Pinned Promoter Calculator preparation, native gTSS localization/control pilot, full scoring-window and coordinate contracts |
 | [regulatory-transterm.md](regulatory-transterm.md) | Standalone TransTermHP build, native assembly and shuffled-control pilot, score semantics, hairpin/tail coordinates and circular-boundary limits |
-| [regulatory-rfam.md](regulatory-rfam.md) | Pinned RF01116/Infernal native pilot, circular and raw coordinates, shuffled-control identity, safe outputs and regression oracles |
+| [regulatory-rfam.md](regulatory-rfam.md) | Admitted RF01116/Infernal native family layer, circular and raw coordinates, coverage, provenance/exports, shuffled controls and regression oracles |
 | [regulatory-streme.md](regulatory-streme.md) | Tan gTSS cohort blocks, native discovery/external evaluation, composition-preserving controls and planted-motif recovery |
 | [regulatory-accessibility.md](regulatory-accessibility.md) | Native ViennaRNA unpaired-segment producer, model/parameter identity, circular/strand coordinates, controls and sensitivity limits |
 | [regulatory-intarna.md](regulatory-intarna.md) | Isolated pinned IntaRNA runtime, explicit native RNA-window interactions, controls, coordinate checks and transcript-boundary limits |

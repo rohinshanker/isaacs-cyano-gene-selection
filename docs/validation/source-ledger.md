@@ -85,6 +85,31 @@ sequence or returned model becomes project provenance automatically. Keep the
 external server terms and privacy setting separate from the standalone Apache-2.0
 code and the separate PyRosetta licence.
 
+## RF01116 native family-homology layer
+
+The admitted Rfam scope is exactly the release 15.1 `RF01116`/Yfr1 covariance
+model applied to the pinned native UTEX 2973 assembly with Infernal 1.1.5.
+The owner's exploratory-prediction authorization covers this project-derived
+layer. Rfam's [release-specific COPYING](https://ftp.ebi.ac.uk/pub/databases/Rfam/15.1/COPYING)
+states: “Rfam is freely available under the Creative Commons Zero ("CC0")
+licence.” Retrieved and mechanically matched 2026-10-15 UTC (2026-10-14 local),
+SHA-256 `4366e90e0da3df45363e4c1d1bba140b3036ff3f78967f1b5f9ba23685b889d5`.
+This admission does not extend to unselected families or other pilot methods.
+
+The primary-data citation `rfam-15-1-rf01116` offers project-derived JSON and TSV;
+the software citation `infernal-1-1` credits Nawrocki and Eddy's recommended
+Infernal 1.1 reference. The [official Infernal page](https://eddylab.org/infernal/)
+was checked on the same date, SHA-256
+`2f1cfc88d659f99c4bb8ac9e164c1c0b2dc4462dd7b57a78015878597600faad`.
+No third-party model or executable is redistributed. Model, native input,
+runtime, parameters, coverage and coordinate pins follow the
+[RF01116 contract](regulatory-rfam.md).
+
+A computed RNA-family match is neither a measured TSS nor a confirmed complete
+transcript or interaction. The intergenic hit has no inferred neighboring-gene
+owner. No RF01116 match at the gathering threshold is a search outcome; other
+families remain not evaluated and absence of regulation is never inferred.
+
 ## Recoded functional-annotation sources
 
 Syn57 and Syn61 may reuse the admitted MG1655 annotation release
