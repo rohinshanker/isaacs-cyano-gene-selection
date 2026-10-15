@@ -54,7 +54,7 @@ def test_sections_and_citations_are_complete():
         "gilliam-2025", "dong-2023", "sato-2026", "choi-2016",
         "puszynska-2017", "piechura-2017", "russo-2025", "li-2022", "ncbi-pcc-7942", "gene-ontology",
         "adomako-2022-essentiality", "puszynska-2017-ppgpp", "xu-2024", "suban-2024", "bohutskyi-2024", "markson-2013", "johnson-2024", "gse225426-deposit", "gse311172-deposit",
-        "price-2018-fitness-browser", "guerreiro-2014", "nakayasu-2017", "wang-2016-limonene",
+        "rfam-15-1-rf01116", "price-2018-fitness-browser", "guerreiro-2014", "nakayasu-2017", "wang-2016-limonene",
     } == {item["id"] for item in sections[0]["items"]}
     assert {
         "sharp-li-cai", "dos-reis-tai", "soma-lysidine", "wright-enc",
@@ -126,6 +126,8 @@ def test_every_retained_external_data_source_is_attributed():
         "GCF_000817325.1-RS_2026_05_13/annotation-evidence-v1.jsonl",
         "data/essentiality/source/mbio.00862-22-s0001.xlsx",
         "site/data/pcc7942-essentiality-v1.json",
+        "site/data/rfam_rf01116.json",
+        "site/data/rfam_rf01116.tsv",
     })
     assert required <= download_paths()
 

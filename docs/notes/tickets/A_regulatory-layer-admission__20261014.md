@@ -51,7 +51,8 @@ method is implicitly added to this ticket's implementation scope.
 
 ## Open Scientific Dependencies
 
-- **I-SCI-1 — open; owner: this admission ticket.** The admitted annotation,
+- **I-SCI-1 — open; explicitly transferred to
+  [Yfr1 transcript/interaction evidence](O_yfr1-transcript-interaction-evidence__20261014.md).** The admitted annotation,
   RF01116 homology interval and retrieved Tan/Richter evidence do not establish
   full native UTEX Yfr1 transcript ends or the pilot's proposed target
   interactions. Resolve with source-backed transcript/interaction evidence

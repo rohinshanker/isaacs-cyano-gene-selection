@@ -3,7 +3,7 @@
     {
       "id": "primary-data",
       "title": "Primary data",
-      "description": "These records supplied the sequences, annotations, and measured values used by this release. A download marked ‘project-derived’ is a processed table, not an unmodified publisher file. The full genome inputs fetched during the build are not committed to this repository.",
+      "description": "These records supplied the sequences, annotations, models, and measured values used by this release. A download marked ‘project-derived’ is a processed table, not an unmodified publisher file. The full genome inputs fetched during the build are not committed to this repository.",
       "items": [
         {
           "id": "yu-2015",
@@ -1360,6 +1360,26 @@
               "kind": "Project-derived mapped fitness table"
             }
           ]
+        },
+        {
+          "id": "rfam-15-1-rf01116",
+          "citation": "Rfam consortium. Rfam release 15.1, RF01116 (Yfr1) covariance model. Model data distributed under CC0.",
+          "url": "https://rfam.org/family/RF01116",
+          "contribution": "The pinned RF01116 model supplies one family search on the native UTEX 2973 assembly using Infernal 1.1.5 and the published 38-bit gathering cutoff. The project-derived 63-base match is exploratory RNA-family homology, not a measured regulatory site, a confirmed full transcript, or evidence for a target interaction. Only RF01116 was evaluated; lack of a match does not establish lack of regulation. JSON retains model/input/runtime hashes, native and raw coordinates, circular search coverage and separate shuffled controls. The model and executable are not redistributed.",
+          "downloads": [
+            {
+              "filename": "rfam_rf01116.json",
+              "repoPath": "site/data/rfam_rf01116.json",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/site/data/rfam_rf01116.json",
+              "kind": "Project-derived family-homology intervals with complete search provenance (JSON)"
+            },
+            {
+              "filename": "rfam_rf01116.tsv",
+              "repoPath": "site/data/rfam_rf01116.tsv",
+              "url": "https://raw.githubusercontent.com/rohinshanker/isaacs-cyano-gene-selection/refs/heads/main/site/data/rfam_rf01116.tsv",
+              "kind": "Project-derived family-homology interval table (TSV)"
+            }
+          ]
         }
       ]
     },
@@ -1558,6 +1578,13 @@
           "citation": "The UniProt Consortium. UniProt: the Universal Protein Knowledgebase in 2025. Nucleic Acids Research 53, D609–D617 (2025). doi:10.1093/nar/gkae1010. Entries for Synechococcus elongatus PCC 7942 (taxon 1140), retrieved 6 October 2026.",
           "url": "https://www.uniprot.org/uniprotkb?query=organism_id:1140",
           "contribution": "UniProt accession to PCC 7942 ordered-locus-name table (2,751 entries, CC BY 4.0), the first step in mapping a protein deposit keyed by UniProt accession onto UTEX 2973 locus tags; entries naming several loci, or loci named by several entries, are dropped. The table is a pinned input beside the ingestion specs, not a product download.",
+          "downloads": []
+        },
+        {
+          "id": "infernal-1-1",
+          "citation": "Nawrocki EP, Eddy SR. Infernal 1.1: 100-fold faster RNA homology searches. Bioinformatics 29, 2933–2935 (2013).",
+          "url": "https://eddylab.org/infernal/",
+          "contribution": "Local cmsearch 1.1.5 computed native UTEX RF01116 family matches from the pinned Rfam 15.1 model. Bit scores and E-values describe model support, not measured UTEX function or calibrated biological probabilities. Infernal software is BSD licensed; no executable is redistributed.",
           "downloads": []
         }
       ]

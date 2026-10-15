@@ -1,4 +1,4 @@
-# Rfam/Infernal regulatory-family pilot on the native UTEX assembly
+# Rfam/Infernal native RF01116 family-homology layer
 
 A reproducible single-family covariance-model search: Rfam 15.1 `RF01116`
 (`Yfr1`, "Cyanobacterial functional RNA 1") against the pinned UTEX 2973
@@ -6,9 +6,10 @@ assembly `GCF_000817325.1_ASM81732v1`, with a deterministic shuffled-background
 control. `tools/regulatory_rfam.py` runs it, `tests/test_regulatory_rfam.py`
 pins its behaviour.
 
-This is a **method pilot**, not a published layer. Nothing here admits a new
-annotation source, publishes a browser marker, or changes the selected-method
-boundaries in [regulatory-methods.md](regulatory-methods.md). It complements
+The browser admission selects **RF01116 alone**, under the
+[source ledger](source-ledger.md#rf01116-native-family-homology-layer).
+The reproducible pilot remains the computation contract; publication does not
+change its evidence boundaries or select any other family. It complements
 the existing Infernal context in
 [trna-annotation-validation.md](trna-annotation-validation.md), which runs a
 different tool over the same genome.
@@ -25,8 +26,9 @@ different tool over the same genome.
   model fit and the search space. Neither is a probability that the interval is
   a functional regulatory element in this organism.
 - **Not comprehensive detection.** Exactly one family is searched. A position
-  with no hit is *uncovered by this pilot*, not a negative. Elements unrelated
-  to the pinned family are invisible to it by construction.
+  with no hit has no RF01116 match at the gathering threshold; other families
+  are not evaluated. Elements unrelated to the pinned family are invisible to
+  it by construction. Neither statement establishes absence of regulation.
 - **Searched is not discovered.** A searched region without a hit produced no
   match at or above the GA threshold under cmsearch's filter pipeline. That
   does not establish that no element of the family is there.
@@ -92,10 +94,11 @@ mechanically against the retrieved bytes after collapsing whitespace runs.
 `1378dd5927b4991d32956920f7b7bb1906bd04428b44ec6b2d8ae7c4895fba6d`. R3 is the same
 bytes as receipt S6 of [the transfer contract](regulatory-transfer.md).
 
-**Terms.** R2 is the source's own statement of its terms, quoted. It is not a
-licence or permission decision for this project; that stays with the
-[source ledger](source-ledger.md) and the owner. No third-party model or
-executable is committed either way: the runbook fetches them.
+**Terms.** R1–R4 were re-fetched on 2026-10-15 UTC (2026-10-14 local), with
+matching hashes; R2's quotation was re-matched mechanically. R2 is source
+evidence; the separate project admission is in the
+[source ledger](source-ledger.md#rf01116-native-family-homology-layer).
+No third-party model or executable is committed: the runbook fetches them.
 
 R4 supports calculating `-Z` for both strands in millions of bases; R3 supports
 `--cut_ga`. The same document prescribes the Rfam search mode and covariance-model
@@ -366,12 +369,18 @@ regulatory function. A different Infernal build can move bit scores at the
 margins, as [trna-annotation-validation.md](trna-annotation-validation.md) notes
 for its own run.
 
-## Before any of this becomes a published layer
+## Browser admission boundary
 
-It is not one yet, and nothing in this document admits it. A browser layer
-would need, under the existing [data contract](data-contract.md) and
-[source ledger](source-ledger.md): the model version and family identity, the
-native input identity, the exact parameters, the coordinate basis, the score
-meaning, the computed record origin with its translucent lower-precedence
-rendering, and the applicable validation. A family match would still be
-labelled `exploratory prediction`, never a measured site.
+Publish only the native family-homology intervals, with the model version,
+family identity, native input identity, exact parameters, coordinate basis,
+score meaning and search coverage intact. Keep the `computed` origin and its
+translucent lower-precedence rendering. A measured Tan TSS remains a separate
+record and evidence type. An intergenic interval may appear in a CDS's displayed
+genomic context but is not assigned to that CDS by proximity.
+
+**[I-SCI-1 remains scientifically unresolved](../notes/tickets/O_yfr1-transcript-interaction-evidence__20261014.md):** neither this family interval nor
+the admitted annotation and retrieved Tan/Richter evidence establishes the full
+native Yfr1 transcript ends or the proposed IntaRNA targets. The family layer
+must not claim either. Any future interaction or full-transcript admission must
+resolve this dependency or explicitly retain approximate computational windows
+and their boundary sensitivity. The computation alone cannot resolve it.
