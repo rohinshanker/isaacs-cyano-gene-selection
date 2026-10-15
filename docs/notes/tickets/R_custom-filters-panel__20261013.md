@@ -1,7 +1,7 @@
-# A_custom-filters-panel__20261013 — Active
+# R_custom-filters-panel__20261013 — Resolved
 
 Scope: Add a collapsed-by-default Custom filters section above Filters in the left controls column and move the existing Add filter area into it.
-Status: active
+Status: resolved
 Opened: 2026-10-13
 Updated: 2026-10-14
 
@@ -44,10 +44,49 @@ and desktop widths. Exercise Add/edit/remove, clear-all confirmation, live slide
 updates, keyboard focus, old/new shared links and organism/tab changes. Verify
 unchanged filtering results and run the repository's required gates.
 
+## Outcome
+
+Closed 2026-10-14 by session cyano-unblocked-tix, which owned and implemented it.
+
+Custom filters is a fourth left-column panel, collapsed by default, directly above
+Filters (de6688a). It holds Add filter, its metric selector and the range rows it
+creates; Filters keeps every built-in filter, the passing count and Clear all
+filters, which clears both. One `FilterPanel` writes one filter state. Encoder
+version 9: an older link inserts the panel above Filters, collapsed, keeping its
+own order and collapse state; a version 9 link keeps the panel opened or moved.
+The Reset panel layout copy names both collapsed panels. Contract distilled to
+`docs/validation/controls-column-and-resets.md` (c81bce2).
+
+## Findings against the work
+
+- Review: no finding against this ticket's scope (Codex, on bfb78d2..9c1ae27).
+- Self-found: the Reset panel layout tooltip and dialog still said only the gene
+  visualizer starts collapsed; resolved in 20147cd.
+
+No finding is open.
+
+## Final validation
+
+Final validation, 2026-10-14, on branch `work/filters-tickets-20261014` after merging
+`origin/main` at 7dedca7: `npm test` 1,623 pass; `.venv/bin/python -m pytest -q`
+2,080 pass, 20 skipped, run with the main checkout's ignored raw inputs linked in;
+`.venv/bin/python tools/validate_contract.py` 130 pass, 1 skipped; module preloads
+match the import graph. Rendered in Chromium at 375, 768, 1280 and 1440 px with no
+console errors, failed requests or horizontal overflow; screenshots under
+`.playwright-cli/filters-tix-20261014/` in the worktree (ignored). Cross-provider
+review by Codex `gpt-6-astra` at xhigh on bfb78d2..9c1ae27 returned R1 to R7;
+the same reviewer confirmed all seven resolved in 617204a with no new defects in
+c81bce2 or 617204a, and confirmed 469a767.
+
+Rendered: fresh, collapsed and expanded, populated with a range row, Add, Remove,
+Clear all with its confirmation, version 9 links, and the UTEX 2973, E. coli K-12
+and Syn61 organisms. Node tests cover version 8 and unversioned link migration,
+the held-slider update in the moved row, and the split hosts.
+
 ## Cleanup
 
 Claim ownership before editing shared panel/filter files. Coordinate with the
-[low-traffic pooling/Provenance ticket](A_low-traffic-provenance-disclosure__20261013.md),
+[low-traffic pooling/Provenance ticket](R_low-traffic-provenance-disclosure__20261013.md),
 which also touches FilterPanel; its built-in controls remain in Filters.
 Resolve every finding, distill the revised panel/state contract into validation
 guidance and its index, then remove this ticket and queue row under AGENTS.md.

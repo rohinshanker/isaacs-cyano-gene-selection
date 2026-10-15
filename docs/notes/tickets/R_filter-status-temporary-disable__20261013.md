@@ -1,7 +1,7 @@
-# A_filter-status-temporary-disable__20261013 — Active
+# R_filter-status-temporary-disable__20261013 — Resolved
 
 Scope: Extend Filter status to Chromosome/Gene, add temporary filter disabling with automatic reactivation on edits, and ensure chromosome access to Show filtered-out genes.
-Status: active
+Status: resolved
 Opened: 2026-10-13
 Updated: 2026-10-14
 
@@ -59,11 +59,60 @@ Use the UI skill for collapsed/expanded sections, checkbox/keyboard interactions
 and both filtered-out visibility settings at mobile/tablet/desktop widths.
 Run the repository's required gates before resolving.
 
+## Outcome
+
+Closed 2026-10-14 by session cyano-unblocked-tix, which owned and implemented it.
+
+Filter status appears on the map and in the chromosome view whenever configured
+filters hide a gene, and always while bypassed, with a **Turn filters off** toggle
+(20147cd). The bypass keeps every criterion and includes every gene; its summary
+reads **Filter status (temporarily disabled)** everywhere. Any criteria change ends
+it, detected by a signature of reader-chosen criteria, so repaints, tab switches,
+panel collapses and Show filtered-out genes do not. Clear all ends it. Shared as
+`fo=1`. By owner decision of 2026-10-14, an export made while bypassed marks every
+row's `passesCurrentFilters` as `true (filters turned off at export)` and carries a
+manifest note. In the chromosome view the section sits under the window readout,
+below the row holding Show filtered-out genes (c81bce2). Contract distilled
+to `docs/validation/viewer-interaction-state.md` and
+`docs/validation/candidate-comparison-and-export.md`.
+
+## Findings against the work
+
+- R4 major, follow-colour reconciled after the bypass check: resolved in 617204a.
+- R5 major, signature omitted annotation and Tan source choices: resolved in 617204a.
+- R6 minor, map Filter status lagged during a live drag: resolved in 617204a.
+- Self-found: the reactivation announcement was overwritten by the edited
+  control's own announcement; resolved in 20147cd before review.
+- Self-found: the chromosome status region came before the window readout and
+  broke `tools/ui/check_neighbor_sites_repair.js`; resolved in c81bce2.
+
+No finding is open.
+
+## Final validation
+
+Final validation, 2026-10-14, on branch `work/filters-tickets-20261014` after merging
+`origin/main` at 7dedca7: `npm test` 1,623 pass; `.venv/bin/python -m pytest -q`
+2,080 pass, 20 skipped, run with the main checkout's ignored raw inputs linked in;
+`.venv/bin/python tools/validate_contract.py` 130 pass, 1 skipped; module preloads
+match the import graph. Rendered in Chromium at 375, 768, 1280 and 1440 px with no
+console errors, failed requests or horizontal overflow; screenshots under
+`.playwright-cli/filters-tix-20261014/` in the worktree (ignored). Cross-provider
+review by Codex `gpt-6-astra` at xhigh on bfb78d2..9c1ae27 returned R1 to R7;
+the same reviewer confirmed all seven resolved in 617204a with no new defects in
+c81bce2 or 617204a, and confirmed 469a767.
+
+Rendered: apply, bypass and restore without losing criteria; reactivation by a
+built-in filter, a custom filter removal, a live drag, a low-traffic pool change and
+follow-colour; no reactivation on Show filtered-out genes, panel collapse or late
+file arrival; Clear all; a bypassed link reloaded into the chromosome view; both
+views at four widths. The tab-switch case is covered by the signature tests, which
+show the panel and other view fields leave the criteria unchanged.
+
 ## Cleanup
 
 Claim ownership before editing shared filter, view-state or chromosome files.
-Coordinate with the [Custom filters panel](A_custom-filters-panel__20261013.md)
-and [low-traffic pooling/Provenance](A_low-traffic-provenance-disclosure__20261013.md)
+Coordinate with the [Custom filters panel](R_custom-filters-panel__20261013.md)
+and [low-traffic pooling/Provenance](R_low-traffic-provenance-disclosure__20261013.md)
 tickets so their edits participate in automatic reactivation. Resolve every
 finding, distill reusable interaction/state rules into validation guidance and
 its index, then remove this ticket and queue row under AGENTS.md. Leave other
