@@ -108,7 +108,7 @@ test('search lists records apart from CDSs; Open shows a read-only card and offe
     const result = results.search('R_');
     assert.equal(result.total, 0);
     assert.equal(result.records.total, 2);
-    assert.match(host.querySelector('p.search-status').textContent, /No protein-coding gene matches/);
+    assert.match(host.querySelector('p.search-status').textContent, /No plotted CDS matches/);
     const recordList = host.querySelector('ul.search-records');
     assert.ok(recordList);
     assert.match(host.textContent, /2 annotated genes outside the plotted CDS set match\. These are annotation records/);

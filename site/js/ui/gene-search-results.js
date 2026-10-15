@@ -208,7 +208,7 @@ export class GeneSearchResults {
       return;
     }
     status.textContent = result.total === 0
-      ? `No protein-coding gene matches “${this.query.trim()}”.${goPendingNote}`
+      ? `No plotted CDS matches “${this.query.trim()}”.${goPendingNote}`
       : `${formatCount(result.total)} gene`
         + `${result.total === 1 ? '' : 's'} match`
         + `${result.total === 1 ? 'es' : ''} “${this.query.trim()}”.${goPendingNote}`;

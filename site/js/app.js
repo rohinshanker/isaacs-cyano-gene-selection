@@ -2988,7 +2988,8 @@ function buildGeneSearch() {
     onShowTrna: (id) => showTrnaRecord(id),
     // The tRNA list's own readiness, so a hand-off is offered only when it can land.
     trnaState: () => (!layerOf(organism, 'trnaLoci') ? 'absent'
-      : pendingState(context.dataset, 'trnaLoci') ?? (context.dataset.trnaLoci ? 'ready' : 'loading')),
+      : context.dataset.files?.trnaLoci?.state === FILE_STATE.ABSENT ? 'absent'
+        : pendingState(context.dataset, 'trnaLoci') ?? (context.dataset.trnaLoci ? 'ready' : 'loading')),
   });
   searchResults.setGenes(context.dataset.genes, context.dataset.goTerms?.terms, context.dataset);
 
