@@ -25,9 +25,25 @@ browser release, or change to the other ingestion routes is authorized here.
 
 ## Verification
 
-Pending: independent source-only join counts; synthetic ambiguity/provenance
-tests and real-input regression; exact-patch review; `npm test`, Python
-`pytest -q`, and `tools/validate_contract.py`.
+Implementation: `0609c1a`. Independent source-only audit DEM-426 reproduced
+the exact-locus counts and found two RefSeq disagreements affecting seven
+rows. The mapper withholds those rows: 1,550 assigned and 75 unassigned,
+with all 1,625 source rows and measurements preserved.
+
+Passed on 2026-10-15: 73 focused reader/mapping tests; `npm test` (1,653
+passed); Python `pytest -q` (2,375 passed, 23 skipped, 51 subtests passed);
+`tools/validate_contract.py` (130 passed, one declared spliced-CDS skip).
+The private pinned workbook regression ran, rather than skipping.
+
+DEM-427 review findings (repair in progress):
+- **MAP-1 open:** RefSeq confirmation must be present, not merely non-conflicting.
+  An offline comparison independently confirmed different source/UTEX protein
+  lengths for all 84 affected rows; withhold these as `refseq_unconfirmed`.
+- **MAP-2 open:** pin every real-input exclusion status and detection count.
+- **MAP-3 open:** expose competing identifiers and rows for reverse collisions.
+
+The repair now assigns 1,466 rows and retains 159 unassigned, with no source
+measurements changed. Pending: repair tests, exact-patch re-review and gates.
 
 ## Cleanup
 

@@ -1,7 +1,9 @@
 """Exact join, whole-input ambiguity and unchanged source-evidence contracts."""
 
 import copy
+import csv
 import hashlib
+import io
 import json
 from pathlib import Path
 import sys
@@ -125,9 +127,28 @@ def test_isoform_notes_missing_refseq_and_exact_pcc_suffixes():
         routes = mapping.build_routes(uniprot([["Q12345", locus, refseq]]),
                                       crosswalk([edge(locus), edge(locus)]))
         result = mapping.lookup("Q12345", routes)
-        assert result["status"] == "mapped"
+        assert result["status"] == ("mapped" if comparison == "agrees" else "refseq_unconfirmed")
+        assert (result["utexLocus"] is not None) == (comparison == "agrees")
+        assert result["utexCandidates"] == ["M744_RS00005"]
         assert result["refseqComparison"] == comparison
         assert result["crosswalkRows"] == [2, 3]
+
+
+
+def test_reverse_conflicts_expose_competing_identifiers_and_source_rows():
+    routes = mapping.build_routes(
+        uniprot([["Q12345", "Synpcc7942_0001", "WP_1.1"],
+                 ["OTHER", "Synpcc7942_0001", "WP_1.1"]]),
+        crosswalk([edge(), edge("Synpcc7942_9999", flag="ambiguous")]),
+    )
+    result = mapping.lookup("Q12345", routes)
+    assert result["status"] == "uniprot_ambiguous"
+    assert result["proteinCompetitors"] == [{
+        "accession": "OTHER", "pccLoci": ["Synpcc7942_0001"], "uniprotRows": [3],
+    }]
+    assert result["crosswalkCompetitors"] == [{
+        "pccLocus": "Synpcc7942_9999", "utexLoci": ["M744_RS00005"], "crosswalkRows": [3],
+    }]
 
 
 def test_protein_group_never_allocates_to_members_or_uses_gene_alias():
@@ -220,14 +241,51 @@ PINNED = mapping.ROOT / "data/interim/pxd036717" / SOURCE_FILE
 def test_pinned_mapping_matches_source_audit_with_disagreements_withheld():
     doc = mapping.map_workbook(PINNED.read_bytes(), (mapping.ROOT / mapping.UNIPROT).read_bytes(),
                                (mapping.ROOT / mapping.CROSSWALK).read_bytes())
-    expected = [(367, [227, 187, 218], 185), (347, [186, 144, 172], 140),
-                (402, [293, 218, 273], 200), (434, [207, 147, 159], 135)]
+    expected = [
+        (347, [218, 181, 209], 179, [8, 1, 2, 20], [608, 332, 22, 79, 0]),
+        (330, [180, 140, 167], 136, [8, 4, 1, 17], [487, 73, 50, 380, 0]),
+        (381, [279, 211, 261], 194, [8, 3, 2, 21], [751, 157, 54, 181, 0]),
+        (408, [199, 142, 155], 131, [13, 3, 2, 26], [496, 144, 51, 533, 0]),
+    ]
     conflicts = set()
-    for table, (count, coverage, means) in zip(doc["sheets"], expected, strict=True):
+    for table, (count, coverage, means, exclusions, detection) in zip(
+            doc["sheets"], expected, strict=True):
         audit = table["mappingAudit"]
         assert audit["mappedRows"] == count
         assert list(audit["mappedValidByReplicate"].values()) == coverage
         assert audit["mappedCompleteMeans"] == means
+        missing, groups, disagree, unconfirmed = exclusions
+        assert audit["statuses"] == {
+            "mapped": count, "crosswalk_missing": missing,
+            "protein_group": groups, "refseq_disagreement": disagree,
+            "refseq_unconfirmed": unconfirmed, "uniprot_ambiguous": 3,
+            "uniprot_no_locus": 2,
+        }
+        assert audit["mappedDetectionCounts"] == dict(zip(
+            ("both", "bait_only", "control_only", "neither", "invalid"), detection, strict=True,
+        ))
         conflicts.update(row["accession"] for row in table["rows"]
                          if row["mapping"]["status"] == "refseq_disagreement")
     assert conflicts == {"Q31PP6", "Q31NP5"}
+    assert sum(len(table["rows"]) for table in doc["sheets"]) == 1625
+
+    # Independent offline check of why missing RefSeq confirmation is a hold.
+    identity_path = mapping.ROOT / (
+        "data/protein-evidence/releases/"
+        "GCF_000817325.1-RS_2026_05_13-protein-evidence-v1/protein-identity-v1.tsv"
+    )
+    identity_data = identity_path.read_bytes()
+    assert hashlib.sha256(identity_data).hexdigest() == (
+        "3e9b2b4dafab2ed7e88d09a6126e4464d83bf7929e9e5fc7f5ffdf70eb19e79a"
+    )
+    lengths = {row["locus_tag"]: int(row["protein_length_aa"])
+               for row in csv.DictReader(io.StringIO(identity_data.decode()), delimiter="\t")}
+    for table in doc["sheets"]:
+        for row in table["rows"]:
+            status = row["mapping"]["status"]
+            if status not in {"mapped", "refseq_disagreement", "refseq_unconfirmed"}:
+                continue
+            target, = row["mapping"]["members"][0]["utexCandidates"]
+            source_length = next(cell["value"] for cell in row["cells"]
+                                 if cell["cell"] == f"AE{row['row']}")
+            assert (source_length == lengths[target]) == (status == "mapped")

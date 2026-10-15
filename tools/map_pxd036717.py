@@ -45,12 +45,17 @@ def _table(data: bytes, required: set[str]) -> list[tuple[int, dict[str, str]]]:
     return result
 
 
-def _unique_links(forward: dict[str, set[str]], excluded: set[str]) -> dict[str, str]:
-    """Mutual uniqueness across the full table, including excluded edges."""
+def _reverse_links(forward: dict[str, set[str]]) -> dict[str, set[str]]:
     reverse = defaultdict(set)
     for source, targets in forward.items():
         for target in targets:
             reverse[target].add(source)
+    return reverse
+
+
+def _unique_links(forward: dict[str, set[str]], excluded: set[str]) -> dict[str, str]:
+    """Mutual uniqueness across the full table, including excluded edges."""
+    reverse = _reverse_links(forward)
     result = {}
     for source, targets in forward.items():
         if source not in excluded and len(targets) == 1:
@@ -106,6 +111,7 @@ def build_routes(uniprot_data: bytes, crosswalk_data: bytes) -> dict[str, Any]:
         "proteinLinks": _unique_links(proteins, unsupported),
         "unsupported": unsupported, "loci": loci, "locusRows": locus_rows,
         "locusLinks": _unique_links(loci, flagged),
+        "locusProteins": _reverse_links(proteins), "targetLoci": _reverse_links(loci),
     }
 
 
@@ -134,17 +140,39 @@ def lookup(accession: str, routes: dict[str, Any]) -> dict[str, Any]:
     elif comparison == "disagrees":
         status = "refseq_disagreement"
         utex = None
+    elif comparison == "not_available":
+        status = "refseq_unconfirmed"
+        utex = None
     else:
         status = "mapped"
+    utex_candidates = {
+        target for source in candidates for target in routes["loci"].get(source, set())
+    }
+    protein_competitors = {
+        other for source in candidates for other in routes["locusProteins"].get(source, set())
+    } - {accession}
+    crosswalk_competitors = {
+        other for target in utex_candidates for other in routes["targetLoci"].get(target, set())
+    } - set(candidates)
     return {
         "accession": accession, "status": status,
         "pccLocus": pcc, "utexLocus": utex,
         "uniprotRefseq": refseq, "crosswalkRefseq": shared_refseq,
         "refseqComparison": comparison,
         "pccCandidates": candidates,
-        "utexCandidates": sorted({
-            target for source in candidates for target in routes["loci"].get(source, set())
-        }),
+        "utexCandidates": sorted(utex_candidates),
+        "proteinCompetitors": [
+            {"accession": other,
+             "pccLoci": sorted(routes["proteins"][other] & set(candidates)),
+             "uniprotRows": routes["proteinRows"][other]}
+            for other in sorted(protein_competitors)
+        ],
+        "crosswalkCompetitors": [
+            {"pccLocus": other,
+             "utexLoci": sorted(routes["loci"][other] & utex_candidates),
+             "crosswalkRows": routes["locusRows"][other]}
+            for other in sorted(crosswalk_competitors)
+        ],
         "uniprotRows": routes["proteinRows"].get(accession, []),
         "crosswalkRows": sorted({
             number for source in candidates for number in routes["locusRows"].get(source, [])

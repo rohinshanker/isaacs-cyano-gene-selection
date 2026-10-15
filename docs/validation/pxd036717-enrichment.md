@@ -187,15 +187,19 @@ these are identifiers, not aliases or a spelling correction.
 The row's `mapping.status` and `mapping.utexLocus` govern assignment. Only
 `status: mapped` assigns a UTEX locus. Each member retains candidate identifiers,
 versioned RefSeq IDs and 1-based physical TSV row numbers (including the header)
-for audit. Member candidates never authorize assigning a group's measurements.
+for audit. `proteinCompetitors` and `crosswalkCompetitors` also identify the
+other source identifiers and TSV rows responsible for reverse collisions.
+Member candidates never authorize assigning a group's measurements.
 If two source rows would assign the same target within one bait, **both** become
 `target_collision` with no assigned UTEX locus; file order never wins. The same
 target in different baits is allowed because the experiments remain separate.
 
 If a nonempty UniProt RefSeq list has no accession in common with the
 crosswalk's shared-protein evidence, the row is `refseq_disagreement` and its
-UTEX assignment is withheld. A missing RefSeq list is explicitly
-`not_available`, never claimed as confirmation. Isoform annotations following
+UTEX assignment is withheld. Assignment requires `refseqComparison: agrees`.
+A missing RefSeq list is explicitly `not_available` and produces the non-assigning
+status `refseq_unconfirmed`; missing confirmation never authorizes a transfer.
+Isoform annotations following
 an accession are retained in the pinned source but do not change that accession.
 These two observed disagreements affect seven source rows:
 
@@ -206,26 +210,40 @@ These two observed disagreements affect seven source rows:
 
 Different accession versions/records do not establish a biological mismatch.
 They do require a separate, recorded identity check before restoring these
-rows. Do not silently substitute the newer identifier. This hold is confined
-to these rows and leaves their original evidence intact.
+rows. Do not silently substitute the newer identifier. Both forms of missing
+confirmation retain the original evidence and candidate identifiers.
+
+The pinned source has 84 additional rows (35 accessions) with no UniProt RefSeq
+confirmation. Their workbook `Sequence length` (column AE) differs from the
+candidate UTEX `protein_length_aa` in every case. The seven explicitly disagreeing
+rows also have different lengths; all 1,466 assigned rows have matching lengths.
+Reproduce this offline comparison using
+`data/protein-evidence/releases/GCF_000817325.1-RS_2026_05_13-protein-evidence-v1/protein-identity-v1.tsv`
+(SHA-256 `3e9b2b4dafab2ed7e88d09a6126e4464d83bf7929e9e5fc7f5ffdf70eb19e79a`).
+Length equality alone does not establish sequence identity. These results support
+withholding unconfirmed assignments, rather than interpreting an empty RefSeq
+cell as a safe transfer. Restoring any of these 91 rows requires a recorded
+identity check.
 
 ### Mapping regression counts
 
-| Bait | Assigned rows | No crosswalk edge | No UniProt locus | Ambiguous UniProt locus | Groups | RefSeq disagreement | Assigned valid A/B/C | Assigned complete means |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: |
-| RpaA | 367 | 8 | 2 | 3 | 1 | 2 | 227 / 187 / 218 | 185 |
-| CikB | 347 | 8 | 2 | 3 | 4 | 1 | 186 / 144 / 172 | 140 |
-| NblS | 402 | 8 | 2 | 3 | 3 | 2 | 293 / 218 / 273 | 200 |
-| ManS | 434 | 13 | 2 | 3 | 3 | 2 | 207 / 147 / 159 | 135 |
+| Bait | Assigned rows | No crosswalk edge | No UniProt locus | Ambiguous UniProt locus | Groups | RefSeq disagreement | RefSeq unconfirmed | Assigned valid A/B/C | Assigned complete means |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| RpaA | 347 | 8 | 2 | 3 | 1 | 2 | 20 | 218 / 181 / 209 | 179 |
+| CikB | 330 | 8 | 2 | 3 | 4 | 1 | 17 | 180 / 140 / 167 | 136 |
+| NblS | 381 | 8 | 2 | 3 | 3 | 2 | 21 | 279 / 211 / 261 | 194 |
+| ManS | 408 | 13 | 2 | 3 | 3 | 2 | 26 | 199 / 142 / 155 | 131 |
 
-All 1,625 source rows are retained: 1,550 assigned and 75 unassigned. These are
-bait/protein rows, not 1,550 distinct UTEX genes. There are 2,431 assigned
-replicate ratios and 660 assigned complete means. The JSON includes every
+All 1,625 source rows are retained: 1,466 assigned and 159 unassigned. These are
+bait/protein rows, not 1,466 distinct UTEX genes. There are 2,342 assigned
+replicate ratios and 640 assigned complete means. The JSON includes every
 exclusion with source worksheet/row and member-level reasons, plus each bait's
 assigned detection-state totals. No source row is discarded because its
 ratios are missing. Tests cover whole-table conflicts, flagged edges, duplicate
 rows, groups, missing mappings, source/output alias protection, all three pins,
 real-source counts and exact preservation of the reader's original output.
+The real-input regression asserts every exclusion status and detection total,
+including the absence of target collisions, not only assigned-row counts.
 
 ## Admission boundary
 
