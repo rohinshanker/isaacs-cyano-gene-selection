@@ -1605,7 +1605,9 @@ def test_run_pilot_reports_zero_hits_without_inventing_a_negative(
         "controlHitsTotal": 0,
     }
     assert report["hits"] == []
-    assert "uncovered by this pilot rather than negative" in report["coverageBoundary"]
+    assert "Other Rfam families were not evaluated" in report["coverageBoundary"]
+    assert "no absence of regulation is inferred" in report["coverageBoundary"]
+    assert "uncovered" not in report["coverageBoundary"]
     assert report["recordOrigin"] == "computed"
     assert "not measured regulation" in report["evidenceBoundary"]
     # The report names only the assembly its pins describe.

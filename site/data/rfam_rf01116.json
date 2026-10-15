@@ -251,7 +251,7 @@
       "overlappingNativePairs": 0,
       "totalHits": 1
     },
-    "coverageBoundary": "One family only (the pinned model). No other Rfam family was searched, so a position with no hit is uncovered by this pilot rather than negative. Covariance-model search finds homologues of a curated family and will miss unrelated or novel elements.",
+    "coverageBoundary": "One family only (the pinned model). A searched position without a hit had no match at or above the family GA threshold. Other Rfam families were not evaluated, and no absence of regulation is inferred. Covariance-model search finds homologues of a curated family and will miss unrelated or novel elements.",
     "evidenceBoundary": "Exploratory computed evidence: a pinned Rfam covariance model matched the native pinned UTEX 2973 assembly GCF_000817325.1_ASM81732v1 above that family's Rfam gathering (GA) bit score. This is homology to a curated RNA family, not measured regulation, not demonstrated regulatory activity, and not a calibrated probability for UTEX 2973. Shuffled-background hits estimate a null rate for composition-matched sequence and are not proven biological negatives.",
     "hits": [
       {

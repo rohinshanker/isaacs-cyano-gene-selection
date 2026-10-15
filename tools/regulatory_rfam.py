@@ -7,8 +7,9 @@ Scope and boundary
 ------------------
 This is a single-family pilot: Rfam 15.1 ``RF01116`` (``Yfr1``,
 "Cyanobacterial functional RNA 1"). It is not a scan of the Rfam library and
-not comprehensive regulatory detection — no other family is searched, so a
-genome position without a hit is outside this pilot's coverage, not a negative.
+not comprehensive regulatory detection. A searched position without a hit has
+no RF01116 match at the GA threshold; other families remain not evaluated,
+and no absence of regulation is inferred.
 
 Every hit this tool reports is **exploratory computed evidence**: a covariance
 model matched the native sequence above that family's Rfam gathering (GA) bit
@@ -1180,8 +1181,9 @@ def evidence_boundary(pins: PinnedIdentity) -> str:
 
 
 COVERAGE_BOUNDARY = (
-    "One family only (the pinned model). No other Rfam family was searched, so "
-    "a position with no hit is uncovered by this pilot rather than negative. "
+    "One family only (the pinned model). A searched position without a hit had no "
+    "match at or above the family GA threshold. Other Rfam families were not "
+    "evaluated, and no absence of regulation is inferred. "
     "Covariance-model search finds homologues of a curated family and will miss "
     "unrelated or novel elements."
 )
