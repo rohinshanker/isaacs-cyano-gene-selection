@@ -29,8 +29,8 @@ retains original cells/formulas and distinguishes reconstructed values from the
 authors' imputed ratios. LFQ intensities are processed MaxQuant outputs, not raw
 mass spectra. Complete-case means require all three valid ratios.
 
-PXD-JOIN is implemented by `cyano-lit-unreach` in the isolated
-`A_pxd036717-protein-mapping__20261015` scope: the pinned exact join assigns
+PXD-JOIN is complete (cyano-lit-unreach, 2026-10-15; independently reviewed
+implementation `b890507`): the pinned exact join assigns
 1,466 source rows and preserves all 159 exclusions, including eleven groups,
 seven rows with two RefSeq identifier disagreements, and 84 rows without
 RefSeq confirmation. No measurements change;
