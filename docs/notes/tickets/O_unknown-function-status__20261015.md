@@ -32,31 +32,46 @@ The label appears in search results, side panel, gene viewer, sequence view,
 shortlist, compare and panel designer. Contract:
 [Noncoding genes and pseudogenes in search](../../validation/viewer-interaction-state.md#noncoding-genes-and-pseudogenes-in-search).
 
+## Owner Decisions, 2026-10-15
+
+- **Three states:** function unknown; domain or family known, role unclear;
+  named. Labels read "Function unknown" and "Domain or family known; role
+  unclear".
+- **Only non-named genes are labelled;** no label means named.
+- **DUF/UPF are unknown.** A family name that names an activity
+  ("recombinase family protein") is named; uninformative families are
+  domain-only.
+- **Surfaces:** all seven current ones, plus a function-status filter in the
+  custom filters panel.
+- **Jev classification is acceptable on the site, disclosed as model-assigned.**
+  Below the confidence threshold the exact rules decide, but the gene's Jev
+  ranking and its confidence are still shown.
+- **Evaluation:** an agent labels a stratified sample of about 200 product names
+  per organism; the owner spot-checks disagreements.
+- **UTEX reviewed category:** when it disagrees with this label, show both and
+  note the disagreement in the gene panel; a test reports the counts.
+- **Still open:** whether the Jev labels are a committed, deliberately
+  regenerated file or a per-release pipeline step needing the TypeSafe key.
+
 ## Plan
 
-1. **DUF/UPF — no owner decision needed.** Label DUF and UPF products as
-   unknown function; both are formal unknown-function designations, so this
-   stays an exact rule. Update the per-organism counts in
-   `tests/js/annotation-records.test.mjs`, which currently asserts DUF names
-   are unlabelled.
-2. **Cross-check — no owner decision needed.** Test and report disagreements
-   between this label and UTEX's reviewed "Unknown or unclassified" function
-   category (1,351 genes); show disagreements, do not hide them.
-3. **Owner decision required before work.** A third state, "domain or family
-   only", and a status shown for every CDS rather than a label on some.
-4. **After 3.** Classify product names with TypeSafe Jev (unknown / domain or
-   family only / named / unclear) once per pipeline release, shipped as a
-   per-gene field; exact rules stay for controlled forms. Score against a
-   hand-labelled sample per organism and record the evaluation with the field.
-   Add the status to the export.
+1. Exact rule: DUF/UPF as unknown; update `tests/js/annotation-records.test.mjs`
+   per-organism counts.
+2. Jev classifier over product names (unknown / domain or family only / named /
+   unclear) with a per-gene label, ranking and confidence; exact rules decide
+   below the threshold. Record the evaluation against the labelled sample and
+   set the threshold from it.
+3. Three-state labels in the seven surfaces with the model-assigned disclosure,
+   the filter, an export column, and the UTEX disagreement note and test.
 
 ## Acceptance Criteria
 
 - DUF/UPF CDSs carry the unknown-function note everywhere the note appears;
   per-organism counts are asserted.
-- The category cross-check reports its counts in a test.
-- Steps 3 and 4 proceed only after the owner settles the states; otherwise
-  they are recorded as declined.
+- The UTEX category cross-check reports its counts in a test.
+- Jev evaluation recorded with the field; low-confidence genes show the Jev
+  ranking and confidence alongside the exact-rule result.
+- Filter and export column cover the three states.
 - Rendered check of the note in each surface; gates pass; the contract section
   is updated.
 
