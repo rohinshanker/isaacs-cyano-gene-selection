@@ -156,6 +156,8 @@ This checks changed and identity results from the real worker, missing/invalid
 output, collapsed and expanded details, input invalidation, keyboard navigation,
 and bounded scrolling at ten widths including both sides of layout breakpoints.
 Alignment rows are created on expansion; scrolling retains the complete row labels.
+Their opaque padding covers the left edge throughout scrolling; the browser check
+hit-tests that edge at several offsets in each viewport.
 Pairing changes use both a highlight and a `^` marker; sequence edits use an
 underline and `*`. Exact changed-position lists also provide a textual reading. Each disclosure and
 scroll region includes its gene ID in its accessible name. A nested pair-partner

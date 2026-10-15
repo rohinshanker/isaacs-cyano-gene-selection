@@ -10,9 +10,10 @@
 
 ## Current State
 
-The bounded local structure-comparison implementation is owned by
-`cyano-regulatory-sites` in [its active ticket](A_rna-structure-comparison__20261014.md).
-Remote infrastructure and workload-policy questions remain here.
+The local original-versus-recoded structure comparison is implemented in the
+shortlist folding panel under the [RNA folding contract](../../validation/rna-folding.md#comparing-predicted-structures).
+It compares the existing genomic start and first-CDS windows. This ticket retains
+remote infrastructure, workload-policy and larger/full-transcript workload choices.
 
 Owner decision, 2026-10-14 (D12): prioritize **RNA folding, accessibility and
 mRNA secondary structure**. Assess an original-versus-recoded comparison that
