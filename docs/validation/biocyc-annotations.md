@@ -68,7 +68,7 @@ Follow [data-contract.md](data-contract.md#evidence-coverage-and-cross-organism-
 - `docs/notes/handoff/cyano_ortholog_annotation_20260930.tsv` (SHA-256
   `e49f7d8f7d328cfc3b7e4e9f50c4a802f450f32cbc782b8fd9428eb3a01ec861`) is
   returned evidence, not an admitted source. 46 `product` values keep the GFF
-  escape `%2C`; decode it at use time and record the decision.
+  escape `%2C`; use the pinned reader below to decode them at use time.
 
 ## Admission
 
@@ -77,3 +77,36 @@ generic redistribution approval gates BioCyc content. Account or subscription
 access, BioCyc's and KEGG's own terms on how their pages and APIs are read, and
 the manifest, checksum, documented join and evidence-label requirements of the
 admission contract still apply.
+
+
+## Ortholog product-text reader
+
+`tools/ortholog_annotations.py` reads the frozen returned table and corrects
+only encoded commas (`%2C`, case-insensitive) in `product`. It decodes once:
+literal `+`, `%252C` and other percent escapes remain literal, and every other
+cell and row order are preserved. Original product text remains accessible for
+provenance. The table remains evidence, not an admitted BioCyc layer or join.
+
+The reader checks the source SHA-256 above before parsing. The source schema,
+unique locus tags and complete records must pass before any output is written.
+Export a derivative to a fresh path:
+
+```sh
+python tools/ortholog_annotations.py --out /tmp/cyano-ortholog-products.tsv
+```
+
+An optional `--source PATH` accepts only a byte-identical copy of the frozen
+source. `read_table()` returns rows with `raw_product`, decoded `product`, and
+all original `cells`; `decoded_cells()` returns the export fields. Exports retain
+the original TSV columns and refuse existing output paths. Never replace the source or relax its pin
+to accept a different return.
+
+Validation checks the real 2,715 rows: exactly 46 product cells change, every
+other cell remains equal, and the original bytes retain their digest. As an
+independent existing-data check, all 2,715 decoded products match the admitted
+native `site/data/genes.json` products by exact locus ID. That comparison checks
+text only; it does not admit the returned orthology or annotation evidence.
+
+Run the focused contract with `python -m pytest -q tests/test_ortholog_annotations.py`.
+The pinned export is 318,164 bytes, SHA-256
+`4cfd9dcfd397bb52e55c3722bbab94005d742336d21e0242d700040d4e8c0b4e`.
