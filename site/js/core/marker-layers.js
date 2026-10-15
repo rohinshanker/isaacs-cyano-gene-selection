@@ -137,6 +137,10 @@ export const MARKER_TYPES = Object.freeze({
     shortLabel: 'ribosome binding site',
     measures: 'ribosome binding',
   }),
+  rnaFamily: Object.freeze({
+    id: 'rnaFamily', geometry: 'interval', label: 'RNA family homology interval',
+    shortLabel: 'family homology', measures: 'sequence/structure family homology',
+  }),
   bindingSite: Object.freeze({
     id: 'bindingSite',
     geometry: 'interval',
@@ -186,6 +190,10 @@ const MARKER_LAYER_REGISTRY = Object.freeze([
     measurement: 'measured',
     origin: 'source',
     producer: 'Tan 2018 Table S1',
+  }),
+  Object.freeze({
+    id: 'rfam', key: 'rfamEvidence', types: Object.freeze(['rnaFamily']),
+    measurement: 'predicted', origin: 'computed', producer: 'Infernal 1.1.5 / Rfam 15.1 RF01116',
   }),
 ]);
 
@@ -239,7 +247,8 @@ export function markerLayersOf(organism) {
  */
 export function availableMarkerLayers(organism, dataset, hasRows = () => true) {
   return markerLayersOf(organism)
-    .filter((layer) => pendingState(dataset, layer.key) === null && hasRows(layer));
+    .filter((layer) => pendingState(dataset, layer.key) === null
+      && (layer.id !== 'rfam' || dataset?.rfamEvidence?.sites?.length > 0) && hasRows(layer));
 }
 
 /**

@@ -1,3 +1,7 @@
+import { RfamSitesPanel, drawRfamIntervals } from './rfam-sites.js';
+import { rfamGeneRows } from '../core/rfam-evidence.js';
+const rfamMounts = new WeakMap();
+const contextExtents = new WeakMap();
 import { NeighborSitePanel, drawNeighborSiteMarks } from './neighbor-sites.js';
 import { neighborSiteOffset } from '../core/neighbor-sites.js';
 const neighborSiteMounts = new WeakMap();
@@ -984,17 +988,20 @@ export function renderGeneViewer(host, gene, {
   tssPending = null, overlapsPending = null, organism = DEFAULT_ORGANISM,
   startSitesVisible = true, onStartSitesVisibleChange = null,
   onOpenPartner = null, table = null, neighborSites = null,
+  rfamEvidence = null, rfamPending = null, rfamVisible = true, onRfamVisibleChange = null,
+  upstreamNt = null, onUpstreamNtChange = null,
 } = {}) {
   const startSites = layerOf(organism, 'tssEvidence');
   host.classList.add('gene-view');
   host.tabIndex = -1;
   host.setAttribute('role', 'group');
   host.setAttribute('aria-label', 'Gene visualizer');
-  const model = geneViewModel(gene);
+  if (upstreamNt !== null) contextExtents.set(host, upstreamNt);
+  let model = geneViewModel(gene, { upstreamNt: contextExtents.get(host) ?? 60 });
   if (!model) {
     const action = document.activeElement?.dataset?.detailAction;
     const held = host.contains(document.activeElement)
-      && (action === START_SITES_CONTROL || action?.startsWith('neighbour-') || action?.startsWith('neighbor-site'));
+      && (action === START_SITES_CONTROL || action?.startsWith('rfam-') || action?.startsWith('neighbour-') || action?.startsWith('neighbor-site'));
     host.replaceChildren();
     const empty = document.createElement('p');
     empty.className = 'panel-note';
@@ -1025,6 +1032,8 @@ export function renderGeneViewer(host, gene, {
     neighbourMounts.set(host, neighbourDetails);
     const neighbourFocus = neighbourDetails.contains(document.activeElement) ? document.activeElement : null;
     const priorSiteFocus = neighborSiteMounts.get(host)?.element.contains(document.activeElement) ? document.activeElement : null;
+    const familyFocus = rfamMounts.get(host)?.element.contains(document.activeElement)
+      ? document.activeElement : null;
     host.replaceChildren();
 
     const heading = document.createElement('p');
@@ -1039,6 +1048,25 @@ export function renderGeneViewer(host, gene, {
       heading.append(document.createElement('br'), product);
     }
     const picture = geneViewSvg(model, tssPending, organism, visible);
+    const familyRows = !rfamPending ? rfamGeneRows(rfamEvidence, gene, model.domain) : [];
+    const familyPanel = rfamMounts.get(host) ?? new RfamSitesPanel();
+    rfamMounts.set(host, familyPanel);
+    const familyPaint = (show) => {
+      rfamVisible = show;
+      for (const mark of picture.querySelectorAll('.rfam-marker')) mark.remove();
+      if (show && familyRows.length) {
+        const marks = svg('g');
+        drawRfamIntervals(marks, familyRows, rfamEvidence, xScale(model), 13);
+        // Computed marks paint before measured TSSs and CDS annotations.
+        picture.insertBefore(marks, picture.childNodes[0] ?? null);
+      }
+      familyPanel.update({ organism, payload: rfamEvidence, pending: rfamPending,
+        rows: familyRows, visible: show, onChange: (next) => {
+          onRfamVisibleChange?.(next);
+          familyPaint(next);
+        } });
+    };
+    familyPaint(rfamVisible);
     const relation = neighborSites?.forGene(gene);
     if (visible) drawNeighborSiteMarks(picture, relation?.sites ?? [], gene,
       (site) => xScale(model)(neighborSiteOffset(gene, site) + 0.5), TRACK_Y + TRACK_HEIGHT / 2);
@@ -1048,7 +1076,31 @@ export function renderGeneViewer(host, gene, {
     neighborSiteMounts.set(host, sitePanel);
     const siteFocus = priorSiteFocus;
     sitePanel.update(neighborSites, gene, onOpenPartner, null, visible);
-    host.append(heading, picture, sitePanel.element);
+    const contextLabel = document.createElement('label');
+    contextLabel.className = 'gene-view-marker-control';
+    contextLabel.textContent = 'Upstream genomic context ';
+    const contextSelect = document.createElement('select');
+    contextSelect.dataset.detailAction = 'gene-view-context';
+    for (const extent of [60, 120, 240, 500, 1000]) {
+      const option = document.createElement('option');
+      option.value = String(extent);
+      option.textContent = `${extent} nt`;
+      contextSelect.append(option);
+    }
+    contextSelect.value = String(contextExtents.get(host) ?? 60);
+    contextSelect.addEventListener('change', () => {
+      contextExtents.set(host, Number(contextSelect.value));
+      onUpstreamNtChange?.(Number(contextSelect.value));
+      model = geneViewModel(gene, { upstreamNt: Number(contextSelect.value) });
+      paint(visible);
+      host.querySelector('[data-detail-action="gene-view-context"]')?.focus({ preventScroll: true });
+    });
+    contextLabel.append(contextSelect);
+    host.append(heading, picture, contextLabel, familyPanel.element, sitePanel.element);
+    if (familyFocus?.isConnected) {
+      const target = familyFocus === familyPanel.toggle && familyPanel.toggleRow.hidden ? host : familyFocus;
+      target.focus?.({ preventScroll: true });
+    }
     if (siteFocus?.isConnected) siteFocus.focus?.({ preventScroll: true });
     if (startSites && tssPending) {
       host.append(pendingNote(tssPending, `the ${startSites.fileLabel}`));

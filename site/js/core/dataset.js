@@ -26,6 +26,7 @@ import { compileScheme } from './scheme.js';
 import { computeLiveMetrics } from './live-metrics.js';
 import { declaredMeasurementSources } from './metric-registry.js';
 import { validateLengthInventory } from './length-cohorts.js';
+import { validateRfamEvidence } from './rfam-evidence.js';
 import { validateRegulatoryTss } from './regulatory-tss.js';
 import { validateStrainFitness } from './strain-fitness.js';
 import { validateCandidateEvidence } from './candidate-evidence.js';
@@ -223,6 +224,7 @@ export function buildCoreDataset(meta, genes, functionCategoryData) {
     excluded: [],
     lengthCohorts: null,
     regulatoryTss: null,
+    rfamEvidence: null,
     trnaLoci: null,
     candidateEvidence: null,
     goIeaEssentiality: null,
@@ -552,6 +554,10 @@ export const DATA_APPLIERS = Object.freeze({
       : null;
   },
 
+  rfamEvidence(dataset, payload) {
+    dataset.rfamEvidence = payload ? validateRfamEvidence(payload, dataset.organism) : null;
+  },
+
   regulatoryTss(dataset, regulatoryTss) {
     if (regulatoryTss) validateRegulatoryTss(regulatoryTss, dataset.genes);
     dataset.regulatoryTss = regulatoryTss;
@@ -651,7 +657,7 @@ export const TIER_LEAD_BYTES = 128 * 1024;
 const LEGACY_FAILURE_ORDER = Object.freeze([
   'lengthCohorts', 'regulatoryTss', 'candidateEvidence', 'goIeaEssentiality', 'annotations',
   'goTerms', 'sourceDerivedCategories', 'tssEvidence', 'expressionLayers', 'codonPca',
-  'codonPcaReference', 'excluded', 'trnaLoci', 'sequenceContext',
+  'codonPcaReference', 'excluded', 'trnaLoci', 'sequenceContext', 'rfamEvidence',
 ]);
 
 /**

@@ -1,3 +1,6 @@
+import { RfamSitesPanel } from './rfam-sites.js';
+import { rfamMarkers, rfamNativeRuns } from '../core/rfam-evidence.js';
+import { sameReplicon as rfamSameReplicon } from '../core/chromosome-model.js';
 import { NeighborSitePanel } from './neighbor-sites.js';
 import { describeNeighborSite, NEIGHBOR_SITE_COLORS } from '../core/neighbor-sites.js';
 /**
@@ -516,6 +519,7 @@ export class ChromosomeView {
   update(model) {
     if (!this.built) this.build();
     this.model = model;
+    this.rfamVisible = model.rfamVisible !== false;
     this.neighborSiteMarks = model.neighborSites?.marks ?? [];
     this.activeNeighborSite = model.showStartSites === false ? null : this.neighborSiteMarks.find((mark) => mark.site.key === this.activeNeighborSite?.site.key && mark.geneId === this.activeNeighborSite?.geneId) ?? null;
     // The caller's record of this view's start-site choice, so a shared link,
@@ -874,12 +878,13 @@ export class ChromosomeView {
     this.siteInstruction = document.createElement('p');
     this.siteInstruction.className = 'panel-note';
     this.siteInstruction.textContent = 'Purple lines mark exact neighbouring-gene TSS bases in CDS segments. Crowded lines are hidden until you zoom in or inspect a site. Press N (Shift+N backwards) on the chromosome to inspect every site in the window, including coincident points; open associated genes in the site list.';
+    this.rfamPanel = new RfamSitesPanel();
     this.sequenceHost = document.createElement('div');
     this.sequenceHost.className = 'chromosome-sequence';
 
     this.figure.append(toolbar, this.windowReadout, this.overlapRow, this.canvasHost,
       this.controls, this.detailJump, this.legendHost, this.viewerInfo,
-      this.siteInstruction, this.neighborSitePanel.element, this.sequenceHost);
+      this.rfamPanel.element, this.siteInstruction, this.neighborSitePanel.element, this.sequenceHost);
     this.host.append(copyNumber, this.unavailable, this.figure);
 
     this.resizeObserver = new ResizeObserver(() => {
@@ -1196,6 +1201,7 @@ export class ChromosomeView {
     for (const band of this.bands()) {
       this.paintBand(ctx, band);
     }
+    this.writeRfamPanel();
     // Written after the bands, not with the other summaries: how many CDSs
     // share a column and how many derived categories lost their hollow style
     // are properties of the picture that was just painted, at the zoom it was
@@ -1215,6 +1221,8 @@ export class ChromosomeView {
       overlapClause: overlapConventions(this),
       copyNumberSentence: this.organism.copy.copyNumberSentence,
     }) + ` Neighbouring-gene TSS points: ${this.model.neighborSites?.available ? `${this.neighborSiteMarks.length} recorded CDS-site relationships; ${this.showStartSites ? 'press N or Shift+N to inspect, Enter for the complete contributor list.' : 'marks hidden by the start-sites control; no marker targets.'}` : this.model.neighborSites?.reason ?? 'evidence unavailable'}`);
+    this.canvas.setAttribute('aria-label', this.canvas.getAttribute('aria-label')
+      + ` RF01116 family homology: ${this.rfamPanel.status.textContent} See RF01116 family evidence, coverage and export.`);
   }
 
   /** Whether the colour channel is a category set rather than a value ramp. */
@@ -1389,6 +1397,7 @@ export class ChromosomeView {
     const marks = visibleMarks(track.marks, view);
     this.paintMarks(ctx, band, marks);
     this.paintOperons(ctx, band);
+    this.paintRfam(ctx, band);
     this.paintTss(ctx, band);
     this.paintNeighborSites(ctx, band);
     this.paintOverlaps(ctx, band);
@@ -1840,6 +1849,59 @@ export class ChromosomeView {
     if (!marks.length) { this.handlers.onAnnounce?.(this.model.neighborSites?.reason ?? 'No recorded neighbouring-gene TSS points in this window.'); return; }
     const current = marks.indexOf(this.activeNeighborSite);
     this.inspectNeighborSite(marks[(current < 0 ? (step > 0 ? 0 : marks.length - 1) : current + step + marks.length) % marks.length]);
+  }
+
+  rfamRowsInBand(band) {
+    if (this.model.rfamPending) return [];
+    return rfamMarkers(this.model.rfamEvidence).filter((row) =>
+      rfamSameReplicon(row.replicon, band.track.accession)
+      && rfamNativeRuns(row).some((run) => run.to >= band.window.from && run.from <= band.window.to));
+  }
+
+  writeRfamPanel() {
+    const rows = this.bands().flatMap((band) => this.rfamRowsInBand(band));
+    this.rfamPanel.update({ organism: this.organism, payload: this.model.rfamEvidence,
+      pending: this.model.rfamPending, rows, visible: this.rfamVisible,
+      onChange: (visible) => {
+        this.rfamVisible = visible;
+        this.handlers.onRfamVisibleChange?.(visible);
+        this.draw();
+      },
+      onInspect: (row) => {
+        const track = this.model.tracks.find((entry) => rfamSameReplicon(entry.accession, row.replicon));
+        if (!track) return;
+        const run = rfamNativeRuns(row)[0];
+        this.windows.set(track.accession, { from: Math.max(1, run.from - 500),
+          to: Math.min(track.lengthBp, run.to + 500) });
+        this.draw();
+        this.canvas.focus({ preventScroll: true });
+        this.handlers.onAnnounce?.(`RF01116 family interval ${row.position}–${row.endPosition} bp; computed homology only.`);
+      } });
+  }
+
+  paintRfam(ctx, band) {
+    const rows = this.rfamRowsInBand(band);
+    if (!this.rfamVisible || rows.length === 0) return;
+    ctx.save();
+    ctx.globalAlpha = 0.62;
+    ctx.fillStyle = TSS_COLOR;
+    for (const row of rows) {
+      for (const run of rfamNativeRuns(row)) {
+        const from = Math.max(run.from, band.window.from);
+        const to = Math.min(run.to + 1, band.window.to + 1);
+        if (to <= from) continue;
+        const left = band.scale.bpToX(from);
+        const right = band.scale.bpToX(to);
+        ctx.fillRect(left, band.layout.tssTop + 2, Math.max(0.1, right - left), 7);
+        const mid = (left + right) / 2;
+        ctx.beginPath();
+        ctx.moveTo(mid - 3, band.layout.tssTop + 2);
+        ctx.lineTo(mid + 3, band.layout.tssTop + 2);
+        ctx.lineTo(mid, band.layout.tssTop + 9);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
   }
 
   /**

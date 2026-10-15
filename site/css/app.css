@@ -2600,3 +2600,10 @@ input[type="range"] { width: 100%; }
 .neighbor-site-provenance dl { font-size: 0.8rem; }
 .neighbor-site-provenance dt { font-weight: 600; }
 .neighbor-site-provenance dd { margin: 0 0 0.35rem; }
+
+/* Computed family intervals retain a head at small scales; exact bp stay in detail. */
+.rfam-sites { min-width: 0; }
+.rfam-sites .help-content { overflow-wrap: anywhere; }
+.rfam-inspect { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.rfam-marker { fill: #6b4f9e; cursor: pointer; }
+.rfam-marker:focus, .rfam-marker:hover { outline: none; stroke: var(--ink); stroke-width: 2; }
