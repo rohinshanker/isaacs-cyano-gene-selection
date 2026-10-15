@@ -58,7 +58,8 @@ const PREFERRED_CONSTRAINT_KEYS = ['lengthCodons', 'gc3', 'rareFraction', 'mfeSt
  * in; this only sets its rank once it is offered.
  */
 export function constrainableMetrics(registry) {
-  const published = registry.metrics.filter((metric) => (metric.source === 'pipeline' || metric.constrainable === true) && !metric.schemeDependent);
+  const published = registry.metrics.filter((metric) => (metric.source === 'pipeline' || metric.constrainable === true)
+    && metric.constrainable !== false && !metric.schemeDependent);
   const native = published.filter(
     (metric) => isExpressionMetric(metric) && !isExpressionProxyMetric(metric)
       && metric.provenance?.isTargetOrganism === true,
@@ -236,7 +237,8 @@ export class PanelDesigner {
   /**
    * @param {{dataset: object, registry: object,
    *   schemes: {active: {name: string, map: object}, saved: Array<{name: string, map: object}>},
-   *   shortlist: string[], pinnedId: string|null, colorSources?: string[]}} state
+   *   shortlist: string[], pinnedId: string|null, colorSources?: string[],
+   *   tssRecodingEvidence?: object|null}} state
    *   `colorSources` is the set enabled for category colouring; the export
    *   records it so a panel file cannot be mistaken for a different view.
    */
@@ -984,7 +986,7 @@ export class PanelDesigner {
   }
 
   exportPanel() {
-    const { dataset, registry, colorSources } = this.state;
+    const { dataset, registry, colorSources, tssRecodingEvidence } = this.state;
     const blocked = exportBlockedReason(dataset);
     if (blocked) {
       this.exportStatus.textContent = blocked;
@@ -997,6 +999,7 @@ export class PanelDesigner {
       space: this.space,
       schemes: this.schemes,
       colorSources,
+      tssRecodingEvidence,
     });
     for (const file of result.files) {
       const blob = new Blob([file.content], { type: file.type });

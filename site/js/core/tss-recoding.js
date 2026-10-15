@@ -118,7 +118,9 @@ export function tssRecodingMetrics(getModel) {
     { key: TSS_EVALUATED_KEY, label: 'Evaluated recorded TSS in CDS', field: 'evaluatedCounts' },
   ].map(({ field, ...definition }) => ({ ...definition, unit: 'sites', integer: true,
     scale: 'sequential', family: 'Genomic context', source: 'derived', schemeDependent: definition.key === TSS_EDIT_KEY,
-    constrainable: definition.key === TSS_EVALUATED_KEY, fileKey: 'tssEvidence',
+    constrainable: false,
+    constraintBlockReason: 'TSS count availability follows the selected Tan evidence. Use an interactive filter instead of a fixed panel constraint.',
+    fileKey: 'tssEvidence',
     fileKeys: Object.freeze(['tssEvidence', 'regulatoryTss']),
     desc: TSS_EDIT_DESCRIPTION, availabilityReason: () => getModel()?.reason ?? null, read: (index) => getModel()?.[field]?.[index] ?? NaN }));
 }

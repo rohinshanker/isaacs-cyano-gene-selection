@@ -158,6 +158,11 @@ export function resolveConstraints({ registry, config }) {
       });
       continue;
     }
+    if (metric.constrainable === false) {
+      blocked.push({ id: `range:${key}`, label: metric.label,
+        reason: metric.constraintBlockReason ?? `${metric.label} cannot be a fixed panel constraint.` });
+      continue;
+    }
     const entry = {
       id: `range:${key}`,
       kind: 'range',

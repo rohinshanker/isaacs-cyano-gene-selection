@@ -398,7 +398,7 @@ function percentileOf(key, value) {
 
 function clearLivePercentiles() {
   for (const metric of context.registry.metrics) {
-    if (metric.source === 'live') context.percentiles.delete(metric.key);
+    if (metric.source === 'live' || metric.schemeDependent) context.percentiles.delete(metric.key);
   }
 }
 
@@ -2113,6 +2113,7 @@ function renderAll({ schemeErrors = [] } = {}) {
     panelDesigner.update({
       dataset: context.dataset,
       registry: scopedRegistry(),
+      tssRecodingEvidence: context.neighborSites,
       shortlist: state.shortlist,
       pinnedId: state.pinnedId,
       colorSources: state.colorSources,

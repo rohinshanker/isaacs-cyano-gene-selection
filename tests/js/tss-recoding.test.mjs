@@ -7,9 +7,11 @@ import { indexNativeSites, neighborSiteModel } from '../../site/js/core/neighbor
 import { evaluateTssRecoding, tssRecodingModel, tssRecodingMetrics, describeTssEdit, TSS_EDIT_KEY, TSS_EVALUATED_KEY } from '../../site/js/core/tss-recoding.js';
 import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import { computeLiveMetrics } from '../../site/js/core/live-metrics.js';
+import { buildPanelExport } from '../../site/js/core/panel-export.js';
 import { buildExport, parseCsv } from '../../site/js/core/export-manifest.js';
 import { metricHelp } from '../../site/js/core/metric-help.js';
-import { normaliseConfig, resolveConstraints } from '../../site/js/core/panel-design.js';
+import { buildPanelSpace } from '../../site/js/core/panel-features.js';
+import { normaliseConfig, resolveConstraints, designPanel } from '../../site/js/core/panel-design.js';
 import { metricFileKeys, metricPendingState } from '../../site/js/core/data-files.js';
 import { panelInputKey, constrainableMetrics } from '../../site/js/ui/panel-designer.js';
 import { encodeState, decodeState, defaultState, applyDecoded, viewStateOf } from '../../site/js/core/url-state.js';
@@ -147,7 +149,7 @@ test('registry, custom numeric filters, help, CSV per-scheme values and blank mi
   let model = tssRecodingModel(dataset, compileScheme({}, dataset.table), { evidence });
   const registry = buildMetricRegistry(dataset.meta, dataset.genes, computeLiveMetrics(dataset, compileScheme({}, dataset.table)).fields, tssRecodingMetrics(() => model));
   for (const key of [TSS_EDIT_KEY, TSS_EVALUATED_KEY]) {
-    assert.equal(constrainableMetrics(registry).some((m) => m.key === key), key === TSS_EVALUATED_KEY);
+    assert.equal(constrainableMetrics(registry).some((m) => m.key === key), false);
     const metric = registry.byKey.get(key);
     assert.match(metricHelp(metric, dataset).origin, /Tan 2018 Table S1.*active scheme/);
     assert.equal(metric.integer, true);
@@ -162,6 +164,18 @@ test('registry, custom numeric filters, help, CSV per-scheme values and blank mi
     schemesToExport: () => [{ map: { TCG: 'AGC' } }], folding: { handoffs: () => [] },
   });
   assert.equal(panelExport.rows[0][TSS_EDIT_KEY], 1, 'actual shortlist panel carries the evidence gate');
+  const space = buildPanelSpace({ dataset, registry, baselineFeatures: ['lengthNt'], schemeFeatures: [] });
+  const design = designPanel({ dataset, registry, space, config: { size: 6, seeds: [focal.id] } });
+  const panel = buildPanelExport({ dataset, registry, design, space,
+    schemes: [{ map: {} }, { map: { TCG: 'AGC' } }], tssRecodingEvidence: evidence });
+  const panelRows = panel.rows.filter((row) => row.id === focal.id);
+  assert.deepEqual(panelRows.map((row) => [row[TSS_EDIT_KEY], row[TSS_EVALUATED_KEY], row.tssRecodingStatus]),
+    [[0, 1, 'evaluated'], [1, 1, 'evaluated']], 'panel export recomputes each scheme using the selected evidence');
+  assert.equal(panel.manifest.dataset.tssRecoding.evidenceAvailable, true);
+  const panelMissing = buildPanelExport({ dataset, registry, design, space,
+    schemes: [{ map: {} }], tssRecodingEvidence: { available: false, reason: 'deselected' } });
+  assert.ok(panelMissing.rows.every((row) => row[TSS_EVALUATED_KEY] === '' && row.tssRecodingReason === 'deselected'));
+  assert.equal(panelMissing.manifest.dataset.tssRecoding.evidenceAvailable, false);
   assert.equal(result.rows[0].tssRecodingStatus, 'evaluated');
   assert.match(result.manifest.dataset.tssRecoding.definition, /not a prediction/);
   assert.equal(parseCsv(result.csv).rows.length, 2);
@@ -237,7 +251,7 @@ test('panel hard constraints reject restored edit counts while fixed metrics kee
   const fixed = { key: 'lengthNt', label: 'CDS length', family: 'Genomic context', source: 'pipeline', read: () => 15 };
   const registry = { metrics: [...metrics, fixed], byKey: new Map([...metrics, fixed].map((m) => [m.key, m])) };
   assert.ok(!constrainableMetrics(registry).some((m) => m.key === TSS_EDIT_KEY));
-  assert.ok(constrainableMetrics(registry).some((m) => m.key === TSS_EVALUATED_KEY));
+  assert.ok(!constrainableMetrics(registry).some((m) => m.key === TSS_EVALUATED_KEY));
   for (const range of [{ min: 0, max: 0 }, { includeMissing: false }]) {
     const config = normaliseConfig({ ranges: { [TSS_EDIT_KEY]: range } });
     const resolved = resolveConstraints({ registry, config });
@@ -248,13 +262,23 @@ test('panel hard constraints reject restored edit counts while fixed metrics kee
   const schemes = [{ map: { TAG: 'TAA' } }];
   const before = panelInputKey(config, schemes);
   const allowed = resolveConstraints({ registry, config });
-  assert.deepEqual(allowed.active.filter((c) => c.kind === 'range').map((c) => c.key), [TSS_EVALUATED_KEY, 'lengthNt']);
+  assert.deepEqual(allowed.active.filter((c) => c.kind === 'range').map((c) => c.key), ['lengthNt']);
+  assert.match(allowed.blocked.find((c) => c.id === `range:${TSS_EVALUATED_KEY}`).reason, /selected Tan evidence/);
   const denominator = registry.byKey.get(TSS_EVALUATED_KEY).read(0);
   assert.equal(registry.byKey.get(TSS_EDIT_KEY).read(0), 4, 'interactive metric still reads active scheme');
   model = tssRecodingModel(dataset, scheme({}), { evidence });
   assert.equal(registry.byKey.get(TSS_EDIT_KEY).read(0), 0, 'interactive filtering remains available');
   assert.equal(registry.byKey.get(TSS_EVALUATED_KEY).read(0), denominator);
   assert.equal(panelInputKey(config, schemes), before, 'fixed constraints do not need display scheme in input');
+  model = tssRecodingModel(dataset, scheme({}), { evidence: { available: false, reason: 'deselected' } });
+  assert.ok(Number.isNaN(registry.byKey.get(TSS_EVALUATED_KEY).read(0)));
+  assert.ok(!resolveConstraints({ registry, config }).active.some((c) => c.key === TSS_EVALUATED_KEY),
+    'source deselection cannot silently alter an active fixed TSS constraint');
+  fixed.constrainable = false;
+  assert.ok(!constrainableMetrics(registry).some((m) => m.key === fixed.key));
+  assert.match(resolveConstraints({ registry, config }).blocked.find((c) => c.id === 'range:lengthNt').reason,
+    /cannot be a fixed panel constraint/);
+
 });
 
 test('scheme comparisons and per-scheme exports reuse native validation without evicting active results', async () => {

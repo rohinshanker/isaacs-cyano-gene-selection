@@ -50,13 +50,21 @@ and other site types remain separate in the parent ticket.
   draws all contained Tan sites, including self/unassigned. The legend/explanation
   now describe the actual set, preserving the existing neighbour-only count.
 
-- **TSS-R1 — open (DEM-425).** The panel designer must reject a scheme-dependent
+- **TSS-R1 — resolved by `f894e1a` (DEM-425 verified).** The panel designer must reject a scheme-dependent
   edited-site count as a fixed hard constraint, including saved/manual constraints;
   its input identity currently does not capture the active display scheme.
-- **TSS-R2 — open (DEM-425).** Avoid rebuilding complete per-base models for every
+- **TSS-R2 — resolved by `f894e1a` (DEM-425 verified).** Avoid rebuilding complete per-base models for every
   CDS on scheme changes; preserve exact semantics and validate measured runtime.
-- **TSS-R3 — open (DEM-425).** Readiness/promotion/default-scale selection must
+- **TSS-R3 — resolved by `f894e1a` (DEM-425 verified).** Readiness/promotion/default-scale selection must
   include both TSS payloads for colors, axes and numeric filters.
+
+- **TSS-R4 — open (DEM-425).** Scheme changes must invalidate the detail card's
+  cached cohort for the edited-count percentile.
+- **TSS-R5 — open (DEM-425).** The panel-designer export must carry selected Tan
+  evidence through to both count columns and its manifest, just like shortlist exports.
+- **TSS-R6 — open (coordinator; DEM-425 confirmed).** Exclude the evaluated
+  denominator from fixed constraints too: Tan source selection changes its
+  availability without participating in the panel input identity. Ordinary filters stay.
 
 ## Verification
 

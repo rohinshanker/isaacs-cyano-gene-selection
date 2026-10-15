@@ -158,6 +158,6 @@ test('measured UTEX evidence opens with the gene detail, before the codon-usage 
 test('the panel designer receives the enabled colour sources and forwards them to its export', () => {
   const designerUpdate = /panelDesigner\.update\(\{[^}]*colorSources: state\.colorSources/s;
   assert.match(appSource, designerUpdate);
-  const exportCall = /exportPanel\(\) \{\s*const \{ dataset, registry, colorSources \} = this\.state;[\s\S]*?buildPanelExport\(\{[^}]*colorSources,/;
+  const exportCall = /exportPanel\(\) \{\s*const \{[^}]*\bcolorSources\b[^}]*\} = this\.state;[\s\S]*?buildPanelExport\(\{[^}]*colorSources,/;
   assert.match(panelDesignerSource, exportCall);
 });

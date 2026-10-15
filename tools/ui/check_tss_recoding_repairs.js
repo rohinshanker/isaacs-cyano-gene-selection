@@ -102,7 +102,7 @@ async (page) => {
     await open('p=native&c=editedTssSitesInCds'); await ready();
     await page.getByText('Configure and generate a diverse 6–10-gene panel', { exact: true }).click();
     check(await page.locator('#panel-range-add option[value="editedTssSitesInCds"]').count() === 0, 'edited count absent from panel constraints');
-    check(await page.locator('#panel-range-add option[value="evaluatedTssSitesInCds"]').count() === 1, 'fixed denominator allowed');
+    check(await page.locator('#panel-range-add option[value="evaluatedTssSitesInCds"]').count() === 0, 'source-dependent denominator excluded from fixed constraints');
     check(await page.locator('#filter-add option[value="editedTssSitesInCds"]').count() === 1, 'ordinary interactive filter still offered');
     check((await page.locator('#panel-range-note').textContent()).includes('scheme-independent published or permitted derived metrics'), 'truthful fixed-metric note');
     for (const [width, height] of [[375,812],[768,1024],[959,900],[961,900],[1239,900],[1241,900],[1280,800],[1440,900]]) {

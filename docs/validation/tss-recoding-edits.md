@@ -65,14 +65,16 @@ as `evaluatedTssSitesInCds`. The ordinary numeric registry supplies coloring,
 axes and custom filters. Saved color/filter state uses those keys and the usual
 scheme state. The edited count is scheme-dependent and cannot be a fixed
 panel-design constraint; the panel engine also rejects restored/manual attempts
-to use it that way. The evaluated-site denominator is scheme-independent and can
-be constrained. The sequence-edit inspection disclosure in both compact viewers
+to use it that way. The evaluated-site denominator is also excluded from fixed panel constraints:
+its availability follows the selected Tan evidence, which the fixed panel input
+does not snapshot. Both metrics remain available in ordinary interactive filters. The sequence-edit inspection disclosure in both compact viewers
 and the expanded sequence view lists each original site, edit state and base
 pair; the expanded view can center a selected site for exact-base inspection.
 Keep start-site visibility controls effective while preserving the counts/list.
 
 Exports recompute both counts for each exported scheme, rather than copying the
-currently displayed scheme's values. Undefined counts are blank. The row's
+currently displayed scheme's values. Both shortlist and panel-designer exports
+carry the current evidence selection. Undefined counts are blank. The row's
 `tssRecodingStatus` and `tssRecodingReason` explain evaluation, and the manifest
 retains the source and sequence-edit definition alongside each scheme identity.
 
@@ -105,11 +107,14 @@ session, open `/site/?uiArtifacts=/absolute/ignored/artifact/directory` and run:
 node --test tests/js/tss-recoding.test.mjs tests/js/tss-recoding-oracle.test.mjs
 playwright-cli -s=YOUR_SESSION run-code --filename=tools/ui/check_tss_recoding.js
 playwright-cli -s=YOUR_SESSION run-code --filename=tools/ui/check_tss_recoding_repairs.js
+playwright-cli -s=YOUR_SESSION run-code --filename=tools/ui/check_tss_recoding_integration.js
 ```
 
 Reopen the URL with `uiArtifacts` before each harness. The browser checks use
 real release records and controlled loading/failure states. The repair checks
 cover saved/late metric selection with either payload delayed, explicit scale
-preservation, fixed panel constraints and repeated scheme timings. Inspect its screenshots and semantic snapshots; a CLI `### Error` is a
+preservation, fixed panel constraints and repeated scheme timings. The integration
+check verifies percentile-cohort invalidation and the actual panel CSV/manifest
+with Tan evidence selected and deselected. Inspect its screenshots and semantic snapshots; a CLI `### Error` is a
 failure even if the command exits zero. Keep failure fixtures consistent with
 published integrity requirements and do not bypass the data loader.
