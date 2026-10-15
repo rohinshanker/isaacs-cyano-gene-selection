@@ -9,10 +9,14 @@
 
 ## Current State
 
-Owner confirmed 2026-10-15: ship the TSS sequence-edit counts first. The
-[active implementation slice](A_tss-recoding-edit-counts__20261015.md) is owned by
-`cyano-regulatory-sites`. It compares actual bases at admitted Tan TSS positions;
-new-promoter predictions and other regulatory-site calculations remain here.
+Owner confirmed 2026-10-15: ship the TSS sequence-edit counts first. That slice
+is implemented: [the TSS comparison contract](../../validation/tss-recoding-edits.md)
+defines both strands, exact active-scheme bases, edited/evaluated counts, coloring,
+interactive filters, both gene viewers and per-scheme exports. It preserves
+original native coordinates and reports no data separately from zero. D1–D4 are
+satisfied for this sequence-overlap calculation at admitted Tan TSS points.
+New-promoter predictions and other regulatory-site calculations remain here;
+the implemented count does not infer loss or gain of regulatory function.
 
 
 Owner decision, 2026-10-14 (D9): **no data / not evaluated is distinct from
@@ -26,8 +30,9 @@ disruption and must remain distinguishable from a changed regulatory-site count.
 The owner's inline answers below settle the initial types (including cryptic
 promoters), rough native/transferred/model evidence, no minimum coverage gate,
 per-gene changed/added counts, and active scheme versus original sequence.
-Do not re-ask those as unanswered prerequisites. This pass records the decisions;
-no metric or RNA comparison has been implemented by it.
+Do not re-ask those as unanswered prerequisites. TSS sequence-edit counts are
+implemented as above, and the separate [local RNA comparison](../../validation/rna-folding.md)
+is also implemented. Neither substitutes for new-promoter prediction.
 
 Owner direction, 2026-10-09: investigate very rough regulatory candidates
 transferred from other cyanobacteria, E. coli and other prokaryotes. The
@@ -137,7 +142,9 @@ Transfer-planning update checked by `cyano-regulatory-sites`, 2026-10-09:
 open status, retained metric-definition decisions, local links and live queue
 verified; source evidence is preserved in
 [the transfer contract](../../validation/regulatory-transfer.md#primary-source-evidence-receipts).
-No metric implementation, dataset or UI changed.
+The transfer-planning update admitted no new source. The implemented TSS
+sequence-edit slice has its independent source/sequence regression checks in
+[the reusable comparison contract](../../validation/tss-recoding-edits.md).
 
 Future implementation: run `npm test`, `.venv/bin/python -m pytest -q`, and
 `.venv/bin/python tools/validate_contract.py`; use the UI render/inspect/repair
