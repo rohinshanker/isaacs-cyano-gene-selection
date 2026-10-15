@@ -66,6 +66,8 @@ def test_exact_join_preserves_every_source_value_and_coordinate():
         assert first["members"][0]["uniprotRows"] == [2]
         assert first["members"][0]["crosswalkRows"] == [2]
         assert first["members"][0]["refseqComparison"] == "agrees"
+        assert first["members"][0]["proteinCompetitors"] == []
+        assert first["members"][0]["crosswalkCompetitors"] == []
         assert table["mappingAudit"]["mappedRows"] == 2
         assert table["mappingAudit"]["mappedValidByReplicate"] == {"A": 1, "B": 1, "C": 1}
         assert table["mappingAudit"]["mappedCompleteMeans"] == 1
@@ -132,7 +134,6 @@ def test_isoform_notes_missing_refseq_and_exact_pcc_suffixes():
         assert result["utexCandidates"] == ["M744_RS00005"]
         assert result["refseqComparison"] == comparison
         assert result["crosswalkRows"] == [2, 3]
-
 
 
 def test_reverse_conflicts_expose_competing_identifiers_and_source_rows():
