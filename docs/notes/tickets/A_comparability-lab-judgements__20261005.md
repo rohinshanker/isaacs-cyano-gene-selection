@@ -1,14 +1,20 @@
-# O_comparability-lab-judgements__20261005 — Open
+# A_comparability-lab-judgements__20261005 — Active
 
 - **Scope:** Put the scientific judgement questions raised by Claude Science packages
   D and E in front of the owner and labmates in a form they can answer, record the
   answers as lab decisions, and carry them into the contract. Covers `docs/` and a
   small generator under `tools/`. Decides nothing itself.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-10-05
 - **Updated:** 2026-10-14
 
 ## Current state
+
+Owned by **cyano-regulatory-sites**, 2026-10-14, in isolated worktree
+`work/comparability-decisions-20261014` based on `bfb78d2`. Reconcile the
+explicit pair 7/8 decisions into the source and emitted metadata, replay the
+current condition screen, and audit the remaining decision-ticket findings.
+The active `cyano-unblocked-tix` filter/viewer work is outside this scope.
 
 Owner decision, 2026-10-14 (D8): **keep pairs 7 and 8 separate**: PXD030282
 condition rows 72 and 74 against PXD062851 row 77. This supersedes pair 7's
