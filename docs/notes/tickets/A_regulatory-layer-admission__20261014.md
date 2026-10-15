@@ -119,22 +119,33 @@ session is claimed. Coordinator integration smoke check confirms all four views
 with the final payload and no runtime errors.
 
 Independent final UI review DEM-417 found RV-1–RV-4 on `c01ef97`:
-- **RV-1 — fixed in `0ffe9e9`, confirmation pending:** Inspect now refreshes
+- **RV-1 — resolved by `0ffe9e9`, confirmed on `844bcb6`:** Inspect now refreshes
   coordinates, pan controls, accessible summaries and the linked tRNA viewport.
-- **RV-2 — fixed in `0ffe9e9`, confirmation pending:** computed intervals use
+- **RV-2 — resolved by `0ffe9e9`, confirmed on `844bcb6`:** computed intervals use
   teal bars/triangular heads and visible per-view legends, distinct from purple
   measured TSS marks. Hidden/loading/failed Tan copy no longer calls the shared
   marker lane empty.
-- **RV-3 — fixed in `0ffe9e9`, confirmation pending:** RF01116-only sequence
+- **RV-3 — resolved by `0ffe9e9`, confirmed on `844bcb6`:** RF01116-only sequence
   rows retain geometry and focus when hidden, including Tan loading/failure.
-- **RV-4 — fixed in `0ffe9e9`, confirmation pending:** upstream context is
+- **RV-4 — resolved by `0ffe9e9`, confirmed on `844bcb6`:** upstream context is
   labelled as a minimum and the disclosure shows each limitation once; full
   raw search coverage remains in the JSON download.
 
 Reviewer rerenders replaced inaccurate worker loading-state evidence and
 confirmed the desktop disclosure/whole-chromosome view. Coordinator rerenders
-cover the corrected patch and mobile disclosure. Final confirmation and public
-raw-download verification remain pending. Do not close before they pass.
+cover the corrected patch and mobile disclosure. DEM-417's independent confirmation accepted all four fixes on exact merge
+`844bcb64bb2a3d659a34e3bdd26b32327622a257`, with 156 focused tests passed and
+no introduced regression. The merge preserves the peers' published filter/array
+changes, both new citations, native payload hashes and I-SCI-1.
+
+Final merged gates: `npm test` 1,635 passed; full Python 2,225 passed,
+14 skipped and 51 subtests passed; contract 130 passed, zero failed and one
+declared spliced-CDS exemption. Four-size merged browser renders, independent
+visibility/focus, Inspect readout/controls, Tan-failed row geometry, and RF01116
+loading/failure all pass. Normal runtime has zero page/console errors and no
+horizontal overflow; deliberately failed requests use 503 fixtures. No automated
+axe or screen-reader test is claimed. Public raw-download verification remains
+pending after the authorized push.
 
 ## Cleanup
 

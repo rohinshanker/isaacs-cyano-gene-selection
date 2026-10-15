@@ -8,7 +8,7 @@ Updated: 2026-10-14
 ## Current State
 
 **I-SCI-1 — open; owned by this evidence ticket.** Transferred explicitly from
-[regulatory layer admission](A_regulatory-layer-admission__20261014.md), whose
+[regulatory layer admission](../../validation/regulatory-rfam.md#browser-admission-boundary), whose
 selected output is RF01116 family homology only. The admitted annotation,
 RF01116 interval and retrieved Tan/Richter evidence do not establish full native
 UTEX Yfr1 transcript ends or the pilot's proposed interactions. This is an

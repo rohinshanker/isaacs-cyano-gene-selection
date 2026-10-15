@@ -408,9 +408,11 @@ synthetic wrap/truncation/no-hit tests separate from the real native oracle.
 Publish only the native family-homology intervals, with the model version,
 family identity, native input identity, exact parameters, coordinate basis,
 score meaning and search coverage intact. Keep the `computed` origin and its
-translucent lower-precedence rendering. A measured Tan TSS remains a separate
-record and evidence type. An intergenic interval may appear in a CDS's displayed
-genomic context but is not assigned to that CDS by proximity.
+translucent lower-precedence rendering: teal interval bars with triangular
+display heads and a visible per-view legend. The heads add no genomic bases.
+Measured Tan TSSs retain their purple marks and separate evidence type. An
+intergenic interval may appear in a CDS's displayed genomic context but is not
+assigned to that CDS by proximity.
 
 The overlay describes the original native assembly, even while a recoding
 scheme is displayed. It is not recomputed for that scheme. The independent
@@ -421,8 +423,17 @@ upstream context. The interval is 138–200 nt before that CDS start and must
 occupy exactly its 63 native bases in both gene visualizers and the sequence
 close-up. Check chromosome placement, independent per-view visibility,
 keyboard/hover detail, missing/loading/failed states, a no-match region and
-an organism where RF01116 was not evaluated. Inspect mobile, tablet, desktop
-and wide layouts, plus relevant responsive breakpoints. Exports must retain
+an organism where RF01116 was not evaluated. Hiding RF01116 must preserve the
+sequence row geometry, camera and held control, including when Tan sites are
+loading or failed. Chromosome Inspect must update the coordinate readout, pan
+buttons, accessible track summary and linked tRNA viewport together. A hidden or
+unavailable Tan layer must not describe the shared marker lane as empty.
+
+The compact viewers' **Minimum upstream genomic context** control sets a
+minimum; a published gene-linked TSS can extend their domain farther. The
+sequence view uses its separate upstream window. Verify loading-state captures
+while the response is still pending rather than inferring state from a filename.
+Inspect mobile, tablet, desktop and wide layouts, plus relevant responsive breakpoints. Exports must retain
 the native interval and cannot infer a neighboring-gene owner.
 
 **[I-SCI-1 remains scientifically unresolved](../notes/tickets/O_yfr1-transcript-interaction-evidence__20261014.md):** neither this family interval nor
