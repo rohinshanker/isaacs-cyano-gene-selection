@@ -50,8 +50,11 @@ shortlist, compare and panel designer. Contract:
   per organism; the owner spot-checks disagreements.
 - **UTEX reviewed category:** when it disagrees with this label, show both and
   note the disagreement in the gene panel; a test reports the counts.
-- **Still open:** whether the Jev labels are a committed, deliberately
-  regenerated file or a per-release pipeline step needing the TypeSafe key.
+- **Jev labels are a committed file, not regenerated each release.** Rerun
+  Jev only on purpose; builds do not need the TypeSafe key.
+- **TypeSafe budget:** do not fully deplete the monthly TypeSafe limit. If a
+  limit is reached, stop, record progress here, and finish the run later
+  rather than dropping or approximating the remaining names.
 
 ## Plan
 
