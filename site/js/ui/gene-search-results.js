@@ -18,16 +18,17 @@ import {
 import { renderAnnotationRecord } from './annotation-record.js';
 
 /**
- * Why noncoding genes and pseudogenes cannot match yet, or ''. Only a file in
- * flight or failed is said: then a miss is not a miss. A release that has no
- * catalogue at all is not announced on every search.
+ * Why annotated genes outside the plotted CDS set cannot match, or '' when they
+ * can. Every state that makes a miss not a miss is said.
  */
 export function annotationRecordsNote(status) {
   return status === 'loading'
-    ? ' Noncoding genes and pseudogenes are still loading, so they cannot match yet.'
+    ? ' Genes outside the plotted CDS set, such as noncoding genes and pseudogenes, are still loading, so they cannot match yet.'
     : status === 'failed'
-      ? ' Noncoding genes and pseudogenes could not be loaded, so they cannot match.'
-      : '';
+      ? ' Genes outside the plotted CDS set, such as noncoding genes and pseudogenes, could not be loaded, so they cannot match.'
+      : status === 'unavailable'
+        ? ' This release has no annotation catalogue, so genes outside the plotted CDS set, such as noncoding genes and pseudogenes, are not searched.'
+        : '';
 }
 
 /** A repeated blur/change event must not replace a result while it is being clicked. */
@@ -111,8 +112,10 @@ export class GeneSearchResults {
     this.goTerms = null;
     this.dataset = null;
     this.query = '';
-    // Opened non-CDS records, kept across redraws of the same list.
+    // Opened non-CDS records, kept across redraws of the same list, and their
+    // rendered cards, reused so a nested disclosure keeps its state.
     this.openRecords = new Set();
+    this.recordCards = new Map();
     this.host.hidden = true;
   }
 
@@ -142,7 +145,21 @@ export class GeneSearchResults {
     const focus = this.host.contains(active)
       ? { geneId: active.dataset.geneId, action: active.dataset.searchAction }
       : null;
+    // Focus inside an opened record's card: its record and the control's role.
+    const card = this.host.contains(active) ? active.closest?.('.annotation-record') : null;
+    const cardFocus = card && !focus?.action
+      ? { recordId: card.dataset.recordId, detail: active.dataset.detailAction ?? null,
+        summary: String(active.tagName).toLowerCase() === 'summary' }
+      : null;
     this.render();
+    if (cardFocus) {
+      const restored = this.recordCards.get(cardFocus.recordId)?.card;
+      const target = !restored ? null : cardFocus.detail
+        ? [...restored.querySelectorAll('[data-detail-action]')].find((el) => el.dataset.detailAction === cardFocus.detail)
+        : null;
+      (target ?? restored?.querySelector('summary'))?.focus({ preventScroll: true });
+      return;
+    }
     if (!focus?.geneId || !focus.action) return;
     const target = [...this.host.querySelectorAll('[data-search-action]')]
       .find((button) => button.dataset.geneId === focus.geneId
@@ -184,9 +201,9 @@ export class GeneSearchResults {
       // Never a silent empty state: say what was searched and what to try.
       status.textContent = `Nothing matches “${this.query.trim()}”. Search covers locus `
         + 'tags, gene names, product descriptions, reviewed categories, GO IDs and GO term names, '
-        + 'and noncoding genes and pseudogenes by locus tag, name or type. Try a shorter '
+        + 'and genes outside the plotted CDS set by locus tag, name or type. Try a shorter '
         + 'word or the name the annotation uses.';
-      status.textContent += goPendingNote + recordsNote;
+      status.textContent += recordsNote + goPendingNote;
       host.append(status);
       return;
     }
@@ -195,8 +212,14 @@ export class GeneSearchResults {
       : `${formatCount(result.total)} gene`
         + `${result.total === 1 ? '' : 's'} match`
         + `${result.total === 1 ? 'es' : ''} “${this.query.trim()}”.${goPendingNote}`;
-    status.textContent += recordsNote;
-    host.append(status);
+    if (recordsNote) {
+      const recordsStatus = document.createElement('p');
+      recordsStatus.className = 'search-status';
+      recordsStatus.textContent = recordsNote.trim();
+      host.append(status, recordsStatus);
+    } else {
+      host.append(status);
+    }
     if (result.total === 0) {
       this.renderRecords(records);
       return;
@@ -248,9 +271,10 @@ export class GeneSearchResults {
     const heading = document.createElement('p');
     heading.className = 'search-status search-records-heading';
     heading.id = 'search-records-heading';
-    heading.textContent = `${formatCount(records.total)} noncoding `
-      + `${records.total === 1 ? 'gene or pseudogene matches' : 'genes and pseudogenes match'}. `
-      + 'These are annotation records, not CDSs.';
+    heading.textContent = `${formatCount(records.total)} annotated `
+      + `${records.total === 1 ? 'gene' : 'genes'} outside the plotted CDS set `
+      + `${records.total === 1 ? 'matches' : 'match'}. These are annotation records: noncoding `
+      + 'genes, pseudogenes, and coding genes the map does not plot.';
     const list = document.createElement('ul');
     list.className = 'search-results search-records';
     list.setAttribute('aria-labelledby', heading.id);
@@ -310,14 +334,33 @@ export class GeneSearchResults {
     });
     actions.append(open);
     item.append(text, actions);
-    if (opened) {
-      item.append(renderAnnotationRecord(record, {
-        index: this.dataset?.geneOverlaps ?? null,
-        onOpenPartner: this.handlers.onOpenPartner ?? null,
-        onShowTrna: this.handlers.onShowTrna ?? null,
-      }));
-    }
+    if (opened) item.append(this.recordCard(record));
     return item;
+  }
+
+  /**
+   * The card for an opened record, reused while its inputs are unchanged, so
+   * the nested neighbour disclosure keeps its open state across redraws. A
+   * rebuilt card carries that open state over.
+   */
+  recordCard(record) {
+    const index = this.dataset?.geneOverlaps ?? null;
+    const exclusion = (this.dataset?.excluded ?? []).find((row) => row.id === record.id) ?? null;
+    const trnaState = this.handlers.trnaState?.() ?? 'ready';
+    const cached = this.recordCards.get(record.id);
+    if (cached && cached.index === index && cached.exclusion === exclusion && cached.trnaState === trnaState) {
+      return cached.card;
+    }
+    const card = renderAnnotationRecord(record, {
+      index, exclusion, trnaState,
+      onOpenPartner: this.handlers.onOpenPartner ?? null,
+      onShowTrna: this.handlers.onShowTrna ?? null,
+    });
+    const wasOpen = cached?.card.querySelector('details')?.open ?? false;
+    const details = card.querySelector('details');
+    if (details && wasOpen) details.open = true;
+    this.recordCards.set(record.id, { card, index, exclusion, trnaState });
+    return card;
   }
 
   renderRow(hit) {

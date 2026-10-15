@@ -11,6 +11,7 @@
  * once per selected scheme, and a panel that changed under the reader's hands
  * would be impossible to reason about.
  */
+import { functionStatusNote } from '../core/annotation-records.js';
 import { organismOf } from '../core/organisms.js';
 import { exportBlockedReason } from '../core/export-manifest.js';
 import { confirmedReset } from './confirm-dialog.js';
@@ -843,6 +844,8 @@ export class PanelDesigner {
 
     const product = this.state.dataset.genes[gene.index].product;
     if (product) item.append(element('p', 'panel-gene-product', product));
+    const functionNote = functionStatusNote(this.state.dataset.genes[gene.index]);
+    if (functionNote) item.append(element('p', 'panel-gene-product gene-function-status', functionNote));
 
     if (gene.nearestId) {
       item.append(element('p', 'panel-gene-line',

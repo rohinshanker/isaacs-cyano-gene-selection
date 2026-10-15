@@ -74,8 +74,12 @@ catalogue's records that are not plotted CDSs, in every organism: tRNA, rRNA and
 other RNA genes, and pseudogenes, from the `features` and `contextFeatures` of
 `gene_overlaps.json` (`annotationRecordsOf` in `site/js/core/annotation-records.js`).
 They match by locus tag, gene name, or kind (`tRNA`, `rRNA`, `pseudogene`,
-`noncoding`), ranked like CDS hits, and are listed as their own labelled group
-under the CDS hits, never mixed into them.
+`noncoding`), ranked like CDS hits, and are listed as their own group, "annotated
+genes outside the plotted CDS set", under the CDS hits, never mixed into them. The
+group also holds protein-coding genes the pipeline excluded, such as E. coli's
+selenoproteins `fdnG`, `fdoG` and `fdhF`; their card names them as coding genes
+the map does not plot and gives the `excluded.json` reason, never "noncoding". A
+query of punctuation alone matches nothing.
 
 - **A record is never a CDS.** It has no Pin or Shortlist action, and it never
   enters the gene list, so no codon, protein or recoding metric, filter,
@@ -84,17 +88,18 @@ under the CDS hits, never mixed into them.
   pseudogene flag, replicon, strand, exact segments, overlap partners from the
   OG layer, and the same flanking-gene disclosure the gene viewers use. A partner
   or flank that is a plotted CDS opens as that CDS; a tRNA record can open the
-  tRNA browser at that locus. Opened cards survive redraws of the same list.
-- A catalogue still loading or failed is said in the status line, because a miss
-  is then not a miss. A release with no catalogue is not announced on every
-  search.
+  tRNA browser at that locus, offered only once that list is loaded and disabled
+  with a reason while it loads or after it fails. An opened card is reused across
+  redraws, so its neighbour disclosure keeps its open state and focus.
+- A catalogue loading, failed or absent is said in its own status line, because
+  a miss is then not a miss.
 - **Hypothetical proteins are CDSs of unknown function, never noncoding.** A CDS
   whose product is, exactly, NCBI's "hypothetical protein", a UniProt-style
   "(putative) uncharacterized protein" with an optional symbol, or Syn57's
   "uncharacterized design CDS" carries the note *Predicted protein-coding gene of
   unknown function; not a noncoding gene* in search results, the detail panel,
-  both gene viewers and the shortlist, and "(function unknown)" in the comparison
-  table (`hasUnknownFunction`). No other wording is guessed at. UTEX 2973 has 394.
+  both gene viewers, the shortlist and the panel designer, and "(function
+  unknown)" in the comparison table (`hasUnknownFunction`). No other wording is guessed at. UTEX 2973 has 394.
 - Tests: `tests/js/annotation-records.test.mjs`.
 
 ## Function-category legend filter

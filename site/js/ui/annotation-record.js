@@ -7,7 +7,7 @@
  * the existing native context; a partner or flank that is a plotted CDS can be
  * opened as that CDS.
  */
-import { biotypeLabel } from '../core/annotation-records.js';
+import { biotypeLabel, EXCLUSION_REASONS, isUnplottedCoding } from '../core/annotation-records.js';
 import { createNeighbourDisclosure, updateNeighbourDisclosure } from './gene-neighbours.js';
 import { formatCount } from './format.js';
 
@@ -38,25 +38,51 @@ export function annotationRecordFacts(record) {
  * @param {{index: object|null, onOpenPartner?: (id: string, geneIndex: number) => void,
  *   onShowTrna?: (id: string) => void}} options `index` is the loaded overlap index.
  */
-export function renderAnnotationRecord(record, { index = null, onOpenPartner = null, onShowTrna = null } = {}) {
+export function annotationRecordLead(record, exclusion = null) {
+  if (isUnplottedCoding(record)) {
+    const why = EXCLUSION_REASONS[exclusion?.reason] ?? (exclusion?.reason
+      ? `the pipeline excluded it (${exclusion.reason})` : 'it is not in the plotted CDS set');
+    return `Annotated protein-coding gene that this map does not plot, because ${why}. As a record outside `
+      + 'the plotted set, no codon, protein or recoding metric is shown, and it cannot be pinned, '
+      + 'shortlisted or filtered.';
+  }
+  return 'Annotation record, not a CDS: no codon, protein or recoding metric applies, and it cannot be '
+    + 'pinned, shortlisted or filtered.';
+}
+
+/**
+ * @param {object} record
+ * @param {{index?: object|null, exclusion?: object|null, trnaState?: string,
+ *   onOpenPartner?: Function|null, onShowTrna?: Function|null}} options
+ *   `exclusion` is the pipeline's `excluded.json` row for the record, when it has one.
+ */
+export function renderAnnotationRecord(record, {
+  index = null, exclusion = null, trnaState = 'ready', onOpenPartner = null, onShowTrna = null,
+} = {}) {
   const card = node('div', 'annotation-record');
   card.id = `annotation-record-${record.id}`;
-  card.append(node('p', 'panel-note',
-    'Annotation record, not a CDS: no codon, protein or recoding metric applies, and it cannot be '
-    + 'pinned, shortlisted or filtered.'));
+  card.dataset.recordId = record.id;
+  card.append(node('p', 'panel-note', annotationRecordLead(record, exclusion)));
   const facts = node('dl', 'annotation-record-facts');
   for (const [label, value] of annotationRecordFacts(record)) {
     facts.append(node('dt', '', label), node('dd', '', value));
   }
   card.append(facts);
 
-  if (record.biotype === 'tRNA' && onShowTrna) {
+  if (record.biotype === 'tRNA' && onShowTrna && trnaState !== 'absent') {
     const trna = node('button', 'chip-button', 'Show in the tRNA browser');
     trna.type = 'button';
     trna.dataset.geneId = record.id;
     trna.dataset.searchAction = 'show-trna';
+    // Only a loaded list can select the locus; a list in flight or failed says so.
+    trna.disabled = trnaState !== 'ready';
     trna.addEventListener('click', () => onShowTrna(record.id));
     card.append(trna);
+    if (trnaState !== 'ready') {
+      card.append(node('p', 'panel-note', trnaState === 'failed'
+        ? 'The tRNA browser list could not be loaded; retry it from the tRNA tab.'
+        : 'The tRNA browser list is still loading.'));
+    }
   }
 
   // Shared bases with other annotated genes, as the overlap layer records them.

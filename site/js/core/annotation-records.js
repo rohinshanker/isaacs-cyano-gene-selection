@@ -24,8 +24,24 @@ export const BIOTYPE_LABELS = Object.freeze({
 
 const NONCODING = new Set(['tRNA', 'rRNA', 'tmRNA', 'ncRNA', 'SRP_RNA', 'RNase_P_RNA', 'antisense_RNA']);
 
+/** Why the pipeline left an annotated gene out of the plotted CDS set, as a clause after "because". */
+export const EXCLUSION_REASONS = Object.freeze({
+  selenocysteine_internal_tga: 'it is a selenoprotein whose in-frame TGA encodes selenocysteine rather '
+    + 'than a stop, so it is kept out of codon metrics and recoding',
+  alternate_cds: 'it is an alternative product at a locus whose other CDS is plotted',
+  pseudogene: 'it is annotated as a pseudogene',
+  missing_terminal_stop: 'its annotated CDS has no terminal stop codon',
+  length_not_multiple_of_3: 'its annotated CDS length is not a multiple of three',
+});
+
+/** True for a protein-coding record outside the plotted CDS set. */
+export function isUnplottedCoding(record) {
+  return record?.biotype === 'protein_coding' && !record.pseudo && !record.selectable;
+}
+
 /** A record's kind in words, saying pseudogene whenever the flag is set. */
 export function biotypeLabel(record) {
+  if (isUnplottedCoding(record)) return 'protein-coding gene, not in the plotted CDS set';
   const base = BIOTYPE_LABELS[record?.biotype] ?? `${record?.biotype ?? 'unrecorded'} gene`;
   return record?.pseudo && record.biotype !== 'pseudogene' ? `${base}, pseudogene` : base;
 }
@@ -73,6 +89,8 @@ function scoreRecord(record, query) {
   if (name && name === query) return TIER.nameExact;
   if (id.includes(query)) return TIER.idPartial;
   const needed = words(query);
+  // A query of punctuation alone has no words, and must match nothing.
+  if (needed.length === 0) return null;
   if (name && needed.every((word) => words(name).includes(word))) return TIER.name;
   const kinds = kindWords(record);
   if (needed.length && needed.every((word) => kinds.has(word))) return TIER.kind;

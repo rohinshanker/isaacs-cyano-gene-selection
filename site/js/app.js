@@ -2986,6 +2986,9 @@ function buildGeneSearch() {
     // A record's overlap partner or flank that is a plotted CDS opens as that CDS.
     onOpenPartner: (id, index) => openOverlapPartner(id, index),
     onShowTrna: (id) => showTrnaRecord(id),
+    // The tRNA list's own readiness, so a hand-off is offered only when it can land.
+    trnaState: () => (!layerOf(organism, 'trnaLoci') ? 'absent'
+      : pendingState(context.dataset, 'trnaLoci') ?? (context.dataset.trnaLoci ? 'ready' : 'loading')),
   });
   searchResults.setGenes(context.dataset.genes, context.dataset.goTerms?.terms, context.dataset);
 
@@ -2995,7 +2998,8 @@ function buildGeneSearch() {
     if (!result) return;
     const records = result.records?.total ?? 0;
     const recordText = records
-      ? ` ${records} noncoding ${records === 1 ? 'gene or pseudogene' : 'genes and pseudogenes'} also match.` : '';
+      ? ` ${records} annotated ${records === 1 ? 'gene' : 'genes'} outside the plotted CDS set also `
+        + `${records === 1 ? 'matches' : 'match'}.` : '';
     announce(result.total === 0 && records === 0
       ? `Nothing matches ${input.value.trim()}.`
       : `${result.total} gene${result.total === 1 ? '' : 's'} match ${input.value.trim()}.${recordText}`);

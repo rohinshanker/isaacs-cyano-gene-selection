@@ -14,7 +14,7 @@ import {
   UNKNOWN_FUNCTION_NOTE,
 } from '../../site/js/core/annotation-records.js';
 import { GeneSearchResults, searchRowModel, annotationRecordsNote } from '../../site/js/ui/gene-search-results.js';
-import { annotationRecordFacts } from '../../site/js/ui/annotation-record.js';
+import { annotationRecordFacts, annotationRecordLead, renderAnnotationRecord } from '../../site/js/ui/annotation-record.js';
 
 async function shipped(organism) {
   const base = new URL(`../../site/${organism.dataDirectory}/`, import.meta.url);
@@ -50,6 +50,7 @@ test('UTEX 2973: 61 records found by locus tag, name and kind', async () => {
   assert.equal(exact.shown[0].matchedOn, 'locus tag');
   assert.equal(searchAnnotationRecords(records, 'dnaA').total, 0, 'a CDS name finds no record');
   assert.equal(searchAnnotationRecords(records, '  ').total, 0);
+  assert.equal(searchAnnotationRecords(records, '!!!').total, 0, 'punctuation alone matches nothing (R6)');
 });
 
 test('labels and facts say what the release says', () => {
@@ -110,7 +111,7 @@ test('search lists records apart from CDSs; Open shows a read-only card and offe
     assert.match(host.querySelector('p.search-status').textContent, /No protein-coding gene matches/);
     const recordList = host.querySelector('ul.search-records');
     assert.ok(recordList);
-    assert.match(host.textContent, /2 noncoding genes and pseudogenes match\. These are annotation records, not CDSs\./);
+    assert.match(host.textContent, /2 annotated genes outside the plotted CDS set match\. These are annotation records/);
     const buttons = () => host.querySelectorAll('button');
     assert.ok(!buttons().some((b) => /^(Pin|Shortlist)$/.test(b.textContent)), 'no pin or shortlist for a record');
     const open = buttons().find((b) => b.dataset.geneId === 'R_TRNA1' && b.dataset.searchAction === 'open-record');
@@ -145,7 +146,59 @@ test('a catalogue in flight or failed says records cannot match yet', () => {
   assert.match(annotationRecordsNote('loading'), /still loading/);
   assert.match(annotationRecordsNote('failed'), /could not be loaded/);
   assert.equal(annotationRecordsNote('ready'), '');
-  assert.equal(annotationRecordsNote('unavailable'), '');
+  assert.match(annotationRecordsNote('unavailable'), /no annotation catalogue/);
   assert.equal(annotationRecordsOf({ files: { geneOverlaps: { state: 'loading' } } }).status, 'loading');
   assert.equal(annotationRecordsOf({ geneOverlaps: { catalogue: null } }).status, 'unavailable');
+});
+
+test('E. coli selenoproteins are coding genes outside the plotted set, never called noncoding (R1)', async () => {
+  const organism = ORGANISMS.find((entry) => entry.id === 'ecoli-k12-mg1655');
+  const { index } = await shipped(organism);
+  const { records } = annotationRecordsOf({ geneOverlaps: index });
+  const excluded = JSON.parse(await readFile(new URL(`../../site/${organism.dataDirectory}/excluded.json`, import.meta.url), 'utf8'));
+  for (const name of ['fdnG', 'fdoG', 'fdhF']) {
+    const record = records.find((entry) => entry.name === name);
+    assert.ok(record, name);
+    assert.equal(biotypeLabel(record), 'protein-coding gene, not in the plotted CDS set');
+    const lead = annotationRecordLead(record, excluded.find((row) => row.id === record.id));
+    assert.match(lead, /protein-coding gene that this map does not plot, because it is a selenoprotein whose in-frame TGA encodes selenocysteine/);
+    assert.doesNotMatch(lead, /not a CDS/);
+  }
+});
+
+test('a tRNA hand-off is offered only when its list can take it (R4)', async () => {
+  await withFakeDocument(() => {
+    const record = fakeIndex().catalogue[0];
+    const button = (state) => renderAnnotationRecord(record, { trnaState: state, onShowTrna: () => {} })
+      .querySelectorAll('button').find((b) => b.textContent === 'Show in the tRNA browser');
+    assert.equal(button('ready').disabled, false);
+    assert.equal(button('loading').disabled, true);
+    assert.equal(button('failed').disabled, true);
+    assert.equal(button('absent'), undefined);
+  });
+});
+
+test('an opened card keeps its neighbour disclosure and focus across redraws (R3)', async () => {
+  await withFakeDocument((document) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const results = new GeneSearchResults(host, {
+      onPin() {}, onShortlist() {}, isShortlisted: () => false, isPinned: () => false,
+    });
+    const index = fakeIndex();
+    results.setGenes([], null, { genes: [], geneOverlaps: index });
+    results.search('R_PSEUDO');
+    host.querySelectorAll('button').find((b) => b.dataset.searchAction === 'open-record').dispatch('click');
+    const details = host.querySelector('div.annotation-record').querySelector('details');
+    details.open = true;
+    details.querySelector('summary').focus();
+    results.refresh();
+    const after = host.querySelector('div.annotation-record').querySelector('details');
+    assert.equal(after.open, true, 'still open');
+    assert.equal(document.activeElement, after.querySelector('summary'), 'focus returns to it');
+    // A new overlap index rebuilds the card and carries the open state over.
+    results.setGenes([], null, { genes: [], geneOverlaps: { ...index } });
+    results.refresh();
+    assert.equal(host.querySelector('div.annotation-record').querySelector('details').open, true);
+  });
 });
