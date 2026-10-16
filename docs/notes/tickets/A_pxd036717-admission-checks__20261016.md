@@ -13,7 +13,9 @@ Preserve all source rows, mapping exclusions, LFQ missingness and source conditi
 
 ## Verification
 
-Pending: direct primary-source checks, exact source hashes and located quotations; meaningful tests of evidence extraction and condition validation; independent review; full required JavaScript, Python and contract checks.
+Implemented the six-sample identification evidence and sixteen condition records. Fourteen exact source passages are matched with hashes/locations in the metadata artifact; article page 3 was rendered and inspected. Focused reader/mapping tests: 141 passed; condition tests: 19 passed. JavaScript: 1,684 passed. Full Python and contract gates, source review and independent exact-patch review are running.
+
+Findings: PXD-CONDITION implemented, awaiting final review. PXD-IDENT descriptive evidence implemented; full identification-rule verification is unavailable from mmc1 and the browser release policy remains open in the parent, with an owner question pending. Existing PXD-IDENT mapping exclusions remain open; PXD-DETECTION and PXD-RELEASE remain open. PXD-JOIN remains resolved by its recorded earlier commit. No new browser admission.
 
 ## Cleanup
 

@@ -66,8 +66,9 @@ This follows the published column indexing without claiming a biologically
 paired design. Zero or blank intensity yields null. Invalid nonnumeric or
 negative intensity is separately flagged and also yields null. No minimum
 replacement, pseudocount, significance test or protein-identification threshold
-is introduced. The row's unique-peptide and coverage columns remain available
-for a later admission check.
+is introduced. The row's unique-peptide and coverage columns are also exposed
+as structured per-sample evidence below. They do not supply an identification
+pass by themselves.
 
 An optional mean is the arithmetic mean of all three reconstructed log2 ratios,
 equivalently the log2 geometric mean of their linear ratios. It is null if any
@@ -245,11 +246,95 @@ real-source counts and exact preservation of the reader's original output.
 The real-input regression asserts every exclusion status and detection total,
 including the absence of target collisions, not only assigned-row counts.
 
+## Identification evidence
+
+Each source row exposes six `identificationEvidence` sample records: control
+A/B/C and the bait's A/B/C. Each names its worksheet, sample, arm, replicate,
+LFQ cell, unique-peptide cell and sequence-coverage cell. `positiveLfq` means
+only a finite positive deposited intensity. Original values, formulas and
+caches stay in `cells`.
+
+Unique-peptide counts must be finite nonnegative integers; sequence coverage
+must be finite and within 0–100 percent. Booleans and numeric strings are not
+numbers. Each field distinguishes `missing`, valid `zero`, `positive`, and
+`invalid`. Missing/error formula caches are flagged without recalculation.
+Positive LFQ with zero, missing or invalid evidence is diagnostic, never
+silently promoted to identification success. No rows are filtered by this
+descriptive extraction.
+
+All 9,750 source sample records have valid numeric peptide/coverage cells.
+All 6,134 positive-LFQ samples have positive peptide and coverage values.
+However, 962 of those samples have **one unique peptide**: RpaA 202, CikB 91,
+NblS 616 and ManS 53. These are source row/sample entries across bait sheets,
+not distinct proteins or independent biological samples. Reproduce the count
+by checking `cells[2 + j] > 0` and `cells[17 + j] == 1` for `j = 0..5`, using
+the cells' cached numeric values.
+
+The publisher's `mmc7.docx`, Supplementary Methods, **LC–MS/MS data analysis**,
+second paragraph, states an individual-sample identification rule requiring
+at least two unique peptides **and** two spectral counts. This is separate
+from the first paragraph's minimum of two LFQ ratio counts. The workbook has
+no spectral-count columns or per-row peptide/protein q-values; a source-level
+1% FDR setting does not supply either. The one-peptide entries and absent
+spectral counts prevent independently confirming the complete stated rule
+from this workbook. A positive peptide count therefore remains descriptive.
+No replacement identification rule or interaction call is inferred.
+
+The supplementary DOCX is in the same owner-supplied ZIP as `mmc1`:
+`1-s2.0-S1096717623001490-mmc7.docx`, 6,077,142 bytes, SHA-256
+`37ac6ae40be4da21a1b14de840195af6ef43c20caf6ce8b924fac85534be7475`.
+The [condition metadata](../../data/expression/evidence/pxd036717-conditions.json)
+retains the exact located identification quotation, source hashes and
+verification date. Extract `word/document.xml` and concatenate the `w:t`
+elements within each paragraph to reproduce the quotation check. Keep the
+private source outside version control.
+
+## Condition records
+
+[`tools/pxd036717_conditions.py`](../../tools/pxd036717_conditions.py) expands
+the reviewed metadata into twelve separate replicate comparisons and four
+optional complete-case mean records, one mean per bait. It validates each
+through `scripts/condition_record.py`, records its metadata hash, and leaves
+`releaseEligible: false`. It writes no expression manifest or browser files.
+
+```sh
+.venv/bin/python tools/pxd036717_conditions.py \
+  --output data/interim/pxd036717/condition-records.json
+.venv/bin/python -m pytest -q tests/test_pxd036717_conditions.py
+```
+
+The records retain engineered PCC 7942/transferred evidence and source A/A,
+B/B, C/C indexing. Their replicate count is one for a single comparison or
+three for a complete-case mean. `studyCount: 3` retains the article/workbook
+count, while `status: conflicting` and all source statements preserve the
+supplement/PRIDE wording “both”. This does not assert biological pairing.
+
+General cultivation is 32 °C, approximately 150 µmol photons m⁻² s⁻¹,
+continuous Gro-Lux fluorescent light, 2% CO2, BG11 with 1 g/L HEPES at pH 8.3,
+in flasks shaken at 150 rpm (article §2.1, printed page 40/PDF page 3).
+The supplementary APEX2 protocol refers to the growing conditions during its
+30-minute six-well-plate incubation. Labeling/resuspension in biotin-phenol
+and PBS/H2O2 is recorded separately from cultivation. Daily preculture
+back-dilution to OD750 0.3 is **not** assigned as harvest OD or growth phase.
+Harvest phase and sample-specific IPTG concentration/timing remain unreported;
+“where appropriate” does not assign induction to individual proteomics samples.
+The source strain name does not establish a measured sucrose-export state.
+
+The metadata contains short source passages and their locations, plus hashes
+for the article, supplementary methods and pinned PRIDE response. Article
+passages were matched after whitespace normalization of `pdftotext` output;
+DOCX and archive passages were matched against paragraph text and the named
+JSON field. Composite axis quotations reference the separately matched
+passages in `evidence`.
+
 ## Admission boundary
 
-The identifier join and ambiguity policy above are implemented. Before releasing
-browser layers, complete peptide/identification checks, the condition record,
-separate enrichment quantity, citation/provenance wiring and rendered tests.
+The identifier join, descriptive identification evidence and condition records
+are implemented. Before releasing browser layers, settle how to present the
+partially unverifiable identification rule, then complete the separate
+enrichment quantity, detection category, citation/provenance wiring and rendered
+tests. The parent ticket retains the identification-policy question and the
+existing identity exclusions; this work restores none of those assignments.
 Reconstruction alone does not admit any row or establish an interactor. Preserve
 PCC 7942-to-UTEX transfer labels if an approved crosswalk is used.
 

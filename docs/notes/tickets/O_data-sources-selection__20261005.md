@@ -9,7 +9,7 @@
   `data/`, `tests/`, and `docs/validation/`.
 - **Status:** open
 - **Opened:** 2026-10-05
-- **Updated:** 2026-10-15
+- **Updated:** 2026-10-16
 
 ## Current state
 
@@ -37,17 +37,27 @@ RefSeq confirmation. No measurements change;
 source evidence remains labelled PCC 7942. See the
 [mapping contract](../../validation/pxd036717-enrichment.md#exact-identifier-mapping).
 
-Remaining PXD036717 admission findings (open):
+PXD036717 admission findings and handoff:
 
-- **PXD-IDENT:** retain peptide/identification evidence and resolve any admission
-  filtering contract; the reader itself does not infer protein identification.
+- **PXD-IDENT — evidence checks implemented; release policy open:** the reader
+  exposes all six source samples’ peptide counts/coverage with cells, states and
+  diagnostics. The supplementary methods require two unique peptides and two
+  spectral counts, but mmc1 lacks spectral counts and includes 962 positive-LFQ
+  entries with one unique peptide. No source row is discarded or labelled as
+  passing identification. The owner has been asked whether browser release may
+  retain reconstructed measurements with flags or must first verify the full
+  source rule. See the [identification contract](../../validation/pxd036717-enrichment.md#identification-evidence).
   Q31PP6/Q31NP5 remain excluded from UTEX assignment because the pinned UniProt
   and crosswalk RefSeq fields disagree; restoring them requires a recorded
   identity check. The same hold applies to 84 rows (35 accessions) without a
   UniProt RefSeq cross-reference: their source protein lengths also differ from
   the proposed UTEX targets. This does not block admission of other eligible rows.
-- **PXD-CONDITION:** finish the condition record and preserve the PRIDE protocol's
-  "both" versus workbook/article three-replicate discrepancy.
+- **PXD-CONDITION — implemented by cyano-lit-unreach, 2026-10-16:** source-pinned
+  metadata and a tested builder produce twelve separate comparison records and
+  four optional within-bait mean records. Cultivation and labeling remain
+  distinct; unknown harvest phase and sample-specific IPTG details remain unknown.
+  The supplementary/PRIDE “both” versus workbook/article three-replicate
+  discrepancy is retained explicitly. See the [condition contract](../../validation/pxd036717-enrichment.md#condition-records).
 - **PXD-RELEASE:** separate enrichment quantity, twelve replicate layers plus
   four optional complete-case means, original/reconstruction provenance,
   source-specific citation/terms and rendered validation. No PXD036717 browser

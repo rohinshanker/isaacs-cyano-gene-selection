@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "accession": "PXD036717",
+  "baits": [
+    "RpaA",
+    "CikB",
+    "NblS",
+    "ManS"
+  ],
+  "sources": {
+    "article": {
+      "file": "1-s2.0-S1096717623001490-main.pdf",
+      "sha256": "376ad183e1fb089bbf33613e45a0f7ef6e13a8b453cf11709a93a907738c22e0",
+      "bytes": 10056603,
+      "verified": "2026-10-16",
+      "url": "https://doi.org/10.1016/j.ymben.2023.11.001",
+      "access": "owner-supplied local source"
+    },
+    "supplement": {
+      "file": "1-s2.0-S1096717623001490-mmc7.docx",
+      "sha256": "37ac6ae40be4da21a1b14de840195af6ef43c20caf6ce8b924fac85534be7475",
+      "bytes": 6077142,
+      "verified": "2026-10-16",
+      "url": "https://doi.org/10.1016/j.ymben.2023.11.001",
+      "access": "owner-supplied local source"
+    },
+    "archive": {
+      "file": "pride-project.json",
+      "sha256": "3fe76e2dd3765bfa4e10afd5e4ad47bbfc64ebf62c14bf2fbb87f4a7c0f525ca",
+      "bytes": 11852,
+      "verified": "2026-10-16",
+      "url": "https://www.ebi.ac.uk/pride/ws/archive/v3/projects/PXD036717",
+      "access": "local copy retrieved 2026-10-15"
+    }
+  },
+  "evidence": {
+    "cultivation-temperature": {
+      "source": "article",
+      "where": "Article section 2.1, printed page 40 (PDF page 3)",
+      "quote": "at 32 ◦ C supplemented with 2% CO2",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "cultivation-light": {
+      "source": "article",
+      "where": "Article section 2.1, printed page 40 (PDF page 3)",
+      "quote": "~150 μmol photons m− 2 s− 1 of continuous light",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "cultivation-spectrum": {
+      "source": "article",
+      "where": "Article section 2.1, printed page 40 (PDF page 3)",
+      "quote": "Sylvania 15 W Gro-Lux fluorescent bulbs and shaken at 150 rpm",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "cultivation-medium": {
+      "source": "article",
+      "where": "Article section 2.1, printed page 40 (PDF page 3)",
+      "quote": "BG11 medium supplemented with 1 g L− 1 HEPES to a final pH of 8.3 with NaOH.",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "cultivation-format": {
+      "source": "article",
+      "where": "Article section 2.1, printed page 40 (PDF page 3)",
+      "quote": "Flasks were cultured in a Multitron incubator (Infors HT)",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "preculture-density": {
+      "source": "article",
+      "where": "Article section 2.1, printed page 40 (PDF page 3)",
+      "quote": "back-diluted daily to an OD750 of 0.3",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "article-replicates": {
+      "source": "article",
+      "where": "Article section 3.6, printed page 45 (PDF page 8)",
+      "quote": "Biotinylated proteins from three biological replicates for each strain were extracted using streptavidin beads",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "supplement-replicates": {
+      "source": "supplement",
+      "where": "Supplementary Methods: LC–MS/MS data analysis, second paragraph",
+      "quote": "proteins identified in both CscB-SPS replicates and/or both Protein-APEX2 replicates",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "archive-replicates": {
+      "source": "archive",
+      "where": "PRIDE dataProcessingProtocol",
+      "quote": "proteins identified in both CscB-SPS replicates and/or both Protein-APEX2 replicates",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "identification-rule": {
+      "source": "supplement",
+      "where": "Supplementary Methods: LC–MS/MS data analysis, second paragraph",
+      "quote": "Only proteins with at least two unique peptides and two spectral counts were considered identified in an individual sample.",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "identification-fdr": {
+      "source": "supplement",
+      "where": "Supplementary Methods: LC–MS/MS data analysis, first paragraph",
+      "quote": "FDRs for both protein and peptide were 0.01",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "lfq-minimum": {
+      "source": "supplement",
+      "where": "Supplementary Methods: LC–MS/MS data analysis, first paragraph",
+      "quote": "Label-free quantification was enabled with minimum 2 LFQ ratio counts",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "labeling-context": {
+      "source": "supplement",
+      "where": "Supplementary Methods: Biotinylation of proteins by APEX2, first paragraph",
+      "quote": "Six-well plates were incubated for 30 min in the growing conditions of S. elongatus cultures.",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "conditional-induction": {
+      "source": "article",
+      "where": "Article section 2.1, printed page 40 (PDF page 3)",
+      "quote": "Where appropriate, 1 mM IPTG was added to induce cscB and sps gene expression.",
+      "verification": "Exact match after whitespace normalization"
+    }
+  },
+  "record": {
+    "studyId": "PXD036717",
+    "dataType": "proteomics",
+    "platform": "LC-MS/MS",
+    "strain": "PCC 7942 CscB-SPS, APEX2-tagged baits versus untagged control",
+    "basis": "transferred",
+    "conditionSet": "APEX2 proximity-label enrichment; general cultivation followed by biotin-phenol/H2O2 labeling",
+    "samples": "RpaA, CikB, NblS and ManS; source comparisons A/A, B/B, C/C",
+    "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD036717",
+    "citation": {
+      "text": "Santos-Merino et al. Identification of a two-component signaling network implicated in organic carbon balancing in Synechococcus elongatus PCC 7942. Metabolic Engineering 81 (2024), 38–52.",
+      "url": "https://doi.org/10.1016/j.ymben.2023.11.001",
+      "pmid": null
+    },
+    "replicates": {
+      "count": 3,
+      "status": "conflicting",
+      "text": "Article states three biological replicates per strain and workbook supplies A/B/C; supplementary methods and PRIDE say “both”. Preserve source column indexing without asserting biological pairing.",
+      "sourceStatements": [
+        {
+          "source": "article",
+          "where": "Article section 3.6, printed page 45 (PDF page 8)",
+          "quote": "Biotinylated proteins from three biological replicates for each strain were extracted using streptavidin beads",
+          "verification": "Exact match after whitespace normalization"
+        },
+        {
+          "source": "supplement",
+          "where": "Supplementary Methods: LC–MS/MS data analysis, second paragraph",
+          "quote": "proteins identified in both CscB-SPS replicates and/or both Protein-APEX2 replicates",
+          "verification": "Exact match after whitespace normalization"
+        },
+        {
+          "source": "archive",
+          "where": "PRIDE dataProcessingProtocol",
+          "quote": "proteins identified in both CscB-SPS replicates and/or both Protein-APEX2 replicates",
+          "verification": "Exact match after whitespace normalization"
+        }
+      ]
+    },
+    "treatments": [
+      "APEX2 proximity labeling",
+      "biotin-phenol and H2O2 labeling"
+    ],
+    "group": "engineered",
+    "conditionTableRow": 75,
+    "conditions": {
+      "temperature": {
+        "status": "reported",
+        "text": "32 °C (general culture conditions)",
+        "quote": "at 32 ◦ C supplemented with 2% CO2",
+        "where": "Article section 2.1, printed page 40 (PDF page 3)",
+        "lo": 32,
+        "hi": 32,
+        "unit": "°C"
+      },
+      "lightIntensity": {
+        "status": "reported",
+        "text": "Approximately 150 µmol photons m⁻² s⁻¹ (general culture conditions)",
+        "quote": "~150 μmol photons m− 2 s− 1 of continuous light",
+        "where": "Article section 2.1, printed page 40 (PDF page 3)",
+        "lo": 150,
+        "hi": 150,
+        "unit": "µmol photons m⁻² s⁻¹"
+      },
+      "lightRegime": {
+        "status": "reported",
+        "text": "Continuous light; Sylvania 15 W Gro-Lux fluorescent bulbs",
+        "quote": "~150 μmol photons m− 2 s− 1 of continuous light; Sylvania 15 W Gro-Lux fluorescent bulbs and shaken at 150 rpm",
+        "where": "Article section 2.1, printed page 40 (PDF page 3)",
+        "kind": "continuous",
+        "photoperiod": null,
+        "spectrumClass": "Gro-Lux fluorescent",
+        "entrained": false
+      },
+      "co2": {
+        "status": "reported",
+        "text": "2% CO2 (general culture conditions)",
+        "quote": "at 32 ◦ C supplemented with 2% CO2",
+        "where": "Article section 2.1, printed page 40 (PDF page 3)",
+        "lo": 2,
+        "hi": 2,
+        "unit": "%"
+      },
+      "medium": {
+        "status": "reported",
+        "text": "BG11 supplemented with 1 g/L HEPES, pH 8.3",
+        "quote": "BG11 medium supplemented with 1 g L− 1 HEPES to a final pH of 8.3 with NaOH.",
+        "where": "Article section 2.1, printed page 40 (PDF page 3)",
+        "base": "BG-11",
+        "modified": true,
+        "conditioned": false,
+        "nitrogenAltered": false
+      },
+      "format": {
+        "status": "reported",
+        "text": "Shaken flasks at 150 rpm for cultivation; six-well plates during 30 min labeling",
+        "quote": "Flasks were cultured in a Multitron incubator (Infors HT); Sylvania 15 W Gro-Lux fluorescent bulbs and shaken at 150 rpm",
+        "where": "Article section 2.1, printed page 40 (PDF page 3)",
+        "value": "planktonic liquid"
+      },
+      "phase": {
+        "status": "not reported",
+        "text": "Harvest phase/OD for proximity labeling is not specified. Daily back-dilution to OD750 0.3 is preculture handling, not a harvest measurement.",
+        "quote": "back-diluted daily to an OD750 of 0.3",
+        "where": "Article section 2.1, printed page 40 (PDF page 3)",
+        "label": null,
+        "od": null,
+        "odNm": null
+      }
+    }
+  },
+  "conditionScope": {
+    "cultivation": "General conditions from article section 2.1; supplementary APEX2 protocol refers to the growing conditions for the 30-minute plate incubation.",
+    "labeling": "50 mL culture harvest; resuspend in 4 mL BG11 with 2.5 mM biotin phenol, six-well plate for 30 min; pellet and resuspend in 1 mL PBS pH 7.8; add 10 µL 100 mM H2O2 and invert for 30 s.",
+    "harvestPhase": "not reported for the proximity-labeling samples",
+    "iptgInduction": "not reported per APEX2 sample; general conditional IPTG statement does not establish the concentration or induction time for each proteomics replicate",
+    "sucroseExport": "engineered CscB-SPS background; do not infer an individually measured export or feeding state from the strain name"
+  },
+  "identificationProtocol": {
+    "source": "supplement",
+    "where": "Supplementary Methods: LC–MS/MS data analysis",
+    "software": "MaxQuant/Andromeda 2.0.3.1",
+    "database": "UniProt S. elongatus UP000002717, 2,657 entries, source date string 9/12/2021",
+    "reportedProteinFdr": 0.01,
+    "reportedPeptideFdr": 0.01,
+    "minimumUniquePeptides": 2,
+    "minimumSpectralCounts": 2,
+    "minimumLfqRatioCounts": 2,
+    "verification": "Published settings, not independently recalculated per-row identification confidence",
+    "unavailableInWorkbook": [
+      "spectral counts",
+      "per-row peptide/protein q-values",
+      "per-row interaction p-values"
+    ],
+    "policy": "Retain source measurements and descriptive evidence. No new identification or interaction calls. Browser filtering/admission is separate."
+  }
+}
