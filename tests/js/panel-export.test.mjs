@@ -10,15 +10,27 @@ import { parseCsv, schemeIdOf } from '../../site/js/core/export-manifest.js';
 import { buildPanelSpace } from '../../site/js/core/panel-features.js';
 import { designPanel } from '../../site/js/core/panel-design.js';
 import {
-  buildPanelExport, readPanelDesign, describeSchemes, buildSchemeMatrix,
+  buildPanelExport as buildPanelExportWithSources, readPanelDesign, describeSchemes, buildSchemeMatrix,
   PANEL_COLUMNS, PANEL_DESIGN_VERSION,
 } from '../../site/js/core/panel-export.js';
+import { describePanelSources } from '../../site/js/core/panel-sources.js';
 import { expressionFixtureDataset, fileFetch } from './helpers.mjs';
 import { loadDataset } from '../../site/js/core/dataset.js';
 
 const SYN61 = { TCG: 'AGC', TCA: 'AGT', TAG: 'TAA' };
 const AMBER = { TAG: 'TAA' };
 const WHEN = new Date('2026-09-18T20:00:00Z');
+
+/** Every export carries the sources its design read; these tests have no Data Sources. */
+function buildPanelExport(options) {
+  return buildPanelExportWithSources({
+    sources: describePanelSources({
+      registry: options.registry, config: options.design.config, geneCount: options.dataset.genes.length,
+      tssRecodingEvidence: options.tssRecodingEvidence,
+    }),
+    ...options,
+  });
+}
 
 let cached = null;
 async function context(schemeList = [{ name: 'Syn61-style', map: SYN61 }]) {

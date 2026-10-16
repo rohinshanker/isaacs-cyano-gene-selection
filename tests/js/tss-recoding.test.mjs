@@ -8,6 +8,7 @@ import { evaluateTssRecoding, tssRecodingModel, tssRecodingMetrics, describeTssE
 import { buildMetricRegistry } from '../../site/js/core/metric-registry.js';
 import { computeLiveMetrics } from '../../site/js/core/live-metrics.js';
 import { buildPanelExport } from '../../site/js/core/panel-export.js';
+import { describePanelSources } from '../../site/js/core/panel-sources.js';
 import { buildExport, parseCsv } from '../../site/js/core/export-manifest.js';
 import { metricHelp } from '../../site/js/core/metric-help.js';
 import { buildPanelSpace } from '../../site/js/core/panel-features.js';
@@ -166,14 +167,19 @@ test('registry, custom numeric filters, help, CSV per-scheme values and blank mi
   assert.equal(panelExport.rows[0][TSS_EDIT_KEY], 1, 'actual shortlist panel carries the evidence gate');
   const space = buildPanelSpace({ dataset, registry, baselineFeatures: ['lengthNt'], schemeFeatures: [] });
   const design = designPanel({ dataset, registry, space, config: { size: 6, seeds: [focal.id] } });
+  const sourcesFor = (tssRecodingEvidence) => describePanelSources({
+    registry, config: design.config, geneCount: dataset.genes.length, tssRecodingEvidence,
+  });
   const panel = buildPanelExport({ dataset, registry, design, space,
-    schemes: [{ map: {} }, { map: { TCG: 'AGC' } }], tssRecodingEvidence: evidence });
+    schemes: [{ map: {} }, { map: { TCG: 'AGC' } }], tssRecodingEvidence: evidence,
+    sources: sourcesFor(evidence) });
   const panelRows = panel.rows.filter((row) => row.id === focal.id);
   assert.deepEqual(panelRows.map((row) => [row[TSS_EDIT_KEY], row[TSS_EVALUATED_KEY], row.tssRecodingStatus]),
     [[0, 1, 'evaluated'], [1, 1, 'evaluated']], 'panel export recomputes each scheme using the selected evidence');
   assert.equal(panel.manifest.dataset.tssRecoding.evidenceAvailable, true);
+  const deselected = { available: false, reason: 'deselected' };
   const panelMissing = buildPanelExport({ dataset, registry, design, space,
-    schemes: [{ map: {} }], tssRecodingEvidence: { available: false, reason: 'deselected' } });
+    schemes: [{ map: {} }], tssRecodingEvidence: deselected, sources: sourcesFor(deselected) });
   assert.ok(panelMissing.rows.every((row) => row[TSS_EVALUATED_KEY] === '' && row.tssRecodingReason === 'deselected'));
   assert.equal(panelMissing.manifest.dataset.tssRecoding.evidenceAvailable, false);
   assert.equal(result.rows[0].tssRecodingStatus, 'evaluated');

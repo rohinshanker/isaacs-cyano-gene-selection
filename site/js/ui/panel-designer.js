@@ -18,6 +18,7 @@ import { confirmedReset } from './confirm-dialog.js';
 import { compileScheme } from '../core/scheme.js';
 import { computeLiveMetrics } from '../core/live-metrics.js';
 import { buildPanelSpace } from '../core/panel-features.js';
+import { describePanelSources, freezeRegistry, panelSourceKey } from '../core/panel-sources.js';
 import {
   designPanel, normaliseConfig, FLAG_CONSTRAINTS, MIN_PANEL_SIZE, MAX_PANEL_SIZE,
   DEFAULT_PANEL_SIZE, SELECTION_ORDER,
@@ -151,6 +152,21 @@ export function panelResultIsStale(resultKey, config, schemes) {
   return Boolean(resultKey) && resultKey !== panelInputKey(config, schemes);
 }
 
+/**
+ * What a stale result owes the reader, or null while it is current. The
+ * heading is the disclosure's summary, so it reads even while collapsed.
+ */
+export function staleResultMessage({ settingsChanged, sourcesChanged }) {
+  if (!settingsChanged && !sourcesChanged) return null;
+  const heading = settingsChanged && sourcesChanged ? 'Settings and data sources changed'
+    : settingsChanged ? 'Settings changed' : 'Data sources changed';
+  const kept = sourcesChanged
+    ? 'These results and exports still use the settings, data sources and values captured by '
+      + 'the last design. '
+    : 'These results and exports still use the settings from the last design. ';
+  return { heading, detail: `${kept}Select Regenerate panel to update them.` };
+}
+
 export class PanelDesigner {
   /**
    * @param {HTMLElement} host
@@ -164,8 +180,12 @@ export class PanelDesigner {
     this.selectedSchemeKeys = new Set(['active']);
     this.design = null;
     this.space = null;
-    this.spaceKey = '';
+    this.schemeFields = null;
+    this.schemeFieldsKey = '';
     this.designInputKey = '';
+    // What the design read: frozen metrics, the source description and the
+    // TSS evidence, kept until the reader regenerates.
+    this.captured = null;
     this.build();
   }
 
@@ -238,9 +258,12 @@ export class PanelDesigner {
    * @param {{dataset: object, registry: object,
    *   schemes: {active: {name: string, map: object}, saved: Array<{name: string, map: object}>},
    *   shortlist: string[], pinnedId: string|null, colorSources?: string[],
-   *   tssRecodingEvidence?: object|null}} state
+   *   tssRecodingEvidence?: object|null, sources?: object|null,
+   *   typeSources?: Record<string, string>}} state
    *   `colorSources` is the set enabled for category colouring; the export
    *   records it so a panel file cannot be mistaken for a different view.
+   *   `sources` is the resolved Data Sources membership and `typeSources` the
+   *   datasets named per type; a design captures both.
    */
   update(state) {
     this.state = state;
@@ -333,6 +356,7 @@ export class PanelDesigner {
         this.selectedSchemeKeys = new Set(['active']);
         this.design = null;
         this.designInputKey = '';
+        this.captured = null;
         this.renderForm();
         this.renderResult();
         this.handlers.onAnnounce('Panel settings reset.');
@@ -595,32 +619,53 @@ export class PanelDesigner {
     return row;
   }
 
-  /** Build the feature space for the chosen schemes, reusing it when nothing changed. */
-  ensureSpace(schemes) {
-    const key = `${schemes.map((scheme) => scheme.schemeId).join('|')}::${this.config.allowBorrowedExpression}`;
-    if (this.space && this.spaceKey === key) return this.space;
-    const { dataset, registry } = this.state;
-    const schemeFields = new Map(schemes.map((scheme) => [
+  /** The live per-scheme fields, recomputed only when the chosen schemes change. */
+  ensureSchemeFields(schemes) {
+    const key = schemes.map((scheme) => scheme.schemeId).join('|');
+    if (this.schemeFields && this.schemeFieldsKey === key) return this.schemeFields;
+    const { dataset } = this.state;
+    this.schemeFields = new Map(schemes.map((scheme) => [
       scheme.schemeId,
       computeLiveMetrics(
         dataset, compileScheme(scheme.map, dataset.table), { baseline: dataset.baseline },
       ).fields,
     ]));
-    this.schemeFields = schemeFields;
-    this.space = buildPanelSpace({
-      dataset, registry, schemes, schemeFields, allowBorrowed: this.config.allowBorrowedExpression,
-    });
-    this.spaceKey = key;
-    return this.space;
+    this.schemeFieldsKey = key;
+    return this.schemeFields;
   }
 
+  /** The sources and values that decide a design with `config`, read now. */
+  describeSources(registry, config) {
+    const { dataset, sources, typeSources, tssRecodingEvidence } = this.state;
+    return describePanelSources({
+      registry, config, geneCount: dataset.genes.length, sources, typeSources, tssRecodingEvidence,
+    });
+  }
+
+  /**
+   * Design from one frozen reading of every metric, so the result, its
+   * explanation and its export all keep the values and sources that chose it.
+   */
   run() {
-    const { dataset, registry } = this.state;
+    const { dataset, tssRecodingEvidence = null } = this.state;
+    const config = normaliseConfig(this.config);
+    const registry = freezeRegistry(this.state.registry, dataset.genes.length, Object.keys(config.ranges));
+    const sources = this.describeSources(registry, config);
     const schemes = describeSchemes(this.chosenSchemes());
-    const space = this.ensureSpace(schemes);
+    const schemeFields = this.ensureSchemeFields(schemes);
+    this.space = buildPanelSpace({
+      dataset, registry, schemes, schemeFields, allowBorrowed: config.allowBorrowedExpression,
+    });
     this.schemes = schemes;
-    this.design = designPanel({ dataset, registry, space, config: this.config });
+    this.design = designPanel({ dataset, registry, space: this.space, config });
     this.designInputKey = panelInputKey(this.config, this.chosenSchemes());
+    this.captured = {
+      registry,
+      sources,
+      sourceKey: panelSourceKey(sources),
+      tssRecodingEvidence,
+      neighborSiteCounts: tssRecodingEvidence?.available ? tssRecodingEvidence.siteCounts ?? null : null,
+    };
     this.renderForm();
     this.renderResult();
     this.handlers.onAnnounce(this.design.feasible
@@ -639,15 +684,28 @@ export class PanelDesigner {
     }
     const { design } = this;
 
-    if (panelResultIsStale(this.designInputKey, this.config, this.chosenSchemes())) {
+    const message = staleResultMessage({
+      settingsChanged: panelResultIsStale(this.designInputKey, this.config, this.chosenSchemes()),
+      sourcesChanged: this.sourcesChanged(),
+    });
+    if (message) {
       const stale = element('div', 'gene-flag');
       stale.setAttribute('role', 'status');
-      stale.append(
-        element('strong', null, 'Settings changed. '),
-        'These results and exports still use the settings from the last design. '
-          + 'Select Regenerate panel to update them.',
-      );
-      this.resultHost.append(tanDisclosure(stale, 'Result status'));
+      stale.append(element('p', null, message.detail));
+      this.resultHost.append(tanDisclosure(stale, message.heading));
+    }
+
+    if (design.constraints.blocked.length > 0) {
+      const notApplied = element('div', 'gene-flag');
+      notApplied.setAttribute('role', 'status');
+      const count = design.constraints.blocked.length;
+      const list = element('ul');
+      for (const entry of design.constraints.blocked) {
+        list.append(element('li', null, `${entry.label}: ${entry.reason}`));
+      }
+      notApplied.append(list);
+      this.resultHost.append(tanDisclosure(notApplied,
+        `${formatCount(count)} constraint${count === 1 ? '' : 's'} not applied`));
     }
 
     if (design.problems.length > 0) {
@@ -692,6 +750,13 @@ export class PanelDesigner {
     this.resultHost.append(this.renderGenes());
     this.resultHost.append(this.renderMatrix());
     this.resultHost.append(this.renderExport());
+  }
+
+  /** Whether the sources deciding the shown design no longer read as they did. */
+  sourcesChanged() {
+    if (!this.captured) return false;
+    const current = this.describeSources(this.state.registry, this.design.config);
+    return panelSourceKey(current) !== this.captured.sourceKey;
   }
 
   renderRejectionSummary() {
@@ -906,7 +971,8 @@ export class PanelDesigner {
   }
 
   renderMatrix() {
-    const { dataset, registry } = this.state;
+    const { dataset } = this.state;
+    const { registry } = this.captured;
     const matrix = buildSchemeMatrix({
       dataset,
       registry,
@@ -977,8 +1043,9 @@ export class PanelDesigner {
     const note = element('p', 'panel-note');
     note.id = 'panel-export-note';
     note.textContent = 'The manifest carries the size, the seeds, every constraint including the '
-      + 'ones that were blocked, the objective, the feature set, and the dataset identity, so the '
-      + 'same panel can be rebuilt and checked rather than taken on trust.';
+      + 'ones that were blocked, the objective, the feature set, the dataset identity, and the '
+      + 'data sources the design read, so the same panel can be rebuilt and checked rather than '
+      + 'taken on trust.';
     this.exportStatus = element('p', 'panel-note');
     this.exportStatus.setAttribute('role', 'status');
     section.append(actions, note, this.exportStatus);
@@ -986,12 +1053,15 @@ export class PanelDesigner {
   }
 
   exportPanel() {
-    const { dataset, registry, colorSources, tssRecodingEvidence } = this.state;
+    const { dataset, colorSources } = this.state;
     const blocked = exportBlockedReason(dataset);
     if (blocked) {
       this.exportStatus.textContent = blocked;
       return;
     }
+    const {
+      registry, sources, tssRecodingEvidence, neighborSiteCounts,
+    } = this.captured;
     const result = buildPanelExport({
       dataset,
       registry,
@@ -1000,6 +1070,8 @@ export class PanelDesigner {
       schemes: this.schemes,
       colorSources,
       tssRecodingEvidence,
+      neighborSiteCounts,
+      sources,
     });
     for (const file of result.files) {
       const blob = new Blob([file.content], { type: file.type });

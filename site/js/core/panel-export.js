@@ -3,7 +3,8 @@
  *
  * A list of gene names is not a design. What made the panel is the size, the
  * seeds, every constraint including the ones that were blocked, the objective,
- * the feature set, and the dataset the numbers came from. All of that rides in
+ * the feature set, the dataset the numbers came from, and the data sources the
+ * deciding metrics read when the panel was designed. All of that rides in
  * the same versioned manifest the shortlist export already writes, so a panel
  * and a shortlist stay one format, and the flat CSV keeps its one row per gene
  * and scheme with the design columns repeated on each.
@@ -16,13 +17,21 @@ import {
 } from './export-manifest.js';
 import { csvField } from '../ui/format.js';
 import { OBJECTIVE_ID, SELECTION_ORDER, normaliseConfig } from './panel-design.js';
+import { designMetricSourcesCell, panelSourceStateId } from './panel-sources.js';
 
-export const PANEL_DESIGN_VERSION = 1;
+/** Version 2 adds the data sources captured when the panel was designed. */
+export const PANEL_DESIGN_VERSION = 2;
+/**
+ * Version 1 manifests predate captured sources. They read back as legacy with
+ * no sources; nothing here fills them in from whatever is selected today.
+ */
+export const LEGACY_PANEL_DESIGN_VERSION = 1;
 export const PANEL_EXPORT_BASENAME = 'gene-panel';
 
 /** Columns added to each row so the CSV alone says why the gene is in the panel. */
 export const PANEL_COLUMNS = Object.freeze([
   'panelOrder', 'panelRole', 'nearestSelected', 'nearestDistance', 'missingFeatures',
+  'designSourceStateId', 'designMetricSources',
 ]);
 
 /**
@@ -64,7 +73,7 @@ export function buildSchemeMatrix({
   return { metrics, schemes, rows };
 }
 
-function designBlock(design, space) {
+function designBlock(design, space, sources) {
   const { config, constraints } = design;
   return {
     panelDesignVersion: PANEL_DESIGN_VERSION,
@@ -104,6 +113,7 @@ function designBlock(design, space) {
     constraintsBlocked: constraints.blocked.map((entry) => ({
       id: entry.id, label: entry.label, reason: entry.reason,
     })),
+    sourceSelection: { stateId: panelSourceStateId(sources), ...sources },
     eligibleGeneCount: design.eligibility.pool.length,
     feasible: design.feasible,
     shortfall: design.shortfall,
@@ -164,18 +174,27 @@ export function panelFileBase(manifest) {
  *
  * @param {{dataset: object, registry: object, design: object, space: object,
  *   schemes: Array<{name?: string|null, map: object}>, generatedAt?: Date,
- *   colorSources?: string[], tssRecodingEvidence?: object|null}} options `colorSources` is the set enabled for
- *   category colouring when the panel was exported; omitted means every source.
+ *   colorSources?: string[], tssRecodingEvidence?: object|null,
+ *   neighborSiteCounts?: ArrayLike<number>|null, sources: object}} options
+ *   `colorSources` is the set enabled for category colouring when the panel
+ *   was exported; omitted means every source. `registry`, the TSS evidence and
+ *   `sources` (from `describePanelSources`, required) are the ones captured
+ *   when the panel was designed, so the file cannot pair its genes with later
+ *   values.
  * @returns {{manifest: object, csv: string, columns: string[], rows: object[],
  *   baseName: string, files: Array<{name: string, type: string, content: string}>}}
  */
 export function buildPanelExport({
   dataset, registry, design, space, schemes, generatedAt = new Date(), colorSources = undefined,
-  tssRecodingEvidence = null,
+  tssRecodingEvidence = null, neighborSiteCounts = null, sources = null,
 }) {
+  if (!sources) throw new Error('A panel export needs the data sources captured when it was designed.');
   const base = buildExport({
     dataset, registry, ids: design.selected, schemes, generatedAt, colorSources, tssRecodingEvidence,
+    neighborSiteCounts,
   });
+  const sourceStateId = panelSourceStateId(sources);
+  const metricSources = designMetricSourcesCell(sources);
   const byId = new Map(design.genes.map((gene) => [gene.id, gene]));
   const columns = [...base.columns, ...PANEL_COLUMNS];
   const rows = base.rows.map((row) => {
@@ -187,6 +206,8 @@ export function buildPanelExport({
       nearestSelected: gene?.nearestId ?? '',
       nearestDistance: Number.isFinite(gene?.nearestDistance) ? gene.nearestDistance : '',
       missingFeatures: gene ? gene.missingFeatures : '',
+      designSourceStateId: sourceStateId,
+      designMetricSources: metricSources,
     };
   });
 
@@ -195,7 +216,7 @@ export function buildPanelExport({
     manifestId: '',
     generator: 'recoding-diversity-map panel design',
     columns,
-    panelDesign: designBlock(design, space),
+    panelDesign: designBlock(design, space, sources),
   };
   manifest.caveats = [
     ...base.manifest.caveats,
@@ -246,14 +267,23 @@ export function buildPanelExport({
  *
  * @param {object} manifest parsed from a `.manifest.json` this module wrote.
  * @returns {{config: object, selected: string[], schemes: Array<object>,
- *   features: string[], dataset: object, coverageAfter: object}}
+ *   features: string[], dataset: object, coverageAfter: object, legacy: boolean,
+ *   sources: object|null}}
+ *   `sources` is the Data Sources selection, named type sources and deciding
+ *   metric digests the design read. A legacy (version 1) manifest recorded
+ *   none, so `legacy` is true and `sources` null: its panel can be rebuilt
+ *   only by a reader who knows the selection some other way.
  */
 export function readPanelDesign(manifest) {
   const design = manifest?.panelDesign;
   if (!design) throw new Error('this manifest carries no panel design');
-  if (design.panelDesignVersion !== PANEL_DESIGN_VERSION) {
+  const legacy = design.panelDesignVersion === LEGACY_PANEL_DESIGN_VERSION;
+  if (design.panelDesignVersion !== PANEL_DESIGN_VERSION && !legacy) {
     throw new Error(`panel design version ${design.panelDesignVersion} is not version `
-      + `${PANEL_DESIGN_VERSION}`);
+      + `${PANEL_DESIGN_VERSION} or legacy version ${LEGACY_PANEL_DESIGN_VERSION}`);
+  }
+  if (!legacy && !design.sourceSelection) {
+    throw new Error('this panel design carries no captured data sources');
   }
   const config = normaliseConfig({
     size: design.size,
@@ -273,6 +303,8 @@ export function readPanelDesign(manifest) {
     features: design.features.map((feature) => feature.key),
     dataset: manifest.dataset,
     coverageAfter: design.coverageAfter,
+    legacy,
+    sources: legacy ? null : design.sourceSelection,
   };
 }
 

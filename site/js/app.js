@@ -2114,6 +2114,9 @@ function renderAll({ schemeErrors = [] } = {}) {
       dataset: context.dataset,
       registry: scopedRegistry(),
       tssRecodingEvidence: context.neighborSites,
+      // The membership type metrics read now; a design captures it.
+      sources: resolvedSourceSelection(),
+      typeSources: state.typeSources,
       shortlist: state.shortlist,
       pinnedId: state.pinnedId,
       colorSources: state.colorSources,

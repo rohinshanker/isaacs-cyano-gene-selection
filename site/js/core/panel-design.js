@@ -146,6 +146,17 @@ export function resolveConstraints({ registry, config }) {
     // No numeric bounds still expresses a real constraint when the reader asks
     // to require a recorded value. Only a completely permissive row is inert.
     if (normalised.min === null && normalised.max === null && normalised.includeMissing) continue;
+    // A data type with no selected dataset has no values and no provenance.
+    // Saying so beats treating it as borrowed or keeping every gene unread.
+    if (metric.isType && !metric.provenance) {
+      blocked.push({
+        id: `range:${key}`,
+        label: metric.label,
+        reason: `No ${metric.label} dataset is selected under Data Sources, so this constraint `
+          + 'cannot act. Select one and regenerate to apply it.',
+      });
+      continue;
+    }
     // A live metric is whatever the currently active scheme makes it, so a hard
     // constraint on one would mean something different the moment the scheme
     // changed. Constraints stay on the scheme-independent metrics.
