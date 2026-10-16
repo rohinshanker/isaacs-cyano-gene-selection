@@ -27,7 +27,7 @@ import {
   buildPanelExport, buildSchemeMatrix, describeSchemes,
 } from '../core/panel-export.js';
 import { canonicalJson, schemeIdOf } from '../core/export-manifest.js';
-import { isBorrowedMetric } from '../core/panel-features.js';
+import { hasNoSelectedDataset, isBorrowedMetric } from '../core/panel-features.js';
 import { isExpressionMetric, isExpressionProxyMetric } from '../core/metric-registry.js';
 import { formatValue, formatCount, formatPercentile } from './format.js';
 import { tanDisclosure } from './disclosures.js';
@@ -460,7 +460,11 @@ export class PanelDesigner {
     const wrap = element('fieldset', 'flag-filter');
     wrap.append(element('legend', null, 'Hard constraints'));
 
-    const borrowed = registry.metrics.filter((metric) => isBorrowedMetric(metric));
+    // A type with no selected dataset is not borrowed: it is neither listed
+    // here nor has its range dropped when borrowed expression is switched off.
+    const borrowed = registry.metrics.filter(
+      (metric) => isBorrowedMetric(metric) && !hasNoSelectedDataset(metric),
+    );
     for (const flag of FLAG_CONSTRAINTS) {
       const disabled = flag.needsBorrowed && !this.config.allowBorrowedExpression;
       const { row, input, label } = checkbox(
@@ -611,7 +615,12 @@ export class PanelDesigner {
     );
     missingRow.classList.add('missing-control');
     row.append(missingRow);
-    if (isBorrowedMetric(metric)) {
+    if (hasNoSelectedDataset(metric)) {
+      row.append(tanDisclosure(element('p', 'provenance-warning',
+        `No ${metric.label} dataset is selected under Data Sources, so this constraint cannot `
+          + 'apply. Select one there, then regenerate the panel.'),
+      'No dataset selected'));
+    } else if (isBorrowedMetric(metric)) {
       row.append(tanDisclosure(element('p', 'provenance-warning',
         'This is a borrowed measurement, so this constraint filters on another organism.'),
       'Borrowed measurement'));

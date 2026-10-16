@@ -61,6 +61,14 @@ export function parseSchemeFeatureKey(key) {
 }
 
 /**
+ * True for a data-type metric none of whose datasets is selected: it reads no
+ * values and has no provenance, so it is neither native nor borrowed.
+ */
+export function hasNoSelectedDataset(metric) {
+  return Boolean(metric?.isType) && !metric.provenance;
+}
+
+/**
  * True when a metric carries a measurement this genome was not measured for.
  * The panel workflow will not use one unless the user opts in, and labels it
  * wherever it appears.

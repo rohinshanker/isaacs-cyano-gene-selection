@@ -21,7 +21,7 @@
 import { expressionBasisOf } from './metric-registry.js';
 import {
   featureDistance, distanceFromCentre, presentFeatureCount, coverageOf, binOf,
-  isBorrowedMetric, parseSchemeFeatureKey, COVERAGE_BINS,
+  hasNoSelectedDataset, isBorrowedMetric, parseSchemeFeatureKey, COVERAGE_BINS,
 } from './panel-features.js';
 
 /** The lab runs between six and ten constructs, so the panel size lives there. */
@@ -148,7 +148,7 @@ export function resolveConstraints({ registry, config }) {
     if (normalised.min === null && normalised.max === null && normalised.includeMissing) continue;
     // A data type with no selected dataset has no values and no provenance.
     // Saying so beats treating it as borrowed or keeping every gene unread.
-    if (metric.isType && !metric.provenance) {
+    if (hasNoSelectedDataset(metric)) {
       blocked.push({
         id: `range:${key}`,
         label: metric.label,

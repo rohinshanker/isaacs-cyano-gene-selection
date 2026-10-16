@@ -13,7 +13,7 @@
  * feature. A source change that alters none of them leaves the panel current.
  */
 import { canonicalJson, fnv1a64 } from './export-manifest.js';
-import { defaultBaselineFeatures, isBorrowedMetric } from './panel-features.js';
+import { defaultBaselineFeatures, hasNoSelectedDataset, isBorrowedMetric } from './panel-features.js';
 
 /**
  * A metric whose getters are evaluated once and whose values are copied, so
@@ -124,7 +124,7 @@ export function describePanelSources({
       label: metric.label,
       unit: metric.unit ?? '',
       // A type reading no dataset has no organism to be borrowed from.
-      borrowed: metric.isType && !metric.provenance ? null : isBorrowedMetric(metric),
+      borrowed: hasNoSelectedDataset(metric) ? null : isBorrowedMetric(metric),
       provenanceId: metric.provenance?.id ?? null,
       ...valueSummary(metric, geneCount),
     };

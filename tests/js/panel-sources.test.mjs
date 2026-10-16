@@ -493,3 +493,60 @@ test('the designer marks a source change stale, keeps its panel, and regenerates
     assert.equal(staleHeading(designer), 'Data sources changed');
   });
 });
+
+function findById(node, id) {
+  if (node?.id === id) return node;
+  for (const child of node?.children ?? []) {
+    const found = findById(child, id);
+    if (found) return found;
+  }
+  return null;
+}
+
+test('the range editor says a deselected type has no dataset, and keeps native and borrowed labels', async () => {
+  const w = await world();
+  // D measured in another organism: the borrowed positive control.
+  w.registry.byKey.get('srcD').provenance = { id: 'D', isTargetOrganism: false, condition: 'D' };
+  await withFakeDocument(async (document) => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const designer = new PanelDesigner(host, { onSelect: () => {}, onAnnounce: () => {}, onShortlist: () => {} });
+    const update = () => designer.update({
+      dataset: w.dataset, registry: w.scoped(), schemes: { active: { name: '', map: {} }, saved: [] },
+      shortlist: [], pinnedId: null, sources: w.sources(), typeSources: w.sel.typeSources,
+    });
+    designer.config = normaliseConfig({ ranges: { [w.initiation]: { min: 1, includeMissing: false } } });
+    const rangeNotes = () => designer.form.querySelectorAll('.filter-row')
+      .flatMap((row) => row.querySelectorAll('summary')).map(textOf);
+    const borrowedList = () => {
+      const note = findById(designer.form, 'panel-borrowed-note');
+      return note ? note.querySelectorAll('li').map(textOf) : [];
+    };
+    const initiationLabel = w.registry.byKey.get(w.initiation).label;
+
+    // Native: the constraint reads C, so it carries no source disclosure at all.
+    update();
+    assert.deepEqual(rangeNotes(), []);
+    assert.ok(!borrowedList().includes(initiationLabel));
+
+    // Deselected: no dataset, never "borrowed", and the reason is spelled out.
+    w.sel.selection = ['A', 'B'];
+    update();
+    assert.deepEqual(rangeNotes(), ['No dataset selected']);
+    assert.match(textOf(designer.form.querySelector('.filter-row')),
+      /No Transcription initiation \(RNA-seq\) dataset is selected under Data Sources, so this constraint cannot apply/);
+    assert.ok(!borrowedList().includes(initiationLabel), 'not listed as borrowed');
+
+    // Switching borrowed expression on and off keeps the retained constraint.
+    const toggle = findById(designer.form, 'panel-allow-borrowed');
+    toggle.checked = true; toggle.dispatch('change');
+    toggle.checked = false; findById(designer.form, 'panel-allow-borrowed').dispatch('change');
+    assert.ok(Object.hasOwn(designer.config.ranges, w.initiation), 'the constraint is not silently dropped');
+
+    // Borrowed: reading D, measured elsewhere, is labelled borrowed.
+    w.sel.selection = ['A', 'B', 'D'];
+    update();
+    assert.deepEqual(rangeNotes(), ['Borrowed measurement']);
+    assert.ok(borrowedList().includes(initiationLabel));
+  });
+});
