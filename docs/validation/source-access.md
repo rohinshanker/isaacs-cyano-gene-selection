@@ -14,9 +14,11 @@ and session state outside Git and tool output. Before a new Keychain/security
 prompt, disclose the exact action and reason; never bypass a denied or pending
 approval. Reuse completed artifacts and coordinate through the retrieval owner.
 
-The public [subscription terms](https://biocyc.org/subscription-terms.txt),
+The public [Individual Subscription License Terms](https://biocyc.org/subscription-terms.txt),
 section 3.1(b), list “Use of the BioCyc Web Services to access BioCyc databases.”
-Section 3.3 separately restricts crawling/scraping. The public
+Section 3.3 separately restricts crawling/scraping. Yale's institutional
+agreement was not inspected; this public document is not proof of the terms or
+entitlement attached to the owner's institutional access. The public
 [download page](https://biocyc.org/download.shtml) distinguishes programmatic
 access from licensed flat-file downloads and treats EcoCyc differently from
 subscription databases. EcoCyc success therefore does not verify UTEX

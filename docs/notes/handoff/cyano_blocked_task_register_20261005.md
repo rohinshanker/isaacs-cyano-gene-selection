@@ -57,7 +57,9 @@ and [source-access contract](../../validation/source-access.md) supersede stale
 login and permission-email requests in the historical rows. The TSV's intake
 columns record each disposition; original observations remain unchanged. BioCyc
 credentials are available, but UTEX/SYNEL entitlement and SYNEL assembly identity
-remain open in the annotation ticket. No new login is currently requested.
+remain open in the annotation ticket, with `cyano-regulatory-sites` owning the
+access check after the related fetch settles. `cyano-lit-unreach` retains closure
+of the access-tracking ticket. No new login is currently requested.
 
 The original access rows below remain dated observations. ACC-02 is resolved
 as of 2026-10-15 UTC: the public rendered PRIDE policy and the Markdown it loads

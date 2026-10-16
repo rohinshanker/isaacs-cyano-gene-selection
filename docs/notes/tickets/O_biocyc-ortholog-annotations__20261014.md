@@ -6,7 +6,7 @@
   six per-strain BioCyc tickets. PCC 6301 has a secondary assessment only.
 - **Status:** open
 - **Opened:** 2026-10-14
-- **Updated:** 2026-10-14
+- **Updated:** 2026-10-16
 
 ## Current State
 
@@ -114,7 +114,7 @@ The table is returned evidence, not an admitted source or an identifier join.
 
 | Id | Prerequisite | Dependent step |
 | --- | --- | --- |
-| D1 | Owner-present BioCyc session: the owner signs in to their own account, the agent reads or exports named pages with the owner present, never sees or stores the password, and saves nothing tied to the login (decided 2026-10-05, [gated pages ticket](O_gated-pages-and-accounts__20261005.md)). Before it, an in-repo agent quotes BioCyc's and KEGG's published terms for how pages and APIs are read, from the public pages, with retrieval date and checksum | Any read of UTEX 2973 or `SYNEL` content, and any KO retrieval |
+| D1 | Reuse the completed related session's authorized web-service access contract and pinned outputs (owner decision, 2026-10-16); no concurrent BioCyc fetch. Verify UTEX/SYNEL access separately. Retain source access-term receipts and verify KEGG access terms before any new KO retrieval | Reads not already satisfied by pinned source artifacts |
 | D2 | The assembly `SYNEL` is built on: `GCF_000012525.1` (Complete), `GCF_030544905.1` (Complete) or `GCF_014698905.1` (Contig); the `SYNEL` page links `CP000100` and `CP000101`, which NCBI lists as sequences of `GCF_000012525.1`, an observation and not a determination | A valid PCC 7942 join |
 | D3 | A documented, exact, release-compatible join per source. UTEX: the return reports gene pages resolving on current locus tags (`M744_RS00070`, legacy `M744_00075`) and `old_locus_tag` in the pinned GFF, not covered by the intake check. *E. coli*: shared KO, unadmitted | Transfer of any locus evidence |
 | D4 | Admission contract: manifest entry, checksum pin, documented join, evidence label, and the strain-and-data-type contract. Citation of source, deposit and article is the redistribution condition (owner decision 2026-10-06); no separate redistribution approval is required | Shipping data or a derived display |
@@ -131,9 +131,9 @@ All are `open` unless marked.
 
 | Id | Finding |
 | --- | --- |
-| BIO-01 | BioCyc page-view metering needs the owner-present session (D1) |
+| BIO-01 | Browser-only access premise superseded by the 2026-10-16 web-service authorization; EcoCyc login reported working in the related session. UTEX/SYNEL access verification remains open (D1) |
 | BIO-02 | The `SYNEL` assembly is undetermined (D2) |
-| BIO-03 | BioCyc and KEGG terms on how pages and APIs are read are unquoted; authenticated download untested. This is an access-terms item, not a redistribution gate |
+| BIO-03 | Related work records BioCyc subscription terms section 3.2 and authenticated EcoCyc access. Reuse its completed receipt; UTEX/SYNEL retrieval and any new KEGG access still require verification. This is an access-terms item, not a new redistribution approval gate |
 | BIO-05 | The recurring release watch (recheck at each BioCyc version past 30.0) is not adopted or declined |
 | BIO-06 — resolved by `3c5fac8` | The pinned reader decodes the 46 escaped product commas at use time, retaining raw text and the unchanged returned table. See [reader contract](../../validation/biocyc-annotations.md#ortholog-product-text-reader). No source admission or join is implied |
 | OWN-03 — answered | D1 and D2 select viewer inclusion of both UTEX and `SYNEL`, with lower-priority *E. coli* gap-fill and disclosed disagreements. No additional visible-versus-export-only approval is required; preserve the same provenance in exports |

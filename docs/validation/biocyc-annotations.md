@@ -51,9 +51,11 @@ Follow [data-contract.md](data-contract.md#evidence-coverage-and-cross-organism-
   on each returned page with the strain requested.
 - Confirm a miss by the second route, `biocyc-pgdb-list.shtml`, which links
   entries as `?object=<ORGID>` (PCC 7942 is `SYNEL`, not its assembly accession).
-- Check for the `account-required.shtml` redirect. No agent creates an account or
-  stores a credential; the owner signs in and the agent reads in that session
-  (see [claude-science-handoff.md](claude-science-handoff.md)).
+- Check for the `account-required.shtml` redirect. No agent creates an account.
+  Since 2026-10-16 the owner keeps their own BioCyc login in the macOS keychain
+  item `biocyc-login`, and agents use it only through BioCyc web services
+  (`websvc.biocyc.org/credentials/login/`), never printing or saving the
+  password; the session cookie stays in scratch space.
 - Record BioCyc version, tier, retrieval date and a checksum of any saved page.
 
 ## Joins
