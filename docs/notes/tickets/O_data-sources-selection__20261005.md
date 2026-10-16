@@ -57,6 +57,9 @@ PXD036717 admission findings and handoff:
   metadata and a tested builder produce twelve separate comparison records and
   four optional within-bait mean records. Cultivation and labeling remain
   distinct; unknown harvest phase and sample-specific IPTG details remain unknown.
+  The raw-file `__IPTG` marker has no explicit +/− sign and is retained without
+  inferring induction. One three-file control set is listed for four bait analyses;
+  repeated workbook controls are not treated as independent biological controls.
   The supplementary/PRIDE “both” versus workbook/article three-replicate
   discrepancy is retained explicitly. See the [condition contract](../../validation/pxd036717-enrichment.md#condition-records).
 - **PXD-RELEASE:** separate enrichment quantity, twelve replicate layers plus

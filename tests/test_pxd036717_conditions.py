@@ -58,16 +58,39 @@ def test_source_metadata_keeps_growth_labeling_and_identification_distinct(metad
     assert axes["medium"]["modified"] and axes["medium"]["base"] == "BG-11"
     assert axes["phase"]["status"] == "not reported"
     assert axes["phase"]["od"] is axes["phase"]["label"] is None
-    assert metadata["conditionScope"]["iptgInduction"].startswith("not reported")
+    assert metadata["conditionScope"]["iptgInduction"].startswith("not determined")
+    assert "__IPTG" in metadata["conditionScope"]["iptgInduction"]
+    assert "Coordination of carbon partitioning and photosynthesis" in metadata["record"]["citation"]["text"]
+    assert metadata["record"]["citation"]["pmid"] == "37925065"
     protocol = metadata["identificationProtocol"]
     assert protocol["minimumUniquePeptides"] == protocol["minimumSpectralCounts"] == 2
     assert "spectral counts" in protocol["unavailableInWorkbook"]
     assert protocol["reportedProteinFdr"] == protocol["reportedPeptideFdr"] == 0.01
     assert "not independently" in protocol["verification"]
+    assert "Mascot" in protocol["additionalDescribedWorkflow"]["software"]
+    assert "Scaffold" in protocol["additionalDescribedWorkflow"]["software"]
     assert all(e["source"] in metadata["sources"] for e in metadata["evidence"].values())
     assert {e["source"] for e in metadata["record"]["replicates"]["sourceStatements"]} == {
-        "article", "supplement", "archive",
+        "article", "supplement", "archive", "archiveFiles",
     }
+
+
+def test_archive_file_inventory_is_pinned_and_keeps_control_reuse_visible(metadata):
+    pin = metadata["sources"]["archiveFiles"]
+    raw = (conditions.METADATA.parent / pin["file"]).read_bytes()
+    assert len(raw) == pin["bytes"]
+    assert hashlib.sha256(raw).hexdigest() == pin["sha256"]
+    files = json.loads(raw)
+    assert len(files) == 24
+    names = sorted(row["fileName"] for row in files if row["fileName"].endswith(".raw"))
+    assert len(names) == len(set(names)) == 15
+    expected = [f"CscB-SPS__IPTG_rep{i}.raw" for i in (1, 2, 3)]
+    for bait in ("RpaA", "CikB", "NblS", "ManS"):
+        expected.extend(f"CscB-SPS-{bait}-APEX2__IPTG_rep{i}.raw" for i in (1, 2, 3))
+    assert names == sorted(expected) == metadata["rawFileInventory"]["rawFiles"]
+    assert metadata["rawFileInventory"]["controlFileCount"] == 3
+    assert "twelve independent biological controls" in metadata["conditionScope"]["controls"]
+    assert "no file-order pairing" in metadata["conditionScope"]["controls"]
 
 
 @pytest.mark.parametrize("key,value", [

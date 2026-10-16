@@ -282,7 +282,11 @@ no spectral-count columns or per-row peptide/protein q-values; a source-level
 1% FDR setting does not supply either. The one-peptide entries and absent
 spectral counts prevent independently confirming the complete stated rule
 from this workbook. A positive peptide count therefore remains descriptive.
-No replacement identification rule or interaction call is inferred.
+No replacement identification rule or interaction call is inferred. The
+supplement also describes Mascot Distiller/Mascot/Scaffold and a Scaffold 1%
+FDR confidence filter in its preceding LC–MS/MS section. Both workflows are
+recorded in the metadata: the workbook alone does not establish which export
+produced each row or which workflow supplies its spectral-count criterion.
 
 The supplementary DOCX is in the same owner-supplied ZIP as `mmc1`:
 `1-s2.0-S1096717623001490-mmc7.docx`, 6,077,142 bytes, SHA-256
@@ -320,9 +324,21 @@ The supplementary APEX2 protocol refers to the growing conditions during its
 30-minute six-well-plate incubation. Labeling/resuspension in biotin-phenol
 and PBS/H2O2 is recorded separately from cultivation. Daily preculture
 back-dilution to OD750 0.3 is **not** assigned as harvest OD or growth phase.
-Harvest phase and sample-specific IPTG concentration/timing remain unreported;
-“where appropriate” does not assign induction to individual proteomics samples.
+Harvest phase and sample-specific IPTG concentration/timing remain unreported.
+All fifteen deposited raw-file names carry the literal `__IPTG` marker, with
+no +/− sign; the marker alone does not establish addition or omission. The
+general “where appropriate” sentence supplies no individual induction state.
 The source strain name does not establish a measured sucrose-export state.
+
+The pinned [PRIDE file inventory](../../data/expression/evidence/pxd036717-pride-files.json)
+lists one set of three untagged control raw files, twelve bait raw files and
+four bait-specific search archives (plus four peak archives and one FASTA).
+Do not count the repeated workbook controls across baits as twelve independent
+biological controls. Rep1/rep2/rep3 file labels support the three-replicate
+structure; no A/B/C-to-file mapping or biological pairing is assigned by order.
+The exact names, source response hash and retrieval date remain in the metadata.
+The article title and PMID refer to the published article, whose title differs
+from the archive project title.
 
 The metadata contains short source passages and their locations, plus hashes
 for the article, supplementary methods and pinned PRIDE response. Article

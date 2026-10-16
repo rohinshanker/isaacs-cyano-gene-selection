@@ -31,6 +31,22 @@
       "verified": "2026-10-16",
       "url": "https://www.ebi.ac.uk/pride/ws/archive/v3/projects/PXD036717",
       "access": "local copy retrieved 2026-10-15"
+    },
+    "archiveFiles": {
+      "file": "pxd036717-pride-files.json",
+      "sha256": "9dcbaf837fbae282e37dc4c8c694c129a11535e2817aa0fe02f7e141349b42be",
+      "bytes": 27385,
+      "verified": "2026-10-16",
+      "url": "https://www.ebi.ac.uk/pride/ws/archive/v3/projects/PXD036717/files?page=0&pageSize=200",
+      "access": "public PRIDE metadata; 24 deposited files; raw spectra were not downloaded"
+    },
+    "pubmedIdentifier": {
+      "file": "pubmed-esearch-doi-20261016.json",
+      "sha256": "6eb261f73e6dc6b74e522ec90a5ef932221d83647b170cad5bbda88d8419bcd0",
+      "bytes": 213,
+      "verified": "2026-10-16",
+      "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=10.1016%2Fj.ymben.2023.11.001%5Bdoi%5D&retmode=json",
+      "access": "public DOI identifier lookup; idlist 37925065"
     }
   },
   "evidence": {
@@ -117,6 +133,30 @@
       "where": "Article section 2.1, printed page 40 (PDF page 3)",
       "quote": "Where appropriate, 1 mM IPTG was added to induce cscB and sps gene expression.",
       "verification": "Exact match after whitespace normalization"
+    },
+    "article-title": {
+      "source": "article",
+      "where": "Article PDF page 1, title",
+      "quote": "Coordination of carbon partitioning and photosynthesis by a two-component signaling network in Synechococcus elongatus PCC 7942",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "archive-raw-files": {
+      "source": "archiveFiles",
+      "where": "fileName fields for all 15 RAW entries",
+      "quote": "CscB-SPS__IPTG_rep1.raw",
+      "verification": "Exact fileName match; all raw file names retained in rawFileInventory"
+    },
+    "scaffold-validation": {
+      "source": "supplement",
+      "where": "Supplementary Methods: LC–MS/MS, final sentences",
+      "quote": "The Mascot output was then analyzed using Scaffold v5.1 to probabilistically validate protein identifications.",
+      "verification": "Exact match after whitespace normalization"
+    },
+    "scaffold-fdr": {
+      "source": "supplement",
+      "where": "Supplementary Methods: LC–MS/MS, final sentences",
+      "quote": "Assignments validated using the Scaffold 1% false discovery rate (FDR) confidence filter are considered true.",
+      "verification": "Exact match after whitespace normalization"
     }
   },
   "record": {
@@ -129,9 +169,9 @@
     "samples": "RpaA, CikB, NblS and ManS; source comparisons A/A, B/B, C/C",
     "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD036717",
     "citation": {
-      "text": "Santos-Merino et al. Identification of a two-component signaling network implicated in organic carbon balancing in Synechococcus elongatus PCC 7942. Metabolic Engineering 81 (2024), 38–52.",
+      "text": "Santos-Merino M, Sakkos JK, Singh AK, Ducat DC. Coordination of carbon partitioning and photosynthesis by a two-component signaling network in Synechococcus elongatus PCC 7942. Metabolic Engineering 81 (2024), 38–52.",
       "url": "https://doi.org/10.1016/j.ymben.2023.11.001",
-      "pmid": null
+      "pmid": "37925065"
     },
     "replicates": {
       "count": 3,
@@ -155,6 +195,12 @@
           "where": "PRIDE dataProcessingProtocol",
           "quote": "proteins identified in both CscB-SPS replicates and/or both Protein-APEX2 replicates",
           "verification": "Exact match after whitespace normalization"
+        },
+        {
+          "source": "archiveFiles",
+          "where": "fileName fields for RAW entries",
+          "quote": "CscB-SPS__IPTG_rep1.raw; CscB-SPS__IPTG_rep2.raw; CscB-SPS__IPTG_rep3.raw",
+          "verification": "Each semicolon-separated file name matches one deposited file; each bait likewise has rep1/rep2/rep3."
         }
       ]
     },
@@ -215,8 +261,8 @@
       "format": {
         "status": "reported",
         "text": "Shaken flasks at 150 rpm for cultivation; six-well plates during 30 min labeling",
-        "quote": "Flasks were cultured in a Multitron incubator (Infors HT); Sylvania 15 W Gro-Lux fluorescent bulbs and shaken at 150 rpm",
-        "where": "Article section 2.1, printed page 40 (PDF page 3)",
+        "quote": "Flasks were cultured in a Multitron incubator (Infors HT); Sylvania 15 W Gro-Lux fluorescent bulbs and shaken at 150 rpm; Six-well plates were incubated for 30 min in the growing conditions of S. elongatus cultures.",
+        "where": "Article section 2.1, printed page 40 (PDF page 3); Supplementary Methods: Biotinylation of proteins by APEX2, first paragraph",
         "value": "planktonic liquid"
       },
       "phase": {
@@ -234,8 +280,9 @@
     "cultivation": "General conditions from article section 2.1; supplementary APEX2 protocol refers to the growing conditions for the 30-minute plate incubation.",
     "labeling": "50 mL culture harvest; resuspend in 4 mL BG11 with 2.5 mM biotin phenol, six-well plate for 30 min; pellet and resuspend in 1 mL PBS pH 7.8; add 10 µL 100 mM H2O2 and invert for 30 s.",
     "harvestPhase": "not reported for the proximity-labeling samples",
-    "iptgInduction": "not reported per APEX2 sample; general conditional IPTG statement does not establish the concentration or induction time for each proteomics replicate",
-    "sucroseExport": "engineered CscB-SPS background; do not infer an individually measured export or feeding state from the strain name"
+    "iptgInduction": "not determined per APEX2 sample: all 15 raw-file names contain the literal __IPTG marker, which supplies no +/− sign. This marker alone is insufficient to establish IPTG addition or omission. Concentration and timing are not reported per sample; the general conditional 1 mM statement is not assigned to the proteomics replicates.",
+    "sucroseExport": "engineered CscB-SPS background; do not infer an individually measured export or feeding state from the strain name",
+    "controls": "The archive lists one set of three untagged CscB-SPS raw files alongside twelve bait raw files and four bait-specific search archives. Do not count the repeated workbook control columns as twelve independent biological controls. A/B/C columns remain local to each bait analysis; no file-order pairing is inferred."
   },
   "identificationProtocol": {
     "source": "supplement",
@@ -258,6 +305,40 @@
       "date": "2026-10-16",
       "choice": "Show reconstructed measurements with evidence flags",
       "scope": "Eventual browser release; this artifact does not admit browser values"
+    },
+    "additionalDescribedWorkflow": {
+      "software": "Mascot Distiller 2.8.1; Mascot 2.8.0.1; Scaffold 5.1",
+      "reportedValidation": "Scaffold 1% FDR confidence filter",
+      "where": "Supplementary Methods: LC–MS/MS",
+      "limitation": "Both Mascot/Scaffold and MaxQuant/Andromeda are described; the workbook does not itself link each row to a particular export or independently establish which workflow supplies the spectral-count rule."
     }
+  },
+  "rawFileInventory": {
+    "source": "archiveFiles",
+    "rawFiles": [
+      "CscB-SPS-CikB-APEX2__IPTG_rep1.raw",
+      "CscB-SPS-CikB-APEX2__IPTG_rep2.raw",
+      "CscB-SPS-CikB-APEX2__IPTG_rep3.raw",
+      "CscB-SPS-ManS-APEX2__IPTG_rep1.raw",
+      "CscB-SPS-ManS-APEX2__IPTG_rep2.raw",
+      "CscB-SPS-ManS-APEX2__IPTG_rep3.raw",
+      "CscB-SPS-NblS-APEX2__IPTG_rep1.raw",
+      "CscB-SPS-NblS-APEX2__IPTG_rep2.raw",
+      "CscB-SPS-NblS-APEX2__IPTG_rep3.raw",
+      "CscB-SPS-RpaA-APEX2__IPTG_rep1.raw",
+      "CscB-SPS-RpaA-APEX2__IPTG_rep2.raw",
+      "CscB-SPS-RpaA-APEX2__IPTG_rep3.raw",
+      "CscB-SPS__IPTG_rep1.raw",
+      "CscB-SPS__IPTG_rep2.raw",
+      "CscB-SPS__IPTG_rep3.raw"
+    ],
+    "controlFileCount": 3,
+    "baitFileCount": 12,
+    "replicateLabels": [
+      "rep1",
+      "rep2",
+      "rep3"
+    ],
+    "workbookToRawPairing": "No A/B/C-to-rep1/rep2/rep3 correspondence or biological pairing is assigned by file order."
   }
 }

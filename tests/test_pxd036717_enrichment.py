@@ -447,6 +447,14 @@ def test_pinned_identification_matches_independently_counted_source_cells():
                       "spectral_counts_not_supplied": 6 * len(table["rows"])},
         }
     assert sum(s["audit"]["identificationEvidence"]["sampleCount"] for s in doc["sheets"]) == 9750
+    # Independent header/cell recount: the owner-approved evidence flag must
+    # remain visible on every one-peptide positive LFQ entry, without masking it.
+    for table, count in zip(doc["sheets"], (202, 91, 616, 53), strict=True):
+        samples = [sample for row in table["rows"] for sample in row["identificationEvidence"]
+                   if sample["positiveLfq"] and sample["uniquePeptides"]["value"] == 1]
+        assert len(samples) == count
+        assert all("below_reported_unique_peptide_minimum" in sample["flags"] for sample in samples)
+        assert all("spectral_counts_not_supplied" in sample["flags"] for sample in samples)
 
 
 def test_cli_source_protection_pin_and_success(tmp_path, monkeypatch, capsys):
