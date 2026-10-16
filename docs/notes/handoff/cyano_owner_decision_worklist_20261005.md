@@ -1,5 +1,11 @@
 # Owner decision working list, 2026-10-05
 
+**Access update, 2026-10-16:** the historical owner-present-only BioCyc wording
+below is superseded by the owner's Keychain/web-service authorization. See
+[source-access.md](../../validation/source-access.md#biocyc) for the current
+route and [access tracking](../tickets/O_gated-pages-and-accounts__20261005.md)
+for the remaining target-entitlement checks. No additional login is requested.
+
 Moved here on 2026-10-05 from `docs/validation/AAAA-new-bio-decisions-to-review.md`,
 which is now the lab-facing review document and holds only the questions for the
 lab, with background. This file keeps the owner's working list as it stood: every

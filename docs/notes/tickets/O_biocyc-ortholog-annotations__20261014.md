@@ -171,6 +171,14 @@ Future integration: run `npm test`, `.venv/bin/python -m pytest -q` and
 mapping coverage and ambiguity, and evidence labels. Visible UI changes also need
 the UI render/inspect/repair skill and renders at mobile, tablet and desktop widths.
 
+## Access coordination
+
+For current access ownership and receipts, see the
+[gated-source audit](O_gated-pages-and-accounts__20261005.md) and
+[source-access contract](../../validation/source-access.md#biocyc).
+The related EcoCyc retrieval is `cyano-unblocked-tix`; subsequent UTEX/SYNEL
+access verification belongs to `cyano-regulatory-sites` after that work settles.
+
 ## Cleanup
 
 On resolution, rename the ticket and H1 to resolved, record final validation and
