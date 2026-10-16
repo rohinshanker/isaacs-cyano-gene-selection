@@ -44,6 +44,17 @@ available. That exclusion does not repair the existing data-type metric path.
 
 ## Verification
 
+Implementation `17d250e8` captures source state and versioned exports; DEM-431
+approved the exact patch with 96 focused checks and inspected rendered evidence.
+Full gates: JavaScript 1,683 passed; Python 2,376 passed, 23 skipped and 51
+subtests passed; contract 130 passed and one declared skip.
+
+Open finding **PS-1 — open**: coordinator final browser check found the retained
+native initiation constraint still shows "Borrowed measurement" in its editor
+after its Tan source is deselected. The result's blocked reason is correct, but
+the form must show "No dataset selected" instead. Assigned to DEM-428 for a
+narrow correction and regression/render checks before closure.
+
 Baseline `9393dd5` reproduced in the real UI at localhost:8741: add a native
 initiation range (minimum 1, require value), design eight genes, then deselect
 Tan control. The same result remained with no stale warning; explicit
