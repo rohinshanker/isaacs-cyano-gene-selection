@@ -273,7 +273,7 @@ def test_identification_samples_preserve_exact_cells_and_all_six_source_labels()
                     "cell": f"{['X', 'Y', 'Z', 'AA', 'AB', 'AC'][i]}2",
                     "value": 12 + i, "status": "positive", "flags": [],
                 },
-                "flags": [],
+                "flags": ["spectral_counts_not_supplied"],
             }
             for key in ("uniquePeptides", "sequenceCoveragePercent"):
                 source = next(cell for cell in row["cells"] if cell["cell"] == sample[key]["cell"])
@@ -283,7 +283,8 @@ def test_identification_samples_preserve_exact_cells_and_all_six_source_labels()
             "uniquePeptides": {"missing": 6, "zero": 0, "positive": 6, "invalid": 0},
             "sequenceCoveragePercent": {"missing": 6, "zero": 0, "positive": 6, "invalid": 0},
             "flags": {"positive_lfq_with_missing_unique_peptides": 2,
-                      "positive_lfq_with_missing_sequence_coverage": 2},
+                      "positive_lfq_with_missing_sequence_coverage": 2,
+                      "spectral_counts_not_supplied": 12},
         }
 
 
@@ -301,8 +302,11 @@ def test_positive_lfq_identification_diagnostics_do_not_change_ratios(index, raw
     for table in doc["sheets"]:
         row = table["rows"][0]
         sample = row["identificationEvidence"][index]
-        assert sample["flags"] == [f"positive_lfq_with_{status}_unique_peptides",
-                                   f"positive_lfq_with_{status}_sequence_coverage"]
+        expected_flags = [f"positive_lfq_with_{status}_unique_peptides",
+                          f"positive_lfq_with_{status}_sequence_coverage"]
+        if status == "zero":
+            expected_flags.append("below_reported_unique_peptide_minimum")
+        assert sample["flags"] == expected_flags + ["spectral_counts_not_supplied"]
         for key, cell in (("uniquePeptides", unique_cell), ("sequenceCoveragePercent", coverage_cell)):
             assert sample[key]["status"] == status
             assert sample[key]["value"] == (0 if status == "zero" else None)
@@ -324,9 +328,25 @@ def test_nonpositive_or_invalid_lfq_does_not_raise_positive_lfq_diagnostics(lfq)
         book.worksheets[0]["X2"] = "bad"
     sample = read(workbook(mutate))["sheets"][0]["rows"][0]["identificationEvidence"][0]
     assert sample["positiveLfq"] is False
-    assert sample["flags"] == []
+    assert sample["flags"] == ["below_reported_unique_peptide_minimum", "spectral_counts_not_supplied"]
     assert sample["uniquePeptides"]["status"] == "zero"
     assert sample["sequenceCoveragePercent"]["flags"] == ["invalid_type"]
+
+
+@pytest.mark.parametrize("peptides,below", [(0, True), (1, True), (2, False), (3, False),
+                                         (None, False), (-1, False), (True, False)])
+def test_source_criterion_flags_never_filter_or_claim_full_identification(peptides, below):
+    data = workbook(lambda b: b.worksheets[0].__setitem__("R2", peptides))
+    doc = read(data)
+    row = doc["sheets"][0]["rows"][0]
+    sample = row["identificationEvidence"][0]
+    assert ("below_reported_unique_peptide_minimum" in sample["flags"]) == below
+    assert "spectral_counts_not_supplied" in sample["flags"]
+    assert row["comparisons"][0]["reconstructedLog2Ratio"] == 2
+    assert row["meanLog2Ratio"] == pytest.approx(1 / 3)
+    assert row["cells"][17]["value"] == peptides
+    assert doc["method"]["identificationEvidence"]["reportedCriteria"]["minimumUniquePeptides"] == 2
+    assert not doc["releaseEligible"]
 
 
 def test_identification_formula_caches_and_errors_preserve_source_and_status():
@@ -414,16 +434,17 @@ def test_pinned_workbook_matches_independent_source_audit():
 def test_pinned_identification_matches_independently_counted_source_cells():
     doc = enrichment.read_workbook(PINNED.read_bytes())
     # Counted directly from columns R:W and X:AC, independently of reader helpers.
-    expected = [(1995, 303, 2000, 298, 1726), (1729, 461, 1735, 455, 1217),
-                (1966, 554, 1974, 546, 1886), (2001, 741, 2011, 731, 1305)]
-    for table, (unique, zero_unique, coverage, zero_coverage, positive_lfq) in zip(
+    expected = [(1995, 303, 2000, 298, 1726, 743), (1729, 461, 1735, 455, 1217, 1055),
+                (1966, 554, 1974, 546, 1886, 1237), (2001, 741, 2011, 731, 1305, 1461)]
+    for table, (unique, zero_unique, coverage, zero_coverage, positive_lfq, below_minimum) in zip(
             doc["sheets"], expected, strict=True):
         assert table["audit"]["identificationEvidence"] == {
             "sampleCount": 6 * len(table["rows"]), "positiveLfqSamples": positive_lfq,
             "uniquePeptides": {"missing": 0, "zero": zero_unique, "positive": unique, "invalid": 0},
             "sequenceCoveragePercent": {"missing": 0, "zero": zero_coverage,
                                         "positive": coverage, "invalid": 0},
-            "flags": {},
+            "flags": {"below_reported_unique_peptide_minimum": below_minimum,
+                      "spectral_counts_not_supplied": 6 * len(table["rows"])},
         }
     assert sum(s["audit"]["identificationEvidence"]["sampleCount"] for s in doc["sheets"]) == 9750
 

@@ -260,7 +260,11 @@ numbers. Each field distinguishes `missing`, valid `zero`, `positive`, and
 `invalid`. Missing/error formula caches are flagged without recalculation.
 Positive LFQ with zero, missing or invalid evidence is diagnostic, never
 silently promoted to identification success. No rows are filtered by this
-descriptive extraction.
+descriptive extraction. Valid counts below the reported two-peptide minimum
+carry `below_reported_unique_peptide_minimum`; every sample carries
+`spectral_counts_not_supplied`. Counts at or above two still lack the spectral
+evidence needed to verify the complete source rule. Invalid/missing counts
+retain their own state rather than being treated as below the minimum.
 
 All 9,750 source sample records have valid numeric peptide/coverage cells.
 All 6,134 positive-LFQ samples have positive peptide and coverage values.
@@ -330,11 +334,13 @@ passages in `evidence`.
 ## Admission boundary
 
 The identifier join, descriptive identification evidence and condition records
-are implemented. Before releasing browser layers, settle how to present the
-partially unverifiable identification rule, then complete the separate
+are implemented. Before releasing browser layers, complete the separate
 enrichment quantity, detection category, citation/provenance wiring and rendered
-tests. The parent ticket retains the identification-policy question and the
-existing identity exclusions; this work restores none of those assignments.
+tests. Owner decision, 2026-10-16: retain reconstructed measurements with explicit
+identification evidence flags; verifying the full source rule is not a release
+prerequisite. The measurements must not be labelled as passing that rule or as
+confirmed interactions. Existing identity exclusions remain in the parent
+ticket; this work restores none of those assignments.
 Reconstruction alone does not admit any row or establish an interactor. Preserve
 PCC 7942-to-UTEX transfer labels if an approved crosswalk is used.
 

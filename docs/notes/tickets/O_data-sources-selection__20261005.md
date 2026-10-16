@@ -39,14 +39,15 @@ source evidence remains labelled PCC 7942. See the
 
 PXD036717 admission findings and handoff:
 
-- **PXD-IDENT — evidence checks implemented; release policy open:** the reader
+- **PXD-IDENT — evidence checks implemented; release policy settled 2026-10-16:** the reader
   exposes all six source samples’ peptide counts/coverage with cells, states and
   diagnostics. The supplementary methods require two unique peptides and two
   spectral counts, but mmc1 lacks spectral counts and includes 962 positive-LFQ
   entries with one unique peptide. No source row is discarded or labelled as
-  passing identification. The owner has been asked whether browser release may
-  retain reconstructed measurements with flags or must first verify the full
-  source rule. See the [identification contract](../../validation/pxd036717-enrichment.md#identification-evidence).
+  passing identification. The owner selected reconstructed measurements with evidence flags
+  for eventual browser release; full verification of the source identification
+  rule is not required first. Counts below two and absent spectral counts are
+  explicit flags, not automatic measurement exclusions or interaction calls. See the [identification contract](../../validation/pxd036717-enrichment.md#identification-evidence).
   Q31PP6/Q31NP5 remain excluded from UTEX assignment because the pinned UniProt
   and crosswalk RefSeq fields disagree; restoring them requires a recorded
   identity check. The same hold applies to 84 rows (35 accessions) without a

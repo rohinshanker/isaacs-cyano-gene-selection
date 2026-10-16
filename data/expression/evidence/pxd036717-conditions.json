@@ -253,6 +253,11 @@
       "per-row peptide/protein q-values",
       "per-row interaction p-values"
     ],
-    "policy": "Retain source measurements and descriptive evidence. No new identification or interaction calls. Browser filtering/admission is separate."
+    "policy": "Owner decision 2026-10-16: eventual browser release may retain reconstructed measurements with explicit evidence flags. Do not filter solely by the incomplete source identification rule or claim that it was verified. No new interaction calls; browser integration remains separate.",
+    "ownerDecision": {
+      "date": "2026-10-16",
+      "choice": "Show reconstructed measurements with evidence flags",
+      "scope": "Eventual browser release; this artifact does not admit browser values"
+    }
   }
 }

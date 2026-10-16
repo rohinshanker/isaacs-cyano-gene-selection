@@ -27,6 +27,7 @@ BAITS = ("RpaA", "CikB", "NblS", "ManS")
 REPLICATES = ("A", "B", "C")
 DETECTION_STATES = ("both", "bait_only", "control_only", "neither", "invalid")
 EVIDENCE_STATES = ("missing", "zero", "positive", "invalid")
+REPORTED_UNIQUE_PEPTIDE_MINIMUM = 2
 ABS_TOLERANCE = 1e-7
 
 
@@ -166,6 +167,12 @@ def _identification_evidence(
                 for name, field in (("unique_peptides", unique), ("sequence_coverage", coverage)):
                     if field["status"] != "positive":
                         flags.append(f"positive_lfq_with_{field['status']}_{name}")
+            if (unique["value"] is not None
+                    and unique["value"] < REPORTED_UNIQUE_PEPTIDE_MINIMUM):
+                flags.append("below_reported_unique_peptide_minimum")
+            # The source requires both peptide and spectral-count evidence. The
+            # workbook supplies no spectral counts, including for peptide>=2.
+            flags.append("spectral_counts_not_supplied")
             samples.append({
                 "sheet": sheet, "sample": f"{label} {rep}", "arm": arm, "replicate": rep,
                 "intensityCell": intensity["cell"], "positiveLfq": positive_lfq,
@@ -199,10 +206,18 @@ def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[
                 "sequenceCoveragePercent": "Finite source percent in [0, 100]; booleans excluded",
                 "states": "Missing, valid zero, positive, or invalid; formula caches are not recalculated",
                 "boundary": (
-                    "Descriptive evidence only; no identification success, peptide threshold, "
-                    "per-row q-value or interaction call is inferred. LFQ ratio counts are not "
-                    "unique-peptide counts."
+                    "Descriptive evidence only; no identification success, per-row q-value "
+                    "or interaction call is inferred. The published peptide minimum is "
+                    "flagged, not applied as a filter. LFQ ratio counts are not unique-peptide counts."
                 ),
+                "reportedCriteria": {
+                    "minimumUniquePeptides": REPORTED_UNIQUE_PEPTIDE_MINIMUM,
+                    "minimumSpectralCounts": 2,
+                    "source": "1-s2.0-S1096717623001490-mmc7.docx",
+                    "where": "Supplementary Methods: LC–MS/MS data analysis, second paragraph",
+                    "sha256": "37ac6ae40be4da21a1b14de840195af6ef43c20caf6ce8b924fac85534be7475",
+                    "spectralCounts": "Not supplied by the workbook; complete criterion unverifiable",
+                },
             },
         },
         "sheets": [],
