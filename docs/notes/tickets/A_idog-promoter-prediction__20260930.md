@@ -1,17 +1,24 @@
-# O_idog-promoter-prediction__20260930 — Open
+# A_idog-promoter-prediction__20260930 — Active
 
 - **Scope:** Investigate building a new promoter-location predictor around iDOG
   for native UTEX 2973 sequence, with exploratory predictions and explicit
   code/model, evaluation and coordinate requirements for viewer integration.
-- **Status:** open
+- **Status:** active
 - **Opened:** 2026-09-30
-- **Updated:** 2026-10-14
+- **Updated:** 2026-10-15
 - **Requested future models:** Mythos 5.1 / Fable 5.1. Reserved for future assessment;
   neither availability nor a provider/transport identifier is assumed. Confirm
   routing under the current agent policy when needed; these are not verified
   runtime identifiers or a requirement to wait for an unavailable model.
 
 ## Current State
+
+Owned by **cyano-regulatory-sites**, 2026-10-15, in the isolated
+`work/idog-feasibility-20261015` worktree. Complete the authorized new-locator
+feasibility investigation: exact code gaps and necessity, source-pinned runtime
+assessment, data requirements, and a concrete implementation/evaluation proposal.
+No promoter predictions are admitted by this assessment.
+
 
 Owner direction, 2026-10-14 (R1): the goal is **promoter-location prediction**,
 not promoter design, and implementation is authorized. The owner explicitly
