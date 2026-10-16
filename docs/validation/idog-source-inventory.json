@@ -1,0 +1,226 @@
+{
+  "repository": "https://github.com/jayman1466/iDOG",
+  "commit": "9d71187f0b2eb27ee681918927e12850470a0688",
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 134,
+      "sha256": "bdc950f5bd92dc079d32135162a539b35c6b5eb9d5cf107b55ea0f60ae5511eb"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1067,
+      "sha256": "85e80ab312d3bd0d8eef956d8dff361db48ca0ce178b3ff9257adc286d1a200f"
+    },
+    {
+      "path": "NuPoP_Rscript.R",
+      "bytes": 651,
+      "sha256": "8d4420cdd917cda4231ac2e6a4a4ce48f6c07e9d9af14771db124d310a2dd1d2"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2834,
+      "sha256": "f38ab3f7e4b9f75627adb9dae8464f2dc46a19ef3d66690639fe4380042ad554"
+    },
+    {
+      "path": "RNAfold_wrapper.py",
+      "bytes": 7595,
+      "sha256": "baa9e3ac9508ac0808d772f19b30fecc4262625ad280e70a06ad91df7086f7eb"
+    },
+    {
+      "path": "__pycache__/RNAfold_wrapper.cpython-37.pyc",
+      "bytes": 5129,
+      "sha256": "3037f5a1734d6375212ee6ceaf37926607095fb677ff4e3de3e436363383a762"
+    },
+    {
+      "path": "__pycache__/codon_opt.cpython-37.pyc",
+      "bytes": 1486,
+      "sha256": "ffa59bea9e6f65d2be6a8baa818cdbe83a35a84891c0e9e5574d4d0f78915375"
+    },
+    {
+      "path": "__pycache__/config.cpython-37.pyc",
+      "bytes": 688,
+      "sha256": "d1181e34895222d15a32119142a047b357a4a8320d766256ec1a36ee1e62184b"
+    },
+    {
+      "path": "__pycache__/countwords.cpython-37.pyc",
+      "bytes": 404,
+      "sha256": "35da72d12fc645e6c781d6e78142b306427319284edeb2c0c5b42902117f9ead"
+    },
+    {
+      "path": "__pycache__/create_RBS.cpython-37.pyc",
+      "bytes": 1302,
+      "sha256": "6f7ab3eac76c1f71afcd328f4d9504638272eafed486dd55de21464baee9906c"
+    },
+    {
+      "path": "__pycache__/create_RBS_web.cpython-37.pyc",
+      "bytes": 1785,
+      "sha256": "6e6b398d8ee1ff7d157347c8e1e5a0f6e0d29ad8812b9e2484c1a708e40d2fdd"
+    },
+    {
+      "path": "__pycache__/create_RBS_webwrapper.cpython-37.pyc",
+      "bytes": 1207,
+      "sha256": "93557eb5104a3b761c7ab8594b0dd7ca162aa949d66e8ae3697aa0f839c54a17"
+    },
+    {
+      "path": "__pycache__/dG_tot_calc.cpython-37.pyc",
+      "bytes": 6932,
+      "sha256": "cd212d65123442b7dfc572cab0e2e4e7862b78816b6167a14e2c167c1d9d5118"
+    },
+    {
+      "path": "__pycache__/detailed_output.cpython-37.pyc",
+      "bytes": 5320,
+      "sha256": "8e269c78825dff788f00f67a7cca61928f1f611b1df8ebd981af654eb167dd89"
+    },
+    {
+      "path": "__pycache__/dnaplotlib.cpython-37.pyc",
+      "bytes": 58812,
+      "sha256": "c004b56f7964baddbf4cfda476865ac1cc84da64fc81d13bed8075e1ea2c1fb0"
+    },
+    {
+      "path": "__pycache__/hello.cpython-37.pyc",
+      "bytes": 12374,
+      "sha256": "4d8f70759d095d75c14bd3759e7e835149fb63022cb49a9a8b02a70b7e7faa2e"
+    },
+    {
+      "path": "__pycache__/models.cpython-37.pyc",
+      "bytes": 2704,
+      "sha256": "df30e5815f9d8ee4cc754e20739d6286a0954b759cab532f90f4d8108e0e43fe"
+    },
+    {
+      "path": "__pycache__/operon_design.cpython-37.pyc",
+      "bytes": 4624,
+      "sha256": "d3e0c56def633d6b8f8500496e3d72436c3712492bd93e669677ed2e79ebe3dd"
+    },
+    {
+      "path": "__pycache__/orf_recode.cpython-37.pyc",
+      "bytes": 1263,
+      "sha256": "8cde00a8707bfd29ca876d8171b827e7adb7e83d3a40578e75fd3bce508c9c51"
+    },
+    {
+      "path": "__pycache__/plot_operon.cpython-37.pyc",
+      "bytes": 3639,
+      "sha256": "aabfcdb349a4430d5bb7edef742d92f4cb97a000d59b09121aa70dc642444903"
+    },
+    {
+      "path": "__pycache__/refactor_pipeline.cpython-37.pyc",
+      "bytes": 1512,
+      "sha256": "36f698401a251df6d9e08f1933273086bf3c42177031ce23b5b519a59519fedb"
+    },
+    {
+      "path": "__pycache__/refactor_pipeline_web.cpython-37.pyc",
+      "bytes": 1566,
+      "sha256": "947ca29367188f1be9644a342f7b83ed008ae935d6ada7bdf979a613719cba52"
+    },
+    {
+      "path": "__pycache__/transterm_wrapper.cpython-37.pyc",
+      "bytes": 977,
+      "sha256": "73fb2fe15d66f1c9ff33043ad56d8aee1acc20886c4872ce0f2d3812a575b347"
+    },
+    {
+      "path": "__pycache__/web_codon_opt.cpython-37.pyc",
+      "bytes": 1068,
+      "sha256": "415613838ff715504932ff347e62a7dc8580e9890acdc25a85d5750f6fed5e34"
+    },
+    {
+      "path": "__pycache__/web_create_RBS.cpython-37.pyc",
+      "bytes": 1121,
+      "sha256": "50e0187727dc6b6773ade7f003ce4e92c02a5a8764475e3d4d6c49c26deba981"
+    },
+    {
+      "path": "__pycache__/web_operon_design.cpython-37.pyc",
+      "bytes": 4637,
+      "sha256": "4076acede1998989e0f2bfc4806502ec95d38a1865ec71bb93d68539a1b3557b"
+    },
+    {
+      "path": "codon_opt.py",
+      "bytes": 2529,
+      "sha256": "4bcb9bdf74c0601f1fad498af38491abb4502b6d7a5f6c0f9a1b4f5c797ae16f"
+    },
+    {
+      "path": "codon_tables/bacillus_subtilis.csv",
+      "bytes": 880,
+      "sha256": "f9a60490c9b67c2ba8b20177369bf0030e39e5e1b0513001e51fa77baa89ad96"
+    },
+    {
+      "path": "codon_tables/escherichia_coli.csv",
+      "bytes": 878,
+      "sha256": "2bcdeafefee6dbcade40aa326b43909d3ccf49665fd63b5e60fef3161bf79a02"
+    },
+    {
+      "path": "codon_tables/saccharomyces_cerevisiae.csv",
+      "bytes": 893,
+      "sha256": "490d77119347b87dfb65951028cbcba3dd109b4560590bbd3da0c5810d95d4d8"
+    },
+    {
+      "path": "create_RBS.py",
+      "bytes": 2127,
+      "sha256": "f70504e64f62e12cbc98b8fd74402ef438e5bb9be82b973c6887f2e9ba1a133e"
+    },
+    {
+      "path": "dG_tot_calc.py",
+      "bytes": 18208,
+      "sha256": "9bcb8c9e3976eedf32b4c2b8d5aebbd1891b938665eff329257a5cf36646e222"
+    },
+    {
+      "path": "detailed_output.py",
+      "bytes": 9823,
+      "sha256": "ee16135411eb75b0f1a88b5b109ae787fb59a383303ef3c06d48a721116506ef"
+    },
+    {
+      "path": "dnaplotlib.py",
+      "bytes": 124658,
+      "sha256": "fd5a194d82c33a9aa072816257ba202afdc10fb27725b254ef3b526cc56323d5"
+    },
+    {
+      "path": "orf_recode.py",
+      "bytes": 1537,
+      "sha256": "e6f98c384b56c84f3dd1e849fd3e2e1cf3fa907877cee549335f8df0a4ee535e"
+    },
+    {
+      "path": "plot_operon.py",
+      "bytes": 4193,
+      "sha256": "f547e5217c9ffab52ca60608891b1b971d7a3075c4749de3554803ecaffbdb7f"
+    },
+    {
+      "path": "relplot.pl",
+      "bytes": 6339,
+      "sha256": "8e2b31b64f89b6645471c3d370e0f98882359e7ff24929fe60b173902f6685b9"
+    },
+    {
+      "path": "transterm",
+      "bytes": 3474135,
+      "sha256": "70ace6a87aac5d1def83ea8a94479a9aee8d9f4083f3c81e8611f42127aa20cc"
+    },
+    {
+      "path": "transterm_wrapper.py",
+      "bytes": 4030,
+      "sha256": "d64177bfbab2ec8a03a6ff8fa3eb5dd281c8f148d349c08a1cf3d435e3a76cde"
+    },
+    {
+      "path": "transtermhp/expterm.dat",
+      "bytes": 45788,
+      "sha256": "fce89a92ab487aaea5a54015e859e1fb5e31f4f9985c9df7831ee09a367db1fe"
+    },
+    {
+      "path": "yeast_elements/.~lock.promoters.csv#",
+      "bytes": 82,
+      "sha256": "2a09fd8331c1c89675d94033b5a88e2b49ca972ff0c4180645688194f2711828"
+    },
+    {
+      "path": "yeast_elements/.~lock.terminators.csv#",
+      "bytes": 82,
+      "sha256": "422ba7fd0d0f2f1b03c872dd4f3e81abf1fe8a536b363d8faa4846547b861ca5"
+    },
+    {
+      "path": "yeast_elements/promoters.csv",
+      "bytes": 9019,
+      "sha256": "0e75223494bc452ade4ceaba56f2fe8d15bd1b16e00be0386c64e9ddbe6336b8"
+    },
+    {
+      "path": "yeast_elements/terminators.csv",
+      "bytes": 1505,
+      "sha256": "dabe4ae609617ac4b8ddf458b5aa4b3e0ee456c8efa2a67efa17f249ed448121"
+    }
+  ]
+}
