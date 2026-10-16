@@ -63,8 +63,8 @@ renders; measure them when implementing.
    buttons as the scroll cue.
    - Pros: always 1 row at every width; smallest change; DOM order, `p` tokens,
      roving tabindex and arrow keys stay as they are.
-   - Cons: tabs off-screen are undiscoverable, which is the opposite of the
-     "discoverability" requirement on a 12-tab set; horizontal scrolling inside a
+   - Cons: off-screen tabs are less discoverable on a 12-tab set and need
+     clear navigation cues; horizontal scrolling inside a
      page that forbids horizontal document scroll needs care; weak on mouse
      without a scroll cue.
 2. **Map-space selector plus short view tabs.** The six scatter projections
@@ -73,7 +73,7 @@ renders; measure them when implementing.
    "Map space" select or menu button that sets the existing `p` ids, beside tabs
    for the remaining views: Chromosome/Gene, tRNA, Lengths, Regulatory sites,
    Strain fitness, Citations & sources, with shortened labels.
-   - Pros: removes most of the width pressure without hiding a view; projection
+   - Pros: removes most of the width pressure while retaining all views; projection
      ids and links stay as they are; likely 1–2 rows at 768 and 1280 and about 3
      at 375 (from 7–8); matches how the views are actually related.
    - Cons: a projection takes two clicks instead of one; tab and select need one
@@ -89,14 +89,15 @@ renders; measure them when implementing.
      adds an ARIA menu/disclosure and focus-return surface.
 4. **Two-level groups.** A short row of group tabs (for example Map spaces,
    Genome views, Evidence) with a second row of that group's tabs only.
-   - Pros: at most 2 rows at every width; scales when more views are added.
-   - Cons: always at least 2 rows on desktop, so it may not beat today's 3;
+   - Pros: targets 2 rows; scales when more views are added. Narrow screens
+     still need a bounded/scrollable subrow to avoid wrapping further.
+   - Cons: uses 2 rows even where a single-row option would fit;
      two-level tab semantics and arrow-key behaviour are harder to make
      accessible; more clicks to reach any view.
 
 **Provisional recommendation:** option 2, using option 1's scroll fallback only
-below the width where the remaining tabs still wrap. It cuts rows without hiding
-any view and keeps the `p` registry intact. This is the proposer's view for the
+below the width where the remaining tabs still wrap. It reduces the visible tab count, retains every view and keeps the `p`
+registry intact; projection choices move inside the labelled selector. This is the proposer's view for the
 owner to review, not a decision.
 
 ### Design choices to review when implementation begins
