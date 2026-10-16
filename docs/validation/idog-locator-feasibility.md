@@ -63,6 +63,13 @@ locate promoters. The RBS thermodynamic source is present. The private `DNAc`
 dependency of the separate Salis RBS Calculator v2.1.1 harness is not an iDOG
 promoter-locator dependency.
 
+[`create_RBS.py:13`](https://github.com/jayman1466/iDOG/blob/9d71187f0b2eb27ee681918927e12850470a0688/create_RBS.py#L13)
+defaults `rRNA_sequence` to `ACCUCCUUA`. That default is not a derived UTEX
+host parameter. The project's [annotated 16S-end derivation](annotation-release-readiness.md#deriving-annotated-16s-rrna-3-termini)
+reports `ACCUCCUUU` at both UTEX annotated boundaries; it does not establish the
+processed, functionally validated anti-Shine-Dalgarno sequence or choose either
+value for a new model run.
+
 ## Asset and runtime boundaries
 
 The 48-row `yeast_elements/promoters.csv` stores named designed parts, strengths,

@@ -4,8 +4,8 @@ The owner-selected methods are RBS Calculator, iDOG/standalone TransTermHP,
 Promoter Calculator, ViennaRNA, STREME, Rfam/Infernal and IntaRNA. FIMO and other
 methods appearing in candidate literature are not implicitly selected. The
 [method contracts](regulatory-methods.md) distinguish runtime results from
-biological evidence and browser admission. RBS access and the newly authorized
-iDOG development remain distinct. The [iDOG feasibility contract](idog-locator-feasibility.md)
+biological evidence and browser admission. RBS access remains in its own ticket.
+The [iDOG feasibility contract](idog-locator-feasibility.md)
 records the completed code audit and the separate native-locator proposal.
 
 Cross-organism transfer supplies exploratory candidates, not established UTEX
