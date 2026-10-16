@@ -120,6 +120,8 @@ single-source reading are different inputs even when their displayed values
 happen to match. Preserve the distinction between zero and missing values.
 Keep constraints whose source becomes unavailable inspectable with their
 blocked reason; do not silently erase them from the configuration.
+The constraint editor must identify an empty type selection as **No dataset
+selected**; absent provenance does not make it a borrowed-organism measurement.
 
 The manifest's `panelDesign.sourceSelection` records this description.
 `designSourceStateId` links every CSV row to it, and `designMetricSources`
