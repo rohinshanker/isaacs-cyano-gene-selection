@@ -540,7 +540,10 @@ test('the range editor says a deselected type has no dataset, and keeps native a
     // Switching borrowed expression on and off keeps the retained constraint.
     const toggle = findById(designer.form, 'panel-allow-borrowed');
     toggle.checked = true; toggle.dispatch('change');
-    toggle.checked = false; findById(designer.form, 'panel-allow-borrowed').dispatch('change');
+    assert.equal(designer.config.allowBorrowedExpression, true);
+    const updatedToggle = findById(designer.form, 'panel-allow-borrowed');
+    updatedToggle.checked = false; updatedToggle.dispatch('change');
+    assert.equal(designer.config.allowBorrowedExpression, false);
     assert.ok(Object.hasOwn(designer.config.ranges, w.initiation), 'the constraint is not silently dropped');
 
     // Borrowed: reading D, measured elsewhere, is labelled borrowed.
