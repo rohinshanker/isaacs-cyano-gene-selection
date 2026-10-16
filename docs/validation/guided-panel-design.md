@@ -84,11 +84,13 @@ schemes cannot retarget a selection; deleting the saved scheme clears it. Two
 differently named saved schemes remain independently selectable even when their
 maps match, while computation and export still deduplicate equivalent maps.
 
-A generated result is tied to the canonical configuration and scheme identities
-that produced it. If size, ranges, flags, seeds/exclusions, borrowed-expression
-policy, or selected schemes change, the existing result and its export remain
-internally reproducible but show **Settings changed** until **Regenerate panel**
-is selected. Never silently relabel an old result as if it used new controls.
+A generated result is tied to the canonical configuration, scheme identities,
+and source evidence that produced it. If size, ranges, flags, seeds/exclusions,
+borrowed-expression policy, selected schemes, or a deciding metric's sources or
+values change, the existing result and its export retain their captured inputs
+and show **Settings changed** until **Regenerate panel** is selected. Unrelated
+visual choices do not change the design. Never silently relabel an old result
+as if it used new controls.
 The complete result region is not live: the page announcer reports one concise
 design outcome, while only the stale notice and infeasible alert keep their own
 targeted status semantics.
@@ -102,6 +104,34 @@ constraints, missing-data policy, exact features, per-gene explanations,
 coverage before/after, and the gene-by-scheme values. CSV remains one row per
 gene and scheme. Import must reject an unknown panel-design version and rebuild
 the identical panel from a valid manifest.
+
+### Captured data sources
+
+Data-type readers normally follow the live Data Sources selection. Panel
+generation captures their values and definitions so later selection changes
+cannot change an existing result or its CSV. Capture the sources alongside
+the chosen genes; recording source IDs only at download time is insufficient.
+
+The source description records the selected dataset IDs, named type overrides,
+and each deciding metric's actual contributors, reading mode, units, source
+identity, finite/missing counts and value digest. A pooled reading and a
+single-source reading are different inputs even when their displayed values
+happen to match. Preserve the distinction between zero and missing values.
+Keep constraints whose source becomes unavailable inspectable with their
+blocked reason; do not silently erase them from the configuration.
+
+The manifest's `panelDesign.sourceSelection` records this description.
+`designSourceStateId` links every CSV row to it, and `designMetricSources`
+names the datasets used by source-dependent deciding metrics in the CSV itself.
+`readPanelDesign()` returns the captured source description so reconstruction
+can restore the selection and verify its inputs before comparing chosen genes.
+For older manifests without this field, `sources` is `null`: the original
+selection was not recorded and must never be inferred from current UI state.
+
+Neighboring TSS counts and per-scheme TSS edit evidence follow the captured
+evidence state. Export a count when that evidence was evaluated, including a
+true zero, and a blank when it was unavailable. Changing the current Tan
+selection must not rewrite the evidence in an existing panel export.
 
 ## Golden validation
 
@@ -118,3 +148,10 @@ Run `node --test tests/js/panel-*.test.mjs`; the selection cases are in
 result, manual-edit, reordered and duplicate-map saved-scheme, multi-scheme,
 stale-result notice, expanded-help, and export states at the
 responsive-workspace viewports.
+
+For source-state regressions, generate a panel with a native initiation range
+and **Require a value**, then deselect its Tan condition under **Data Sources**.
+The old result must be marked stale; its export must still identify and read
+the captured condition. Regeneration must use the new selection and disclose
+any blocked constraint. Also exercise pooled versus individual sources, values
+arriving after generation, missing-value rules, and unrelated visual toggles.
