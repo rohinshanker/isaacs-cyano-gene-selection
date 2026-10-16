@@ -27,6 +27,7 @@ finding is reverted rather than argued about.
 | [A_raw-read-pilot-execution__20261007](A_raw-read-pilot-execution__20261007.md) | Active non-release execution of the pinned GSE122841 four-library raw-read pilot; preparation and eight-file input verification are complete, but full pipeline outputs remain in progress |
 | [O_data-sources-selection__20261005](O_data-sources-selection__20261005.md) | Existing selection/agreement UI shipped; PXD036717 reader/reconstruction and exact gene mapping complete; detection presentation and browser admission open; PXD044412 interaction reader/aggregation remain |
 | [O_ui-clutter-human-audit__20261005](O_ui-clutter-human-audit__20261005.md) | Prepared 20 renders/text inventory; owner will enter keep/move/merge/remove marks on this ticket itself; leave open and hold implementation |
+| [O_tab-navigation-layout__20261016](O_tab-navigation-layout__20261016.md) | Owner asked for fewer rows of view tabs with every view kept; 4 options and a provisional recommendation (map-space selector plus short tabs) await owner review when work starts; nothing implemented or scheduled |
 
 ## Pending Claude Science
 
