@@ -44,6 +44,15 @@ available. That exclusion does not repair the existing data-type metric path.
 
 ## Verification
 
+Baseline `9393dd5` reproduced in the real UI at localhost:8741: add a native
+initiation range (minimum 1, require value), design eight genes, then deselect
+Tan control. The same result remained with no stale warning; explicit
+regeneration selected different genes. Implementation is assigned to the sole
+writer in `../worktrees/panel-source-state-impl-20261015`; coordinator owns
+integration, full gates and closure. Existing result/evidence must remain
+captured until explicit regeneration.
+
+
 DEM-425 read-only review of `f894e1a`, 2026-10-15: `type-metrics.js` supplies
 selection-dependent readers; `panel-designer.js` hashes only config/schemes;
 `panel-export.js` supplies no data-source selection to `buildExport`.
