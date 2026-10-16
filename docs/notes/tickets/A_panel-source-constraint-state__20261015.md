@@ -1,13 +1,19 @@
-# O_panel-source-constraint-state__20261015 — Open
+# A_panel-source-constraint-state__20261015 — Active
 
 Scope: Bind panel-design constraints and exported provenance to the data-source selection used to evaluate them.
-Status: open
+Status: active
 Opened: 2026-10-15
 Updated: 2026-10-15
 
 ## Current State
 
-Unclaimed. DEM-425 identified a pre-existing panel-state issue while reviewing
+Owner: cyano-lit-unreach (80c81443-1791314087). Isolated coordinator worktree
+`../worktrees/panel-source-state-20261015`, branch
+`work/panel-source-state-20261015`, baseline `c74b0ffd`. Preserve the active
+unknown-function session's work; its only current panel-designer edit is a
+function-status import, which must survive integration.
+
+DEM-425 identified a pre-existing panel-state issue while reviewing
 TSS integration: type metrics read the current Data Sources selection, but
 `panelInputKey(config, schemes)` records only panel configuration and schemes.
 A source change can therefore change a constraint's values or missingness
