@@ -13,6 +13,37 @@
 
 ## Current State
 
+The code-grounded feasibility assessment is complete and awaiting independent
+review before closure. [The durable contract](../../validation/idog-locator-feasibility.md)
+records every missing module's decoded role, source inventory, runtime/licence
+boundaries, mandatory/optional data requirements and a concrete native-scanning,
+paired-recoding and evaluation proposal. All 44 tracked paths, nine source
+modules and 21 bytecode modules at the pinned public commit were inspected;
+no iDOG code was executed. The exact recipe verifies every file hash and
+reproduces disassembly with isolated xdis 6.3.0.
+
+This completes investigation, not a prediction-layer release. New-promoter
+calculation and display remain explicitly in
+[the regulatory-site changes ticket](O_recoding-regulatory-site-change__20260930.md).
+There is no owner decision needed to establish missing-code necessity: none of
+the twelve missing design/web sources is a dependency of the proposed separate
+scanner. The existing Promoter Calculator is the recommended separately named
+baseline; iDOG's own design/terminator/RBS parts are not relabelled promoter
+predictions. The old finding of absent capability alone is not this resolution;
+the new data, architecture, evaluation and integration assessment is included.
+
+Findings tracked for this assessment:
+- **IDOG-1:** complete independent bytecode inspection; resolved by the pinned
+  inventory and decoded module roles in the feasibility contract.
+- **IDOG-2:** preserve a concrete new-locator path and evaluation/data limits;
+  resolved by the feasibility contract and explicit continuing recoding scope.
+- **IDOG-REVIEW:** open pending the independent exact-patch review.
+
+Verification: `npm test` 1,668 passed; project venv pytest 2,383 passed,
+16 skipped and 51 subtests; default contract 130 passed, 0 failed, one declared
+contiguity skip. Browser/UI and release payloads are unchanged; no rendered
+feature or biological performance is claimed.
+
 Owned by **cyano-regulatory-sites**, 2026-10-15, in the isolated
 `work/idog-feasibility-20261015` worktree. Complete the authorized new-locator
 feasibility investigation: exact code gaps and necessity, source-pinned runtime

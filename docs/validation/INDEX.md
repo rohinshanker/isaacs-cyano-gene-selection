@@ -4,6 +4,7 @@ Reusable contracts and runbooks for this repository.
 
 | Document | Covers |
 | --- | --- |
+| [idog-locator-feasibility.md](idog-locator-feasibility.md) | Complete pinned iDOG source/bytecode inventory, missing-code necessity, design-versus-location boundary, and a native promoter-locator/evaluation proposal |
 | [pxd036717-enrichment.md](pxd036717-enrichment.md) | Pinned APEX2 supplement preservation, non-imputed LFQ reconstruction, detection states, exact protein-to-gene mapping with group/RefSeq ambiguity preserved, and browser-admission boundary |
 | [geo-array-reader.md](geo-array-reader.md) | Lossless GEO processed-sample reader, pinned SOFT/matrix equality, exact GPL9534 gene mapping, distinct array quantities, source-specific optional summaries and author probe-averaging disclosure |
 | [tss-recoding-edits.md](tss-recoding-edits.md) | Exact active-scheme sequence edits at admitted Tan TSS points, physical-site counts and evaluated denominators, strand/segment mapping, missingness and independent release-data checks |

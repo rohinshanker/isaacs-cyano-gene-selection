@@ -76,7 +76,7 @@ validation or a licence decision:
   boundary, with no processing-site evidence behind it; it is not a validated
   anti-Shine-Dalgarno sequence, and it does not decide what sequence either tool
   should be given. The
-  [iDOG assessment](O_idog-promoter-prediction__20260930.md) records the same
+  [iDOG assessment](../../validation/idog-locator-feasibility.md) records the same
   default for `create_RBS`.
 
 The strain in scope is *Synechococcus* sp. UTEX 2973, RefSeq assembly
@@ -154,7 +154,7 @@ missing outputs explicitly.
 Related: [cross-strain data scan](O_cross-strain-data-scan__20260927.md) and
 [UTEX BioCyc assessment](O_biocyc-ortholog-annotations__20261014.md) may supply particular
 inputs; depend only on identified artifacts and their admission checks. Coordinate
-with [iDOG assessment](O_idog-promoter-prediction__20260930.md) where RBS capability
+with [iDOG assessment](../../validation/idog-locator-feasibility.md) where RBS capability
 or dependencies overlap, without conflating promoter prediction and RBS scoring
 or waiting for the whole iDOG ticket. Validated RBS evidence may later feed
 [regulatory-site recoding comparison](O_recoding-regulatory-site-change__20260930.md).

@@ -15,6 +15,10 @@ defines both strands, exact active-scheme bases, edited/evaluated counts, colori
 interactive filters, both gene viewers and per-scheme exports. It preserves
 original native coordinates and reports no data separately from zero. D1–D4 are
 satisfied for this sequence-overlap calculation at admitted Tan TSS points.
+The [iDOG feasibility assessment](../../validation/idog-locator-feasibility.md)
+now specifies the separate native-scanning, score-selection, paired-recoding and
+evaluation contract. Its recommended baseline is the already selected Promoter
+Calculator under its own name; no new prediction layer was admitted.
 New-promoter predictions and other regulatory-site calculations remain here;
 the implemented count does not infer loss or gain of regulatory function.
 

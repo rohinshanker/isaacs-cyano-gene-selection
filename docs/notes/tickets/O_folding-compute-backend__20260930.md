@@ -71,7 +71,7 @@ Complete).
 **Architecture is a visible constraint before any benchmark runs.** At least one
 tool a sibling ticket depends on ships as an x86-64 Linux binary needing
 recompilation for arm64: the TransTermHP bundled with
-[iDOG](O_idog-promoter-prediction__20260930.md), whose README says so. The
+[iDOG](../../validation/idog-locator-feasibility.md), whose README says so. The
 2026-09-30 return further states that both fallback devices are arm64; that is the
 return's unverified statement — intake could not check it, because this ticket
 records no Mac mini model and the Jetson module page served no CPU text. Determine
