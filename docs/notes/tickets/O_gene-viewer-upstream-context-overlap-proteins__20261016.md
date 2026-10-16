@@ -83,16 +83,19 @@ similar to an overlapping gene.
   (including joined and origin-crossing segments), read in its own strand. A
   reverse-strand neighbour shows reverse-complemented codons in the focal
   gene's left-to-right columns with labels like the OG `3′→5′` convention.
-  Partial codons at the displayed edge are marked partial and show no residue
-  unless the whole codon is in the annotation, which is shown; never guessed.
+  Partial codons at a display edge are marked partial. Derive a residue only
+  from a complete codon available in the annotated CDS sequence; distinguish
+  clipped display bases from genuinely unavailable sequence and never guess.
 - The gene is a flank, not an overlap: a gene that shares bases with the focal
   gene stays an OG partner (no double listing); `overlap-blocked` and
   `OG partners never become separated flanks` still hold.
 - Nonselectable loci are labelled annotated context; selectable ones reuse the
   Pin/open route and focus restoration.
-- The selected upstream extent decides what appears; changing the extent,
-  recoding scheme, filters, or the camera must not recompute neighbour
-  identity (reuse the lazy `flankingNeighbours` result).
+- The selected upstream extent decides which annotation intervals intersect
+  the view. Reuse the native annotation inventory and stable feature IDs; do
+  not limit the view to the single nearest `flankingNeighbours` result if
+  several genes fall inside the displayed context. Recompute visibility when
+  the extent changes, without changing feature identity or source evidence.
 
 ### Requirement 3 — overlapping genes show proteins as well as codons
 
@@ -107,8 +110,9 @@ disclosure.
 - Provenance: show what the active view supports. Native partner bases stay
   native annotation bases; where the focal gene is shown original versus
   recoded, partner translation is labelled with the provenance it was computed
-  from (original reference vs. recoded sequence) and never silently switches. Do
-  not describe donor/recoded-site positions in native coordinates.
+  from (original reference vs. recoded sequence) and never silently switches. Donor
+  evidence stays in its source genome; a length-preserving recoded sequence may
+  use the established native-coordinate alignment with its sequence basis named.
 
 ## Implementation Defaults (not owner-approved)
 
@@ -133,7 +137,7 @@ Proposed so work can start; each is open to the owner:
 - Whether the upstream-neighbour translation should reach the smaller
   visualizer or stay expanded-only (default: expanded plus a name/strand/product
   note in the smaller view; no letters).
-- How recoded (donor) provenance labels partner and neighbour translations when
+- How recoded-sequence provenance labels partner and neighbour translations when
   a scheme changes bases inside a neighbour (default: native original shown,
   recoded translation shown only where the recoded sequence of that locus exists
   and is labelled).
@@ -143,16 +147,16 @@ Proposed so work can start; each is open to the owner:
 Not met; each needs the test or rendered check named.
 
 1. Arrow appears exactly when ≥1 admitted, visible-layer record is
-   `outside-shown-sequence` for the shown extent, points left for both strands,
+   both upstream and `outside-shown-sequence` for the shown extent, points left for both strands,
    states count/source/nearest coordinate, and disappears once the extent
    places every such row; test with plus, minus, origin-crossing, no-context and
    hidden/loading/failed-layer fixtures and an independent oracle over the
    shipped Tan rows.
 2. No arrow or text claims promoter absence; no inferred site exists in
    unit, export or accessibility output.
-3. An annotated gene inside displayed upstream is drawn with strand, product,
+3. Every annotated gene inside displayed upstream is drawn with strand, product,
    coding DNA and aligned translation matching an independent translation of the
-   native annotation (both strands, joined, origin-crossing, partial codons at
+   native annotation (multiple neighbours, both strands, joined, origin-crossing, partial codons at
    the extent edge, pseudogene, noncoding grey with no protein).
 4. No gene is both OG partner and upstream neighbour; neighbour identity is
    stable across extent, scheme, filter and camera changes.
