@@ -129,8 +129,9 @@ pooling their validation populations.
    distribution, pinned model/preparation hashes, parameters and coverage mask.
    Build recoded sequence through the project's existing recoding contract,
    preserving the protected initiation triplet, terminal-stop convention and
-   focal-gene-only edits. Keep neighboring genes' bases unchanged unless an
-   explicitly different multi-gene comparison is selected.
+   focal-gene-only edits. Only coordinates in the focal CDS are edited; a base
+   shared with a neighboring gene necessarily changes at that same coordinate.
+   Do not independently recode the neighboring gene as part of this comparison.
 2. **Coordinates:** score both strands in transcription orientation. Preserve a
    native coordinate for every input base, including circular wrap and split
    intervals. Retain model component intervals separately from the predicted
