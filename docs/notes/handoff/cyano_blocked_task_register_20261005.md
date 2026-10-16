@@ -52,6 +52,13 @@ source uncertainty and separately tracked implementation remain explicit.
 
 ## Access intake dispositions
 
+2026-10-16: the [current access audit](../tickets/O_gated-pages-and-accounts__20261005.md)
+and [source-access contract](../../validation/source-access.md) supersede stale
+login and permission-email requests in the historical rows. The TSV's intake
+columns record each disposition; original observations remain unchanged. BioCyc
+credentials are available, but UTEX/SYNEL entitlement and SYNEL assembly identity
+remain open in the annotation ticket. No new login is currently requested.
+
 The original access rows below remain dated observations. ACC-02 is resolved
 as of 2026-10-15 UTC: the public rendered PRIDE policy and the Markdown it loads
 were read, checksummed and quote-matched without an account or challenge. See

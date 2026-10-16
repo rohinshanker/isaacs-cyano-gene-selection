@@ -1,0 +1,122 @@
+{
+  "checkedOn": "2026-10-16",
+  "rawArtifacts": "Saved outside the repository; no credentials or authenticated content collected.",
+  "sources": [
+    {
+      "name": "biocyc-subscription-terms",
+      "url": "https://biocyc.org/subscription-terms.txt",
+      "finalUrl": "https://biocyc.org/subscription-terms.txt",
+      "httpStatus": 200,
+      "retrievedAt": "2026-10-16T19:38:20.956057+00:00",
+      "sha256": "a8c452ef7a2cf9af8bde9c0261942429d643a70fb2c62a81c74ab95e37782250",
+      "bytes": 16517,
+      "location": "section 3.1(b)",
+      "quote": "Use of the BioCyc Web Services to access BioCyc databases.",
+      "quoteMatched": true,
+      "textNormalization": "collapse whitespace"
+    },
+    {
+      "name": "biocyc-faq",
+      "url": "https://biocyc.org/subscription-faq.shtml",
+      "finalUrl": "https://biocyc.org/subscription-faq.shtml",
+      "httpStatus": 200,
+      "retrievedAt": "2026-10-16T19:38:28.759025+00:00",
+      "sha256": "6126a08c74d73605e88367d8af00fbfcf81f2dc29fdd8624bf2d65239aac2db0",
+      "bytes": 5492,
+      "location": "institution subscribes / off-campus access",
+      "quote": "accessing BioCyc through your institution's VPN or proxy server",
+      "quoteMatched": true,
+      "textNormalization": "HTML text excluding script/style; entity decode; collapse whitespace"
+    },
+    {
+      "name": "biocyc-download",
+      "url": "https://biocyc.org/download.shtml",
+      "finalUrl": "https://biocyc.org/download.shtml",
+      "httpStatus": 200,
+      "retrievedAt": "2026-10-16T19:38:29.282466+00:00",
+      "sha256": "ef5c2e69f5381fe4fcd546f9004f495c305351e5e3cc1486532e4a5c1608b8d6",
+      "bytes": 60868,
+      "location": "Programmatic Access to BioCyc Data",
+      "quote": "Access to BioCyc data via APIs requires a",
+      "quoteMatched": true,
+      "textNormalization": "HTML text excluding script/style; entity decode; collapse whitespace"
+    },
+    {
+      "name": "kegg-legal",
+      "url": "https://www.genome.jp/kegg/legal.html",
+      "finalUrl": "https://www.genome.jp/kegg/legal.html",
+      "httpStatus": 200,
+      "retrievedAt": "2026-10-16T19:38:30.292153+00:00",
+      "sha256": "b87105e6251b08a2cd0f0208ee4615d021fe448f4ad46983eb7b576358ddd8e7",
+      "bytes": 2129,
+      "location": "Academic use of KEGG",
+      "quote": "Academic users may freely use the KEGG website",
+      "quoteMatched": true,
+      "textNormalization": "HTML text excluding script/style; entity decode; collapse whitespace"
+    },
+    {
+      "name": "kegg-api",
+      "url": "https://www.kegg.jp/kegg/rest/",
+      "finalUrl": "https://www.kegg.jp/kegg/rest/",
+      "httpStatus": 200,
+      "retrievedAt": "2026-10-16T19:38:31.666684+00:00",
+      "sha256": "abd6ea94f118d25d01e40daa222b6e344b86c1c4ea08f46fe7e716d86f6ae635",
+      "bytes": 9713,
+      "location": "KEGG API / restriction",
+      "quote": "KEGG API at rest.kegg.jp is made available only for academic use by academic users.",
+      "quoteMatched": true,
+      "textNormalization": "HTML text excluding script/style; entity decode; collapse whitespace"
+    },
+    {
+      "name": "geo-disclaimer",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html",
+      "finalUrl": "https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html",
+      "httpStatus": 200,
+      "retrievedAt": "2026-10-16T19:38:31.803355+00:00",
+      "sha256": "64e4ffbb72b6b1528eef8856c5a4c9f21ff2518adff394ff3fb4ea28fc56f006",
+      "bytes": 21318,
+      "location": "served challenge title",
+      "quote": "Checking your browser",
+      "quoteMatched": true,
+      "textNormalization": "HTML text excluding script/style; entity decode; collapse whitespace"
+    },
+    {
+      "name": "geo-faq",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/info/faq.html",
+      "finalUrl": "https://www.ncbi.nlm.nih.gov/geo/info/faq.html",
+      "httpStatus": 200,
+      "retrievedAt": "2026-10-16T19:38:31.920582+00:00",
+      "sha256": "139205c8a91e2276f33d03a1931f5673193e7cafc19ce51a244d7a217b793d99",
+      "bytes": 21298,
+      "location": "served challenge title",
+      "quote": "Checking your browser",
+      "quoteMatched": true,
+      "textNormalization": "HTML text excluding script/style; entity decode; collapse whitespace"
+    },
+    {
+      "name": "nupack-start",
+      "url": "https://docs.nupack.org/start/",
+      "finalUrl": "https://docs.nupack.org/start/",
+      "httpStatus": 200,
+      "retrievedAt": "2026-10-16T19:38:32.030936+00:00",
+      "sha256": "27b1b186a9ed07af74e39f0c01531be0c3298d3abcf123a816b588073a5999b7",
+      "bytes": 24522,
+      "location": "macOS/Linux installation step 3",
+      "quote": "After agreeing to the NUPACK license",
+      "quoteMatched": true,
+      "textNormalization": "HTML text excluding script/style; entity decode; collapse whitespace"
+    },
+    {
+      "name": "nupack-license",
+      "url": "https://www.nupack.org/download/license",
+      "method": "rendered document.body.innerText; no login or acceptance",
+      "retrievedAt": "2026-10-16T19:40:18.754455+00:00",
+      "sha256": "bf4b125a9607730b1e1867ce8866b693d6db56a02393f2592d6a7ecb604c1e41",
+      "bytes": 2308,
+      "location": "above agreement",
+      "quote": "Please log in and activate your subscription to accept the Software License Agreement.",
+      "quoteMatched": true,
+      "textNormalization": "collapse whitespace"
+    }
+  ]
+}

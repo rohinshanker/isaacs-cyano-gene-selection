@@ -4,6 +4,7 @@ Reusable contracts and runbooks for this repository.
 
 | Document | Covers |
 | --- | --- |
+| [source-access.md](source-access.md) | Current public source routes, BioCyc Keychain/service versus download entitlement, calculator-account limits, nonblocking GEO challenges and dated quote/hash receipts |
 | [idog-locator-feasibility.md](idog-locator-feasibility.md) | Complete pinned iDOG source/bytecode inventory, missing-code necessity, design-versus-location boundary, and a native promoter-locator/evaluation proposal |
 | [pxd036717-enrichment.md](pxd036717-enrichment.md) | Pinned APEX2 supplement preservation, non-imputed LFQ reconstruction, detection states, exact protein-to-gene mapping with group/RefSeq ambiguity preserved, and browser-admission boundary |
 | [geo-array-reader.md](geo-array-reader.md) | Lossless GEO processed-sample reader, pinned SOFT/matrix equality, exact GPL9534 gene mapping, distinct array quantities, source-specific optional summaries and author probe-averaging disclosure |

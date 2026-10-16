@@ -59,6 +59,13 @@ probes run from a session with this repository mounted:
   `account-required.shtml` (HTTP 200), while `biocyc-pgdb-list.shtml` and
   `download.shtml` stayed readable. A probe must check for that redirect as well
   as for the *E. coli* fallback, and no agent creates an account to get past it.
+  **Access update, 2026-10-16:** the owner already has a BioCyc account with Yale
+  access and authorizes its Keychain credential for documented web services.
+  Reuse the active retrieval owner's route and completed artifacts; target-specific
+  UTEX/SYNEL entitlement and assembly checks still need verification. The
+  [source-access contract](source-access.md#biocyc) supersedes the old assumption
+  that an owner-present browser is the only authorized route. It also records
+  freshly matched public BioCyc/KEGG terms and their distinct download boundaries.
 - **`journals.asm.org` returns 403 from ASM itself**, not from the allowlist, and
   that is left alone: no User-Agent spoofing, no mirror, no archive proxy. It is not
   needed, see the next bullet.

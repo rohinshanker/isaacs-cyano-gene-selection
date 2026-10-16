@@ -199,8 +199,9 @@ that the attribution is right and the history is visible; the admission contract
 what is shown. Everything the earlier rules kept back is queued for ingestion in
 [proteomics-deposit-readers.md](proteomics-deposit-readers.md).
 Two matters are access terms, not distribution, and are unchanged: BioCyc's and
-KEGG's own terms govern how their pages and APIs are read (the owner signs in to
-BioCyc in person), and SRI's open-database terms ask for the attribution
+KEGG's own terms govern how their pages and APIs are read (the owner's
+2026-10-16 BioCyc Keychain/web-service authorization is recorded in
+[source-access.md](source-access.md#biocyc)), and SRI's open-database terms ask for the attribution
 statement and notification recorded in the E. coli ticket.
 
 The rules the evidence-based decisions followed until 2026-10-06, kept for the
