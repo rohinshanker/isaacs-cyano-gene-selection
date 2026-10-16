@@ -1,7 +1,7 @@
 # CAI reference-set selection and semantic audit
 
-The published CAI values use a fixed 71-locus reference set selected from the
-current 2,715-gene release. This is a reproducible codon-usage convention, not a
+The published UTEX 2973 CAI values use a fixed 71-locus reference set selected
+from its 2,715-gene release. MG1655 uses the separate 81-locus set below. This is a reproducible codon-usage convention, not a
 measurement or proof of high expression.
 
 ## Deterministic selection contract
@@ -53,13 +53,12 @@ The rule yields these 81 exact members:
 `b4143/groL`, `b4147/efp`, `b4200/rpsF`, `b4202/rpsR`, `b4203/rplI`,
 and `b4375/prfC`.
 
-Membership is rule-derived, not hand-edited. Three biological-policy questions
-remain open for the lab: whether programmed-frameshift release factor `prfB`
-belongs in a high-expression reference; whether the zinc-independent paralogues
-`ykgM` and `ykgO` should remain despite their condition dependence; and whether
-EF-P (`efp`) should remain under the rule's translation-elongation wording. This
-release includes all four loci because the stated rule includes them; that is not
-a lab decision that they are ideal references.
+Membership is rule-derived, not hand-edited. The owner-directed
+[primary-source review](ecoli-cai-reference-evidence.md) distinguishes `prfB`'s
+frameshift from expression, `ykgM`/`ykgO`'s zinc-dependent regulation, and EF-P's
+specialized translation function. None alone settles ideal reference membership.
+All four remain included under the owner's retain-membership instruction; any
+new biological reference policy remains a separate lab decision.
 
 ## TypeSafe/Jev audit
 
@@ -132,7 +131,9 @@ an explicitly annotated ribosomal protein.
 
 ## Release decision
 
-Keep the 71-locus set unchanged for this release. Automatic membership changes
+Keep the UTEX 71-locus set unchanged for this release. The owner also directed
+that the MG1655 81-locus membership remain unchanged during its evidence review
+(2026-10-14). Automatic membership changes
 are disabled: there is no probability threshold at which Jev output mutates the
 reference set. A `0.8` declared-choice probability and confidence cutoff was used
 only to broaden the human review queue, never to accept a change. Every membership

@@ -3,7 +3,7 @@
 Scope: Add E. coli as a selectable organism in the visualizer.
 Status: active
 Opened: 2026-10-05
-Updated: 2026-10-14
+Updated: 2026-10-16
 
 ## Current State
 
@@ -22,8 +22,12 @@ must be verified before replacing the pinned dataset.
 
 CAI reference membership for `prfB`, `ykgM`, `ykgO`, and `efp` is a separate
 expression/reference-set question. The owner chose **review the evidence and
-retain current membership meanwhile** (2026-10-14). Investigate primary-source
-expression/reference-set support before proposing a membership change.
+retain current membership meanwhile** (2026-10-14). The bounded primary-source
+review is recorded in [the CAI evidence contract](../../validation/ecoli-cai-reference-evidence.md).
+All four remain included. Zinc/Zur regulation warrants a conditional-paralogue
+caveat for `ykgM`/`ykgO`; the frameshift in `prfB` and specialized function of
+EF-P do not alone decide expression-reference membership. A changed biological
+reference policy remains a lab decision; this review changes no weights or CDSs.
 The owner's “keep them separate, but allow for
 pooling” answer was explicitly clarified to mean **microarray measurements**,
 recorded in [the array contract](../../validation/geo-array-reader.md); it is not
@@ -126,10 +130,11 @@ Owner directions and remaining evidence work:
 - **Decided 2026-10-14:** show and flag the three selenoprotein genes (`fdnG`,
   `fdoG`, `fdhF`), retaining explicit recoding restrictions. The shipped dataset
   still excludes them pending implementation.
-- CAI reference set membership under the product-name rule: the frameshifted
-  `prfB`; the zinc-independent ribosomal paralogues `ykgM` and `ykgO`, which are
-  near-silent in rich media; and whether EF-P belongs. **Owner direction
-  2026-10-14:** review the evidence, retaining current membership meanwhile.
+- CAI reference evidence for `prfB`, `ykgM`, `ykgO` and `efp` is documented in
+  [the primary-source review](../../validation/ecoli-cai-reference-evidence.md).
+  The zinc/Zur-regulated paralogues are conditional; universal near-silence in
+  rich media is not established. **Owner direction 2026-10-14 remains:** retain
+  current membership. A replacement reference policy, if desired, is separate.
 - At nine loci with more than one annotated product, the current build keeps the
   longest CDS (for example over the `dnaX` gamma frameshift product or CheA-short).
   **Owner direction 2026-10-14:** review the most recent CDS data and conclusive
