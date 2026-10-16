@@ -88,7 +88,8 @@ A generated result is tied to the canonical configuration, scheme identities,
 and source evidence that produced it. If size, ranges, flags, seeds/exclusions,
 borrowed-expression policy, selected schemes, or a deciding metric's sources or
 values change, the existing result and its export retain their captured inputs
-and show **Settings changed** until **Regenerate panel** is selected. Unrelated
+and show **Settings changed**, **Data sources changed**, or both until
+**Regenerate panel** is selected. Unrelated
 visual choices do not change the design. Never silently relabel an old result
 as if it used new controls.
 The complete result region is not live: the page announcer reports one concise
@@ -98,12 +99,12 @@ targeted status semantics.
 ## Export contract
 
 Panel export extends the existing research manifest with
-`panelDesignVersion: 1`, objective and tie order, dataset/checksum identity,
+`panelDesignVersion: 2`, objective and tie order, dataset/checksum identity,
 selected schemes, size, seeds, include/exclude lists, active and blocked
 constraints, missing-data policy, exact features, per-gene explanations,
 coverage before/after, and the gene-by-scheme values. CSV remains one row per
-gene and scheme. Import must reject an unknown panel-design version and rebuild
-the identical panel from a valid manifest.
+gene and scheme. Import must reject an unknown panel-design version. Restore
+captured sources before rebuilding and comparing a current-version panel.
 
 ### Captured data sources
 
@@ -125,8 +126,10 @@ The manifest's `panelDesign.sourceSelection` records this description.
 names the datasets used by source-dependent deciding metrics in the CSV itself.
 `readPanelDesign()` returns the captured source description so reconstruction
 can restore the selection and verify its inputs before comparing chosen genes.
-For older manifests without this field, `sources` is `null`: the original
+Version 1 manifests return `legacy: true` and `sources: null`: the original
 selection was not recorded and must never be inferred from current UI state.
+A version 2 manifest without captured sources is rejected. Reconstructing a
+legacy panel requires independent knowledge of its original selection.
 
 Neighboring TSS counts and per-scheme TSS edit evidence follow the captured
 evidence state. Export a count when that evidence was evaluated, including a
