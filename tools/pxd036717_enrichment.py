@@ -26,6 +26,7 @@ SOURCE_SHA256 = "287d5f49a71425ba2b085a7070053a34f9f17219833663e1231ea3ab81d8680
 BAITS = ("RpaA", "CikB", "NblS", "ManS")
 REPLICATES = ("A", "B", "C")
 DETECTION_STATES = ("both", "bait_only", "control_only", "neither", "invalid")
+EVIDENCE_STATES = ("missing", "zero", "positive", "invalid")
 ABS_TOLERANCE = 1e-7
 
 
@@ -118,6 +119,61 @@ def _source_cell(cell: Any, cached: Any, coordinate: str) -> dict[str, Any]:
     }
 
 
+def _identification_field(cell: dict[str, Any], *, count: bool) -> dict[str, Any]:
+    """Describe a source count or percent without accepting malformed evidence."""
+    raw = cell["cachedValue"]
+    flags = []
+    if cell["type"] == "f" and raw is None:
+        flags.append("formula_cache_missing")
+    elif cell["cachedType"] == "e":
+        flags.append("formula_cache_error" if cell["type"] == "f" else "source_error")
+    elif raw is None:
+        return {"cell": cell["cell"], "value": None, "status": "missing", "flags": []}
+    elif type(raw) not in (int, float):
+        flags.append("invalid_type")
+    elif not math.isfinite(raw):
+        flags.append("non_finite")
+    else:
+        if raw < 0:
+            flags.append("negative")
+        if count and raw % 1 != 0:
+            flags.append("non_integer")
+        if not count and raw > 100:
+            flags.append("above_100_percent")
+    return {
+        "cell": cell["cell"], "value": None if flags else raw,
+        "status": "invalid" if flags else ("zero" if raw == 0 else "positive"),
+        "flags": flags,
+    }
+
+
+def _identification_evidence(
+    cells: list[dict[str, Any]], bait: str, sheet: str,
+) -> list[dict[str, Any]]:
+    """Keep all six source samples; positive LFQ never supplies identification."""
+    samples = []
+    for i, arm in enumerate(("control", "bait")):
+        label = "control" if arm == "control" else f"{bait}-APEX2"
+        for j, rep in enumerate(REPLICATES):
+            offset = 3 * i + j
+            intensity = cells[2 + offset]
+            unique = _identification_field(cells[17 + offset], count=True)
+            coverage = _identification_field(cells[23 + offset], count=False)
+            raw = intensity["cachedValue"]
+            positive_lfq = _finite_number(raw) and raw > 0
+            flags = []
+            if positive_lfq:
+                for name, field in (("unique_peptides", unique), ("sequence_coverage", coverage)):
+                    if field["status"] != "positive":
+                        flags.append(f"positive_lfq_with_{field['status']}_{name}")
+            samples.append({
+                "sheet": sheet, "sample": f"{label} {rep}", "arm": arm, "replicate": rep,
+                "intensityCell": intensity["cell"], "positiveLfq": positive_lfq,
+                "uniquePeptides": unique, "sequenceCoveragePercent": coverage, "flags": flags,
+            })
+    return samples
+
+
 def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[str, Any]:
     """Read a pinned workbook, retaining every populated data cell and formula.
 
@@ -138,6 +194,16 @@ def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[
             "replicates": "Source column indexing A/A, B/B, C/C; no paired-design inference",
             "mean": "Arithmetic mean of all three reconstructed log2 ratios; null otherwise",
             "comparisonAbsTolerance": ABS_TOLERANCE,
+            "identificationEvidence": {
+                "uniquePeptides": "Finite nonnegative integer source count; booleans excluded",
+                "sequenceCoveragePercent": "Finite source percent in [0, 100]; booleans excluded",
+                "states": "Missing, valid zero, positive, or invalid; formula caches are not recalculated",
+                "boundary": (
+                    "Descriptive evidence only; no identification success, peptide threshold, "
+                    "per-row q-value or interaction call is inferred. LFQ ratio counts are not "
+                    "unique-peptide counts."
+                ),
+            },
         },
         "sheets": [],
     }
@@ -204,6 +270,7 @@ def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[
                 detection_counts.update(c["detectionState"] for c in comparisons)
                 table["rows"].append({
                     "row": number, "accession": identifier, "cells": cells,
+                    "identificationEvidence": _identification_evidence(cells, bait, sheet.title),
                     "comparisons": comparisons,
                     "validReplicates": sum(v is not None for v in ratios),
                     "detectionCounts": dict(detection_counts),
@@ -211,6 +278,7 @@ def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[
                 })
             if not table["rows"]:
                 raise ValueError(f"{sheet.title}: no data rows")
+            samples = [sample for row in table["rows"] for sample in row["identificationEvidence"]]
             table["audit"] = {
                 "rowCount": len(table["rows"]), "validByReplicate": dict(valid_by_replicate),
                 "completeMeans": sum(row["meanLog2Ratio"] is not None for row in table["rows"]),
@@ -225,6 +293,20 @@ def read_workbook(data: bytes, *, expected_sha256: str = SOURCE_SHA256) -> dict[
                 "detectionCounts": {
                     state: sum(row["detectionCounts"][state] for row in table["rows"])
                     for state in DETECTION_STATES
+                },
+                "identificationEvidence": {
+                    "sampleCount": len(samples),
+                    "positiveLfqSamples": sum(sample["positiveLfq"] for sample in samples),
+                    **{
+                        field: {
+                            state: sum(sample[field]["status"] == state for sample in samples)
+                            for state in EVIDENCE_STATES
+                        }
+                        for field in ("uniquePeptides", "sequenceCoveragePercent")
+                    },
+                    "flags": dict(sorted(Counter(
+                        flag for sample in samples for flag in sample["flags"]
+                    ).items())),
                 },
             }
             document["sheets"].append(table)
