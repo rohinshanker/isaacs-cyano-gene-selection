@@ -16,9 +16,22 @@
 Owner decision, 2026-10-14 (D11): retain **PXD036717 proximity-label enrichment
 ratios** and **PXD044412 metabolite–protein interaction measurements** as separate
 evidence types. Neither is protein abundance, and neither is admitted by this
-decision alone. Source-specific readers, identifier/condition checks and the
-PXD044412 peptide-to-protein aggregation contract remain implementation work.
-The owner has settled whether these evidence types are wanted.
+decision alone. The source-specific readers are now implemented; identifier,
+condition and browser-admission checks remain. The owner has settled whether
+these evidence types are wanted.
+
+PXD044412 reader preparation is complete (cyano-regulatory-sites, 2026-10-16):
+[the pinned analyzed-peptide reader](../../validation/pxd044412-peptides.md) uses
+the paper-linked Figshare S3, which already supplies fold changes, adjusted
+p-values and source significance labels. It streams all 391,900 rows across 42
+comparison labels, preserves every source cell, and provides conservative
+source-protein summaries without averaging fold changes. Ambiguous-only groups
+are not evaluated, not negative. This supersedes the assumption that the seven
+PRIDE intensity reports must be the reader input. S3's CC BY 4.0 terms are
+separate from PRIDE's CC0. Remaining PXD044412 admission work: exact source-to-UTEX
+identity validation, comparison/condition metadata, distinct interaction
+presentation, citations and rendered validation. No PXD044412 browser values
+are admitted by this reader.
 
 Owner decisions, 2026-10-15 (D12): PXD036717 browser release requires a
 reconstruction from raw LFQ intensities before admission; expose twelve
@@ -341,7 +354,7 @@ on 2026-10-12. Metadata only; nothing was downloaded.
 | PXD027430 | PCC 7942 | 9 files: three mzIdentML with their MGFs and raws | the same reader, three runs | its condition record, and that this is a TMT study whose reporter-ion quantification is not in the deposit, so counts are the only quantity it can yield. Conditions and the 0 h baseline assignments are open depositor questions, deferred |
 | PXD014590 | **UTEX 2973, native** | 135 files: 27 top-down runs as `.raw`, 27 `.ms1ft` MS1 feature files, 27 search archives and 54 `*_MSAlign_Results_XML.zip` | no protein-level table; an MSAlign result-XML reader would be new | top-down results identify proteoforms, not gene-level amounts. Roadmap item 7 directs a presence overlay first; define/validate that output contract before a layer ships |
 | PXD036717 | PCC 7942 CscB-SPS, engineered | 24 archive files; four APEX2 baits against CscB-SPS. Owner-supplied publisher `mmc1.xlsx` provides LFQ intensities and ratios directly, without extracting the search/peak RARs | pinned workbook reader and non-imputed reconstruction; identifier/condition/release checks above remain | separate enrichment approved D11; D12 requires raw-LFQ reconstruction, twelve replicate comparisons and optional within-bait means; not protein abundance |
-| PXD044412 | multi-organism; PCC 7942 among them | 2,002 files. The PCC 7942 arms serve `quant_report_7942_*.elib.peptides.txt` only; the *Cupriavidus* arms serve `.elib.proteins.txt`. Arms are metabolites: 2PG, ADP, AcCoA, G6P, Mal, Ru5P, RuBP | peptide-level EncyclopeDIA reports, with an SDRF experimental design | owner approved a separate interaction evidence type on 2026-10-14; define/validate the peptide-to-protein roll-up, retaining interaction rather than abundance semantics |
+| PXD044412 | multi-organism archive; S3 is PCC 7942 | 2,002 PRIDE entries include seven PCC 7942 intensity reports; paper-linked Figshare v1 S3 supplies 391,900 analyzed peptide rows across 42 labels | pinned streaming S3 reader and conservative source-protein evidence summaries implemented; full cell preservation and ambiguity/missingness checks | distinct interaction type approved D11; native identifier/crosswalk and condition validation, browser admission and rendering remain; no protein-abundance interpretation |
 
 Unchanged and still outside the shortlist: PXD019731 and PXD074299 deposit no
 proteome-wide table and wait on reprocessing; PXD011485 is PCC 11801, outside
@@ -351,12 +364,11 @@ package B with no grant over its files.
 **What this leaves S5.** Two deposits, PXD023591 and PXD027430, are readable
 today by a reader that already exists and is already tested. Neither is blocked
 by licence, by tooling or by the crosswalk. Both are blocked by the same thing:
-a condition record, which needs depositor answers the owner has deferred. The
-other three each need a new reader and a source-appropriate output contract.
-PXD014590 already has a presence-overlay-first direction; D11 now approves
-separate enrichment/interaction evidence types for PXD036717/PXD044412.
-Their reader/contract preparation can proceed; this is not a claim of admitted
-layers or permission to reinterpret those measurements as protein abundance.
+a condition record, which needs depositor answers the owner has deferred. PXD014590 still needs a new reader and presence-overlay output contract.
+PXD036717 and PXD044412 now have bounded readers and source-specific output
+contracts; their remaining admission work is listed above. D11 approves separate
+enrichment/interaction evidence types, not reinterpretation as protein abundance.
+Reader completion does not itself admit either source to the browser.
 
 
 ## Work

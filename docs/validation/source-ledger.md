@@ -289,7 +289,7 @@ record:
 | PXD027430 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
 | PXD030282 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
 | PXD036717 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
-| PXD044412 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
+| PXD044412 | PCC 7942 | PRIDE files: permitted under CC0 with deposit/article attribution. Paper-linked Figshare v1 S3 is separately CC BY 4.0 (metadata verified 2026-10-16); retain dataset/article attribution, licence and derived-output notice. The [reader and receipts](pxd044412-peptides.md) cover non-release preparation, not browser admission. |
 | PXD062851 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
 | PXD074299 | PCC 7942 | permitted: CC0 over the deposited files; attribute the deposit and the article |
 

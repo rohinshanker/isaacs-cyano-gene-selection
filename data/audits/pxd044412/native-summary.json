@@ -1,0 +1,367 @@
+{
+  "sourceSha256": "c6cb4794f0a1ff854899b83ddec2ebbef20577387c262b279a6f2519be9a06b5",
+  "sourceRows": 391900,
+  "proteinComparisonGroups": 67276,
+  "labelCount": 42,
+  "ambiguousSignificantRowsExcluded": 70,
+  "totals": {
+    "rows": 391900,
+    "ambiguousRows": 4494,
+    "unambiguousSignificantRows": 6942,
+    "no_significant_peptide_evidence": 63152,
+    "significant_peptide_evidence": 3830,
+    "not_evaluated": 294
+  },
+  "bySourceLabel": {
+    "2OG_1": {
+      "rows": 10156,
+      "unambiguousSignificantRows": 23,
+      "ambiguousRows": 113,
+      "no_significant_peptide_evidence": 1658,
+      "significant_peptide_evidence": 15,
+      "not_evaluated": 6
+    },
+    "2OG_2": {
+      "rows": 10156,
+      "unambiguousSignificantRows": 72,
+      "ambiguousRows": 113,
+      "no_significant_peptide_evidence": 1613,
+      "significant_peptide_evidence": 60,
+      "not_evaluated": 6
+    },
+    "2PG_1": {
+      "rows": 8565,
+      "ambiguousRows": 113,
+      "no_significant_peptide_evidence": 1549,
+      "not_evaluated": 7
+    },
+    "2PG_2": {
+      "rows": 8565,
+      "ambiguousRows": 113,
+      "no_significant_peptide_evidence": 1549,
+      "not_evaluated": 7
+    },
+    "3PGA_1": {
+      "rows": 10390,
+      "ambiguousRows": 113,
+      "no_significant_peptide_evidence": 1687,
+      "not_evaluated": 4
+    },
+    "3PGA_2": {
+      "rows": 10390,
+      "ambiguousRows": 113,
+      "no_significant_peptide_evidence": 1687,
+      "not_evaluated": 4
+    },
+    "ADP_1": {
+      "rows": 8789,
+      "ambiguousRows": 110,
+      "unambiguousSignificantRows": 3,
+      "no_significant_peptide_evidence": 1589,
+      "not_evaluated": 9,
+      "significant_peptide_evidence": 2
+    },
+    "ADP_2": {
+      "rows": 8789,
+      "unambiguousSignificantRows": 49,
+      "ambiguousRows": 110,
+      "no_significant_peptide_evidence": 1549,
+      "significant_peptide_evidence": 42,
+      "not_evaluated": 9
+    },
+    "AMP_1": {
+      "rows": 8430,
+      "unambiguousSignificantRows": 22,
+      "ambiguousRows": 104,
+      "no_significant_peptide_evidence": 1508,
+      "significant_peptide_evidence": 9,
+      "not_evaluated": 7
+    },
+    "AMP_2": {
+      "rows": 8430,
+      "unambiguousSignificantRows": 221,
+      "ambiguousRows": 104,
+      "no_significant_peptide_evidence": 1366,
+      "significant_peptide_evidence": 151,
+      "not_evaluated": 7
+    },
+    "ATP_1": {
+      "rows": 8162,
+      "unambiguousSignificantRows": 396,
+      "ambiguousRows": 103,
+      "significant_peptide_evidence": 189,
+      "no_significant_peptide_evidence": 1318,
+      "not_evaluated": 6
+    },
+    "ATP_2": {
+      "rows": 8162,
+      "unambiguousSignificantRows": 773,
+      "ambiguousRows": 103,
+      "significant_peptide_evidence": 361,
+      "no_significant_peptide_evidence": 1146,
+      "not_evaluated": 6
+    },
+    "AcCoA_1": {
+      "rows": 6569,
+      "ambiguousRows": 97,
+      "unambiguousSignificantRows": 18,
+      "no_significant_peptide_evidence": 1402,
+      "significant_peptide_evidence": 18,
+      "not_evaluated": 8
+    },
+    "AcCoA_2": {
+      "rows": 6569,
+      "unambiguousSignificantRows": 354,
+      "ambiguousRows": 97,
+      "significant_peptide_evidence": 290,
+      "no_significant_peptide_evidence": 1130,
+      "not_evaluated": 8
+    },
+    "Cit_1": {
+      "rows": 10485,
+      "ambiguousRows": 117,
+      "unambiguousSignificantRows": 33,
+      "no_significant_peptide_evidence": 1656,
+      "significant_peptide_evidence": 21,
+      "not_evaluated": 5
+    },
+    "Cit_2": {
+      "rows": 10485,
+      "unambiguousSignificantRows": 190,
+      "ambiguousRows": 117,
+      "no_significant_peptide_evidence": 1599,
+      "significant_peptide_evidence": 78,
+      "not_evaluated": 5
+    },
+    "FBP_1": {
+      "rows": 10201,
+      "ambiguousRows": 97,
+      "unambiguousSignificantRows": 6,
+      "no_significant_peptide_evidence": 1614,
+      "significant_peptide_evidence": 3,
+      "not_evaluated": 6
+    },
+    "FBP_2": {
+      "rows": 10201,
+      "ambiguousRows": 97,
+      "unambiguousSignificantRows": 19,
+      "no_significant_peptide_evidence": 1604,
+      "significant_peptide_evidence": 13,
+      "not_evaluated": 6
+    },
+    "G6P_1": {
+      "rows": 8982,
+      "ambiguousRows": 123,
+      "unambiguousSignificantRows": 9,
+      "no_significant_peptide_evidence": 1581,
+      "significant_peptide_evidence": 6,
+      "not_evaluated": 9
+    },
+    "G6P_2": {
+      "rows": 8982,
+      "ambiguousRows": 123,
+      "unambiguousSignificantRows": 86,
+      "no_significant_peptide_evidence": 1540,
+      "significant_peptide_evidence": 47,
+      "not_evaluated": 9
+    },
+    "GAP_1": {
+      "rows": 8603,
+      "ambiguousRows": 100,
+      "unambiguousSignificantRows": 13,
+      "no_significant_peptide_evidence": 1508,
+      "significant_peptide_evidence": 8,
+      "not_evaluated": 8
+    },
+    "GAP_2": {
+      "rows": 8603,
+      "unambiguousSignificantRows": 2069,
+      "ambiguousRows": 100,
+      "significant_peptide_evidence": 927,
+      "no_significant_peptide_evidence": 589,
+      "not_evaluated": 8
+    },
+    "GTP_1": {
+      "rows": 10652,
+      "unambiguousSignificantRows": 88,
+      "ambiguousRows": 101,
+      "no_significant_peptide_evidence": 1656,
+      "significant_peptide_evidence": 39,
+      "not_evaluated": 4
+    },
+    "GTP_2": {
+      "rows": 10652,
+      "unambiguousSignificantRows": 1098,
+      "ambiguousRows": 101,
+      "significant_peptide_evidence": 569,
+      "no_significant_peptide_evidence": 1126,
+      "not_evaluated": 4
+    },
+    "Glyc_1": {
+      "rows": 10609,
+      "ambiguousRows": 100,
+      "no_significant_peptide_evidence": 1628,
+      "not_evaluated": 7
+    },
+    "Glyc_2": {
+      "rows": 10609,
+      "ambiguousRows": 100,
+      "no_significant_peptide_evidence": 1628,
+      "not_evaluated": 7
+    },
+    "Glyx_1": {
+      "rows": 10484,
+      "ambiguousRows": 112,
+      "no_significant_peptide_evidence": 1627,
+      "not_evaluated": 8
+    },
+    "Glyx_2": {
+      "rows": 10484,
+      "unambiguousSignificantRows": 164,
+      "ambiguousRows": 112,
+      "no_significant_peptide_evidence": 1483,
+      "significant_peptide_evidence": 144,
+      "not_evaluated": 8
+    },
+    "Mal_1": {
+      "rows": 9091,
+      "ambiguousRows": 108,
+      "no_significant_peptide_evidence": 1628,
+      "not_evaluated": 7
+    },
+    "Mal_2": {
+      "rows": 9091,
+      "ambiguousRows": 108,
+      "unambiguousSignificantRows": 6,
+      "no_significant_peptide_evidence": 1622,
+      "significant_peptide_evidence": 6,
+      "not_evaluated": 7
+    },
+    "NADPH_1": {
+      "rows": 8595,
+      "ambiguousRows": 103,
+      "unambiguousSignificantRows": 13,
+      "no_significant_peptide_evidence": 1541,
+      "significant_peptide_evidence": 9,
+      "not_evaluated": 7
+    },
+    "NADPH_2": {
+      "rows": 8595,
+      "unambiguousSignificantRows": 216,
+      "ambiguousRows": 103,
+      "no_significant_peptide_evidence": 1373,
+      "significant_peptide_evidence": 177,
+      "not_evaluated": 7
+    },
+    "NADP_1": {
+      "rows": 8300,
+      "unambiguousSignificantRows": 57,
+      "ambiguousRows": 98,
+      "no_significant_peptide_evidence": 1465,
+      "significant_peptide_evidence": 51,
+      "not_evaluated": 8
+    },
+    "NADP_2": {
+      "rows": 8300,
+      "unambiguousSignificantRows": 767,
+      "ambiguousRows": 98,
+      "no_significant_peptide_evidence": 1052,
+      "significant_peptide_evidence": 464,
+      "not_evaluated": 8
+    },
+    "PEP_1": {
+      "rows": 10688,
+      "ambiguousRows": 103,
+      "no_significant_peptide_evidence": 1679,
+      "not_evaluated": 5
+    },
+    "PEP_2": {
+      "rows": 10688,
+      "unambiguousSignificantRows": 160,
+      "ambiguousRows": 103,
+      "significant_peptide_evidence": 120,
+      "no_significant_peptide_evidence": 1559,
+      "not_evaluated": 5
+    },
+    "Ru5P_1": {
+      "rows": 9312,
+      "ambiguousRows": 111,
+      "no_significant_peptide_evidence": 1588,
+      "not_evaluated": 11
+    },
+    "Ru5P_2": {
+      "rows": 9312,
+      "ambiguousRows": 111,
+      "no_significant_peptide_evidence": 1588,
+      "not_evaluated": 11
+    },
+    "RuBP_1": {
+      "rows": 8865,
+      "ambiguousRows": 112,
+      "unambiguousSignificantRows": 3,
+      "no_significant_peptide_evidence": 1583,
+      "significant_peptide_evidence": 1,
+      "not_evaluated": 8
+    },
+    "RuBP_2": {
+      "rows": 8865,
+      "ambiguousRows": 112,
+      "unambiguousSignificantRows": 14,
+      "no_significant_peptide_evidence": 1574,
+      "significant_peptide_evidence": 10,
+      "not_evaluated": 8
+    },
+    "Suc_1": {
+      "rows": 10022,
+      "ambiguousRows": 109,
+      "no_significant_peptide_evidence": 1655,
+      "not_evaluated": 7
+    },
+    "Suc_2": {
+      "rows": 10022,
+      "ambiguousRows": 109,
+      "no_significant_peptide_evidence": 1655,
+      "not_evaluated": 7
+    }
+  },
+  "examples": {
+    "no_significant_peptide_evidence": {
+      "entry": "P11004",
+      "label": "FBP_1",
+      "firstSourceLine": 2,
+      "evaluatedPeptides": 14,
+      "significantPeptides": 0,
+      "ambiguousRows": 0
+    },
+    "significant_peptide_evidence": {
+      "entry": "Q31L13",
+      "label": "FBP_2",
+      "firstSourceLine": 49,
+      "evaluatedPeptides": 22,
+      "significantPeptides": 3,
+      "ambiguousRows": 0
+    },
+    "not_evaluated": {
+      "entry": "Q9KHA8",
+      "label": "FBP_1",
+      "firstSourceLine": 2134,
+      "evaluatedPeptides": 0,
+      "significantPeptides": 0,
+      "ambiguousRows": 8
+    }
+  },
+  "entryCount": 2148,
+  "peptideSequenceCount": 18641,
+  "authorSignificantRows": 7012,
+  "signMismatchRows": 0,
+  "duplicateKeys": 0,
+  "duplicateKeyFields": [
+    "Label",
+    "Entry",
+    "PeptideSequence",
+    "BioReplicate"
+  ],
+  "sourceIssueRows": 0,
+  "unavailableStatisticsRows": 0,
+  "nonfiniteStatisticsRows": 0
+}

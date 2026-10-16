@@ -51,6 +51,8 @@ def _statistic(raw: str, column: str) -> dict[str, Any]:
     """Separate literal missingness from invalid, nonfinite and valid numbers."""
     if raw in ("", "NA"):
         return {"value": None, "status": "unavailable"}
+    if raw != raw.strip() or "_" in raw:
+        return {"value": None, "status": "invalid", "reason": "not_numeric"}
     try:
         value = float(raw)
     except ValueError:
@@ -279,8 +281,10 @@ def write_report(
             "source": {
                 "file": source.name, "sha256": expected_sha256,
                 "url": "https://ndownloader.figshare.com/files/41985861",
-                "article": "https://api.figshare.com/v2/articles/23939604",
+                "datasetMetadata": "https://api.figshare.com/v2/articles/23939604",
+                "datasetDOI": "10.6084/m9.figshare.23939604.v1", "datasetVersion": 1,
                 "paperDOI": "10.1038/s42003-023-05318-8", "license": "CC BY 4.0",
+                "licenseURL": "https://creativecommons.org/licenses/by/4.0/",
                 "headers": HEADERS,
                 "pinPolicy": "CLI uses the pinned S3 source; API alternative pins require separate review",
             },
@@ -291,6 +295,7 @@ def write_report(
                 "significance": "Independent finite valid adj.pvalue < 0.01; source Sign retained; mismatches flagged",
                 "evaluation": "All eight statistics valid and issue blank/NA; ambig=yes excluded from unique-protein evidence",
                 "evidence": "Any evaluable unambiguous significant row; negative means only no significant peptide in evaluated rows",
+                "sourceLimit": "Pinned S3 has no unavailable/nonfinite statistics or source issues; it cannot assess one-condition-missing comparisons omitted upstream. The author script filters infinite fold changes, a plausible origin, not a verified S3 execution history",
                 "missing": "Blank/NA unavailable; invalid/nonfinite/out-of-range p-values flagged; zero is numeric",
                 "duplicates": "All source rows retained and counted; duplicate keys compare all cells against first row; counts are rows, not independent peptide support",
                 "rollup": "No numeric fold-change aggregation; derived conservative evidence, not exact author interaction calls",

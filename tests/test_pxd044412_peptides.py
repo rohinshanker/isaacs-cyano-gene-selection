@@ -70,6 +70,11 @@ def test_lossless_cells_typed_statistics_and_line_references(tmp_path):
     assert rows[0]["flags"] == []
     assert doc["releaseEligible"] is False
     assert doc["source"]["headers"] == peptides.HEADERS
+    assert doc["source"]["datasetDOI"] == "10.6084/m9.figshare.23939604.v1"
+    assert doc["source"]["datasetVersion"] == 1
+    assert doc["source"]["datasetMetadata"] == "https://api.figshare.com/v2/articles/23939604"
+    assert doc["source"]["paperDOI"] == "10.1038/s42003-023-05318-8"
+    assert doc["source"]["licenseURL"] == "https://creativecommons.org/licenses/by/4.0/"
     assert "inert" in doc["method"]["sourceCells"]
     assert doc["audit"]["rowCount"] == 2
     assert doc["audit"]["peptideSequenceCount"] == 2
@@ -133,6 +138,8 @@ def test_strict_threshold_and_source_sign_are_independent(tmp_path, adjusted, si
 @pytest.mark.parametrize("raw,status,reason", [
     ("", "unavailable", None), ("NA", "unavailable", None),
     ("=1+2", "invalid", "not_numeric"), ("oops", "invalid", "not_numeric"),
+    (" 0.005", "invalid", "not_numeric"), ("0.005 ", "invalid", "not_numeric"),
+    ("0_005", "invalid", "not_numeric"),
     ("NaN", "invalid", "nonfinite"), ("Infinity", "invalid", "nonfinite"),
     ("-inf", "invalid", "nonfinite"), ("1e999", "invalid", "nonfinite"),
 ])

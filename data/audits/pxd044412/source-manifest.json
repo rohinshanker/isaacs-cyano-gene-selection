@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "accession": "PXD044412",
+  "releaseEligible": false,
+  "artifact": {
+    "url": "https://ndownloader.figshare.com/files/41985861",
+    "retrieved": "2026-10-16T20:35:13.865576+00:00",
+    "sha256": "c6cb4794f0a1ff854899b83ddec2ebbef20577387c262b279a6f2519be9a06b5",
+    "md5": "e22aea4821e61fc0ee48a3279367520b",
+    "bytes": 395211418,
+    "name": "S3. Detected peptides in all experiments with Synechococcus PCC7942.tsv",
+    "figshareFileId": 41985861
+  },
+  "dataset": {
+    "articleId": 23939604,
+    "version": 1,
+    "doi": "10.6084/m9.figshare.23939604.v1",
+    "url": "https://figshare.com/articles/dataset/Supplemental_Datasets/23939604",
+    "license": {
+      "value": 1,
+      "name": "CC BY 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "metadataReceipt": {
+      "url": "https://api.figshare.com/v2/articles/23939604",
+      "retrieved": "2026-10-16T20:32:09.719856+00:00",
+      "sha256": "cae77bb22df61f3dd4fb90e7836b14b1687c3c6767d9cd06897ce0c217bb16db",
+      "bytes": 7402
+    }
+  },
+  "article": {
+    "doi": "10.1038/s42003-023-05318-8",
+    "pmcid": "PMC10507043",
+    "citation": "Sporre E, Karlsen J, Schriever K, et al. Metabolite interactions in the bacterial Calvin cycle and implications for flux regulation. Communications Biology 6, 947 (2023).",
+    "receipt": {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10507043/fullTextXML",
+      "retrieved": "2026-10-16T20:32:07.751298+00:00",
+      "sha256": "daf158707f78a74ff507ec5fbda0f767df239aea8cf41b0bdda2a7298d633109",
+      "bytes": 185562,
+      "quotes": [
+        {
+          "text": "if at least one peptide showed significant change",
+          "locator": "Methods / Data analysis, Sec15"
+        },
+        {
+          "text": "Each sample group was prepared as four technical replicates",
+          "locator": "Methods / Limited proteolysis, Sec11"
+        },
+        {
+          "text": "significance threshold of 0.01",
+          "locator": "Methods / Data analysis, Sec15"
+        }
+      ]
+    }
+  },
+  "authorCode": [
+    {
+      "repo": "emilsporre/lipsmap-comp",
+      "commit": "67af07959aa25dfe98b827965c5f745527c19a3b",
+      "url": "https://raw.githubusercontent.com/emilsporre/lipsmap-comp/67af07959aa25dfe98b827965c5f745527c19a3b/source/ms_analysis_20220405.R",
+      "sha256": "3afc8f333064f1328331fbc28e95f64e4d06ad7f1c661c5697ffe3270ef43386"
+    },
+    {
+      "repo": "Asplund-Samuelsson/lipsmap",
+      "commit": "6215ed0374320fe0aadd94eec46e7228a72ea69a",
+      "url": "https://raw.githubusercontent.com/Asplund-Samuelsson/lipsmap/6215ed0374320fe0aadd94eec46e7228a72ea69a/README.md",
+      "sha256": "714d8cb5a61724bca4ef5c02c3b681fe1c4b876de8611d7e25f7dde3e143e9d3"
+    },
+    {
+      "repo": "Asplund-Samuelsson/lipsmap",
+      "commit": "6215ed0374320fe0aadd94eec46e7228a72ea69a",
+      "url": "https://raw.githubusercontent.com/Asplund-Samuelsson/lipsmap/6215ed0374320fe0aadd94eec46e7228a72ea69a/source/concatenate_input_data.R",
+      "sha256": "22a13e7f6039e04ba9b16257c910390771ab94d7ce48a0de749601db4e24078f"
+    },
+    {
+      "repo": "Asplund-Samuelsson/lipsmap",
+      "commit": "6215ed0374320fe0aadd94eec46e7228a72ea69a",
+      "url": "https://raw.githubusercontent.com/Asplund-Samuelsson/lipsmap/6215ed0374320fe0aadd94eec46e7228a72ea69a/source/tables.R",
+      "sha256": "0a4d2622f129a4326ae536b0c4f1b5d351519bdf7d7faf8b4b20b6096755ea74"
+    },
+    {
+      "repo": "Asplund-Samuelsson/lipsmap",
+      "commit": "6215ed0374320fe0aadd94eec46e7228a72ea69a",
+      "url": "https://raw.githubusercontent.com/Asplund-Samuelsson/lipsmap/6215ed0374320fe0aadd94eec46e7228a72ea69a/source/functions.R",
+      "sha256": "7f7892d1ec2c7a5217d510074e1feaf4a0d1732d193753aa8be76bb8fec0d677"
+    },
+    {
+      "repo": "Asplund-Samuelsson/lipsmap",
+      "commit": "6215ed0374320fe0aadd94eec46e7228a72ea69a",
+      "url": "https://raw.githubusercontent.com/Asplund-Samuelsson/lipsmap/6215ed0374320fe0aadd94eec46e7228a72ea69a/source/metabolites.R",
+      "sha256": "aefc0c948c0571cfc532f3eee5b3aeeb0f6004d631cd571e9da1311e45937966"
+    }
+  ],
+  "boundary": "Author-analyzed PCC 7942 peptide comparisons, not protein abundance, confirmed binding, native UTEX measurements or browser admission. Author-code pins describe conventions, not an execution receipt proving the entire S3-generating environment."
+}
