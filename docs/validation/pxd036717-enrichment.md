@@ -341,7 +341,8 @@ The article title and PMID refer to the published article, whose title differs
 from the archive project title.
 
 The metadata contains short source passages and their locations, plus hashes
-for the article, supplementary methods and pinned PRIDE response. Article
+for the article, supplementary methods, pinned PRIDE project/file responses
+and the [PubMed DOI lookup](../../data/expression/evidence/pubmed-esearch-doi-20261016.json). Article
 passages were matched after whitespace normalization of `pdftotext` output;
 DOCX and archive passages were matched against paragraph text and the named
 JSON field. Composite axis quotations reference the separately matched
@@ -355,7 +356,9 @@ enrichment quantity, detection category, citation/provenance wiring and rendered
 tests. Owner decision, 2026-10-16: retain reconstructed measurements with explicit
 identification evidence flags; verifying the full source rule is not a release
 prerequisite. The measurements must not be labelled as passing that rule or as
-confirmed interactions. Existing identity exclusions remain in the parent
+confirmed interactions. A released comparison must retain its bait and control
+samples’ flags; a mean must retain the flags from all six contributing sample
+records, with arm/replicate attribution. Existing identity exclusions remain in the parent
 ticket; this work restores none of those assignments.
 Reconstruction alone does not admit any row or establish an interactor. Preserve
 PCC 7942-to-UTEX transfer labels if an approved crosswalk is used.
