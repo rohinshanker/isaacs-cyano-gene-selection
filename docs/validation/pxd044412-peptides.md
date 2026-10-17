@@ -188,9 +188,12 @@ the builder does not download sources, recheck the PDF cells or interpret prose.
 
 The owner approved a separate interaction evidence type (D11). Browser admission
 still needs confirmation of candidate condition assignments and contrast direction,
-identity/crosswalk validation,
 review of excluded/ambiguous evidence, a distinct interaction quantity and
-missingness presentation, citations/terms, and rendered checks. The reader
-performs none of those approvals. The [data-sources ticket](../notes/tickets/O_data-sources-selection__20261005.md)
+missingness presentation, citations/terms, and rendered checks. Exact identity
+mapping is prepared under the [mapping contract](pxd044412-mapping.md); it preserves
+excluded identities and source evidence states. Peptide ambiguity is assessed in
+the PCC 7942 search space and must not be labelled UTEX-specific evidence merely
+because an identity maps. The reader performs none of the browser-admission
+approvals. The [data-sources ticket](../notes/tickets/O_data-sources-selection__20261005.md)
 retains that work; the existing [admission contract](future-data-roadmap.md#admission-contract)
 and [measurement contract](measured-quantity-contract.md) continue to apply.
