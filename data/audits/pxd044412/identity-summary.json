@@ -1,0 +1,4732 @@
+{
+  "entryCount": 2148,
+  "entryMappingStatuses": {
+    "crosswalk_missing": 66,
+    "mapped": 1849,
+    "refseq_disagreement": 26,
+    "refseq_unconfirmed": 197,
+    "uniprot_ambiguous": 4,
+    "uniprot_no_locus": 6
+  },
+  "excludedEntries": {
+    "O33700": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2578",
+      "rowCount": 72,
+      "sourceLengths": [
+        "157"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2578"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "O50209": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 558,
+      "sourceLengths": [
+        "169"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2158"
+      ],
+      "status": "uniprot_no_locus",
+      "utexLocus": null
+    },
+    "P04997": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 288,
+      "sourceLengths": [
+        "360"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1389; Synpcc7942_0893"
+      ],
+      "status": "uniprot_ambiguous",
+      "utexLocus": null
+    },
+    "P06539": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 816,
+      "sourceLengths": [
+        "173"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1047; Synpcc7942_1052"
+      ],
+      "status": "uniprot_ambiguous",
+      "utexLocus": null
+    },
+    "P11005": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 292,
+      "sourceLengths": [
+        "352"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0655; Synpcc7942_1637"
+      ],
+      "status": "uniprot_ambiguous",
+      "utexLocus": null
+    },
+    "P13530": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 594,
+      "sourceLengths": [
+        "163"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1048; Synpcc7942_1053"
+      ],
+      "status": "uniprot_ambiguous",
+      "utexLocus": null
+    },
+    "P14788": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1680",
+      "rowCount": 130,
+      "sourceLengths": [
+        "344"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1680"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "P42079": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1523",
+      "rowCount": 902,
+      "sourceLengths": [
+        "624"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1523"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "P50020": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_2073",
+      "rowCount": 86,
+      "sourceLengths": [
+        "655"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2073"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "P50026": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_2579",
+      "rowCount": 10,
+      "sourceLengths": [
+        "287"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2579"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "P50590": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2497",
+      "rowCount": 264,
+      "sourceLengths": [
+        "149"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2497"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "P54415": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1554",
+      "rowCount": 214,
+      "sourceLengths": [
+        "197"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1554"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31JS8": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_B2660",
+      "rowCount": 2,
+      "sourceLengths": [
+        "131"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_B2660"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31JY4": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2605",
+      "rowCount": 162,
+      "sourceLengths": [
+        "218"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2605"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31JZ5": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_2594",
+      "rowCount": 28,
+      "sourceLengths": [
+        "203"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2594"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31JZ6": {
+      "comparisonCount": 34,
+      "pccLocus": "Synpcc7942_2593",
+      "rowCount": 42,
+      "sourceLengths": [
+        "178"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2593"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31K00": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2589",
+      "rowCount": 196,
+      "sourceLengths": [
+        "261"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2589"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31K14": {
+      "comparisonCount": 16,
+      "pccLocus": "Synpcc7942_2575",
+      "rowCount": 18,
+      "sourceLengths": [
+        "313"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2575"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31K15": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_2574",
+      "rowCount": 4,
+      "sourceLengths": [
+        "251"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2574"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31K23": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2566",
+      "rowCount": 618,
+      "sourceLengths": [
+        "365"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2566"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31K29": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_2560",
+      "rowCount": 8,
+      "sourceLengths": [
+        "186"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2560"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31K54": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_2535",
+      "rowCount": 24,
+      "sourceLengths": [
+        "1099"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2535"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31K55": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2534",
+      "rowCount": 130,
+      "sourceLengths": [
+        "421"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2534"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31K76": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2513",
+      "rowCount": 292,
+      "sourceLengths": [
+        "294"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2513"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31K82": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_2507",
+      "rowCount": 66,
+      "sourceLengths": [
+        "86"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2507"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31K85": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_2504",
+      "rowCount": 10,
+      "sourceLengths": [
+        "134"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2504"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31K97": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_2492",
+      "rowCount": 6,
+      "sourceLengths": [
+        "237"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2492"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31KA6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2483",
+      "rowCount": 590,
+      "sourceLengths": [
+        "494"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2483"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KB0": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2479",
+      "rowCount": 146,
+      "sourceLengths": [
+        "188"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2479"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31KC9": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_2460",
+      "rowCount": 8,
+      "sourceLengths": [
+        "424"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2460"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KD4": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2455",
+      "rowCount": 150,
+      "sourceLengths": [
+        "210"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2455"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31KD5": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_2454",
+      "rowCount": 2,
+      "sourceLengths": [
+        "424"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2454"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31KD7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2452",
+      "rowCount": 500,
+      "sourceLengths": [
+        "238"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2452"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31KH8": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_2411",
+      "rowCount": 2,
+      "sourceLengths": [
+        "94"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2411"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KI2": {
+      "comparisonCount": 28,
+      "pccLocus": "Synpcc7942_2407",
+      "rowCount": 42,
+      "sourceLengths": [
+        "259"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2407"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KI7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2402",
+      "rowCount": 158,
+      "sourceLengths": [
+        "376"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2402"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KJ9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2390",
+      "rowCount": 556,
+      "sourceLengths": [
+        "1229"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2390"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KK2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2387",
+      "rowCount": 72,
+      "sourceLengths": [
+        "671"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2387"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KK6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2383",
+      "rowCount": 170,
+      "sourceLengths": [
+        "383"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2383"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KM6": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_2363",
+      "rowCount": 6,
+      "sourceLengths": [
+        "123"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2363"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KM8": {
+      "comparisonCount": 10,
+      "pccLocus": "Synpcc7942_2361",
+      "rowCount": 10,
+      "sourceLengths": [
+        "289"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2361"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KN2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2357",
+      "rowCount": 190,
+      "sourceLengths": [
+        "481"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2357"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KP2": {
+      "comparisonCount": 38,
+      "pccLocus": "Synpcc7942_2347",
+      "rowCount": 76,
+      "sourceLengths": [
+        "358"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2347"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KP3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2346",
+      "rowCount": 162,
+      "sourceLengths": [
+        "261"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2346"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KR4": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_2325",
+      "rowCount": 2,
+      "sourceLengths": [
+        "255"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2325"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KT3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2306",
+      "rowCount": 500,
+      "sourceLengths": [
+        "195"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2306"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KT5": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2304",
+      "rowCount": 166,
+      "sourceLengths": [
+        "305"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2304"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31KV3": {
+      "comparisonCount": 16,
+      "pccLocus": "Synpcc7942_2286",
+      "rowCount": 18,
+      "sourceLengths": [
+        "361"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2286"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KV8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2281",
+      "rowCount": 236,
+      "sourceLengths": [
+        "318"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2281"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KW4": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_2275",
+      "rowCount": 4,
+      "sourceLengths": [
+        "94"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2275"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31KX9": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_2260",
+      "rowCount": 6,
+      "sourceLengths": [
+        "108"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2260"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KY3": {
+      "comparisonCount": 32,
+      "pccLocus": "Synpcc7942_2256",
+      "rowCount": 42,
+      "sourceLengths": [
+        "184"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2256"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31KY6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2253",
+      "rowCount": 264,
+      "sourceLengths": [
+        "384"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2253"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KY7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2252",
+      "rowCount": 342,
+      "sourceLengths": [
+        "1017"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2252"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31KY8": {
+      "comparisonCount": 16,
+      "pccLocus": "Synpcc7942_2251",
+      "rowCount": 18,
+      "sourceLengths": [
+        "194"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2251"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31KZ8": {
+      "comparisonCount": 16,
+      "pccLocus": "Synpcc7942_2241",
+      "rowCount": 24,
+      "sourceLengths": [
+        "290"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2241"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31L00": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2239",
+      "rowCount": 66,
+      "sourceLengths": [
+        "171"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2239"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31L54": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_2185",
+      "rowCount": 2,
+      "sourceLengths": [
+        "134"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2185"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31L62": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_2177",
+      "rowCount": 6,
+      "sourceLengths": [
+        "296"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2177"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31L64": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2175",
+      "rowCount": 448,
+      "sourceLengths": [
+        "357"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2175"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31L70": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_2169",
+      "rowCount": 4,
+      "sourceLengths": [
+        "107"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2169"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31L84": {
+      "comparisonCount": 16,
+      "pccLocus": "Synpcc7942_2155",
+      "rowCount": 18,
+      "sourceLengths": [
+        "147"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2155"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31L86": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_2153",
+      "rowCount": 2,
+      "sourceLengths": [
+        "159"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2153"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31L96": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2143",
+      "rowCount": 388,
+      "sourceLengths": [
+        "420"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2143"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LA2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2137",
+      "rowCount": 642,
+      "sourceLengths": [
+        "1351"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2137"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LA6": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_2133",
+      "rowCount": 4,
+      "sourceLengths": [
+        "168"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2133"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LD6": {
+      "comparisonCount": 30,
+      "pccLocus": "Synpcc7942_2103",
+      "rowCount": 38,
+      "sourceLengths": [
+        "134"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2103"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31LE9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2090",
+      "rowCount": 306,
+      "sourceLengths": [
+        "445"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2090"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LF8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2081",
+      "rowCount": 132,
+      "sourceLengths": [
+        "316"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2081"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31LI9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2050",
+      "rowCount": 298,
+      "sourceLengths": [
+        "487"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2050"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LM7": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_2012",
+      "rowCount": 2,
+      "sourceLengths": [
+        "407"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2012"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LN6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2003",
+      "rowCount": 118,
+      "sourceLengths": [
+        "237"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2003"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LP1": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1998",
+      "rowCount": 4,
+      "sourceLengths": [
+        "195"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1998"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LQ3": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_1986",
+      "rowCount": 26,
+      "sourceLengths": [
+        "440"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1986"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LV5": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1934",
+      "rowCount": 174,
+      "sourceLengths": [
+        "449"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1934"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LW3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1926",
+      "rowCount": 230,
+      "sourceLengths": [
+        "97"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1926"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LX2": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1917",
+      "rowCount": 4,
+      "sourceLengths": [
+        "364"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1917"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31LX4": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1915",
+      "rowCount": 260,
+      "sourceLengths": [
+        "130"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1915"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31LX7": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_1912",
+      "rowCount": 6,
+      "sourceLengths": [
+        "224"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1912"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31LX9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1910",
+      "rowCount": 202,
+      "sourceLengths": [
+        "212"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1910"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31M13": {
+      "comparisonCount": 22,
+      "pccLocus": "Synpcc7942_1876",
+      "rowCount": 28,
+      "sourceLengths": [
+        "126"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1876"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31M27": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1862",
+      "rowCount": 488,
+      "sourceLengths": [
+        "307"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1862"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31M28": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1861",
+      "rowCount": 490,
+      "sourceLengths": [
+        "421"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1861"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31M67": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1822",
+      "rowCount": 70,
+      "sourceLengths": [
+        "70"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1822"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31M85": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_1804",
+      "rowCount": 58,
+      "sourceLengths": [
+        "184"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1804"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31M89": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_1800",
+      "rowCount": 52,
+      "sourceLengths": [
+        "170"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1800"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MA4": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1785",
+      "rowCount": 2,
+      "sourceLengths": [
+        "136"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1785"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MA5": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_1784",
+      "rowCount": 44,
+      "sourceLengths": [
+        "260"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1784"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31MC5": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1764",
+      "rowCount": 2,
+      "sourceLengths": [
+        "122"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1764"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MC8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1761",
+      "rowCount": 552,
+      "sourceLengths": [
+        "576"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1761"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MD0": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1759",
+      "rowCount": 42,
+      "sourceLengths": [
+        "67"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1759"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MD1": {
+      "comparisonCount": 12,
+      "pccLocus": "Synpcc7942_1758",
+      "rowCount": 14,
+      "sourceLengths": [
+        "361"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1758"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MD3": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1756",
+      "rowCount": 2,
+      "sourceLengths": [
+        "91"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1756"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31MD4": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_1755",
+      "rowCount": 64,
+      "sourceLengths": [
+        "577"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1755"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MF9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1730",
+      "rowCount": 330,
+      "sourceLengths": [
+        "196"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1730"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MG4": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_1725",
+      "rowCount": 6,
+      "sourceLengths": [
+        "483"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1725"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MH2": {
+      "comparisonCount": 34,
+      "pccLocus": "Synpcc7942_1717",
+      "rowCount": 72,
+      "sourceLengths": [
+        "433"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1717"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MI3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1706",
+      "rowCount": 208,
+      "sourceLengths": [
+        "730"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1706"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31MI6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1703",
+      "rowCount": 364,
+      "sourceLengths": [
+        "1025"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1703"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31ML1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1678",
+      "rowCount": 212,
+      "sourceLengths": [
+        "180"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1678"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31ML8": {
+      "comparisonCount": 26,
+      "pccLocus": "Synpcc7942_1671",
+      "rowCount": 40,
+      "sourceLengths": [
+        "203"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1671"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MM1": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_1668",
+      "rowCount": 6,
+      "sourceLengths": [
+        "556"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1668"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MM6": {
+      "comparisonCount": 38,
+      "pccLocus": "Synpcc7942_1663",
+      "rowCount": 38,
+      "sourceLengths": [
+        "119"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1663"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MP3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1646",
+      "rowCount": 42,
+      "sourceLengths": [
+        "240"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1646"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31MP5": {
+      "comparisonCount": 16,
+      "pccLocus": "Synpcc7942_1644",
+      "rowCount": 16,
+      "sourceLengths": [
+        "267"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1644"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MQ4": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1635",
+      "rowCount": 840,
+      "sourceLengths": [
+        "548"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1635"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31MQ6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1633",
+      "rowCount": 154,
+      "sourceLengths": [
+        "240"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1633"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MR5": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1624",
+      "rowCount": 80,
+      "sourceLengths": [
+        "244"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1624"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MW0": {
+      "comparisonCount": 12,
+      "pccLocus": "Synpcc7942_1579",
+      "rowCount": 12,
+      "sourceLengths": [
+        "155"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1579"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MX0": {
+      "comparisonCount": 12,
+      "pccLocus": "Synpcc7942_1569",
+      "rowCount": 12,
+      "sourceLengths": [
+        "153"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1569"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MX1": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1568",
+      "rowCount": 2,
+      "sourceLengths": [
+        "79"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1568"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MX3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1566",
+      "rowCount": 760,
+      "sourceLengths": [
+        "731"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1566"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MX6": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1563",
+      "rowCount": 4,
+      "sourceLengths": [
+        "138"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1563"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MX8": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1561",
+      "rowCount": 2,
+      "sourceLengths": [
+        "168"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1561"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31MY8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1551",
+      "rowCount": 114,
+      "sourceLengths": [
+        "254"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1551"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31N03": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1536",
+      "rowCount": 170,
+      "sourceLengths": [
+        "226"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1536"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31N06": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_1533",
+      "rowCount": 60,
+      "sourceLengths": [
+        "279"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1533"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31N15": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1524",
+      "rowCount": 2668,
+      "sourceLengths": [
+        "1318"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1524"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31N17": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1522",
+      "rowCount": 2190,
+      "sourceLengths": [
+        "1100"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1522"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31N32": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1507",
+      "rowCount": 4,
+      "sourceLengths": [
+        "311"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1507"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31N33": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1506",
+      "rowCount": 74,
+      "sourceLengths": [
+        "138"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1506"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31N37": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1502",
+      "rowCount": 108,
+      "sourceLengths": [
+        "186"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1502"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31N73": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1466",
+      "rowCount": 520,
+      "sourceLengths": [
+        "334"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1466"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31N74": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_1465",
+      "rowCount": 28,
+      "sourceLengths": [
+        "151"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1465"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31N76": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1463",
+      "rowCount": 456,
+      "sourceLengths": [
+        "543"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1463"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31NA1": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1438",
+      "rowCount": 4,
+      "sourceLengths": [
+        "164"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1438"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NA3": {
+      "comparisonCount": 32,
+      "pccLocus": "Synpcc7942_1436",
+      "rowCount": 42,
+      "sourceLengths": [
+        "148"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1436"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31NA9": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_1430",
+      "rowCount": 64,
+      "sourceLengths": [
+        "311"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1430"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31ND1": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1408",
+      "rowCount": 2,
+      "sourceLengths": [
+        "213"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1408"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31ND7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1402",
+      "rowCount": 252,
+      "sourceLengths": [
+        "419"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1402"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NF5": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1384",
+      "rowCount": 84,
+      "sourceLengths": [
+        "281"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1384"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NG1": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_1378",
+      "rowCount": 40,
+      "sourceLengths": [
+        "413"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1378"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NG2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1377",
+      "rowCount": 176,
+      "sourceLengths": [
+        "779"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1377"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NG3": {
+      "comparisonCount": 30,
+      "pccLocus": "Synpcc7942_1376",
+      "rowCount": 32,
+      "sourceLengths": [
+        "198"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1376"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NG8": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1371",
+      "rowCount": 2,
+      "sourceLengths": [
+        "387"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1371"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31NH6": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1363",
+      "rowCount": 2,
+      "sourceLengths": [
+        "95"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1363"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31NH7": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_1362",
+      "rowCount": 24,
+      "sourceLengths": [
+        "161"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1362"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NH9": {
+      "comparisonCount": 26,
+      "pccLocus": "Synpcc7942_1360",
+      "rowCount": 54,
+      "sourceLengths": [
+        "436"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1360"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NI2": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_1357",
+      "rowCount": 32,
+      "sourceLengths": [
+        "1807"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1357"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31NI3": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1356",
+      "rowCount": 4,
+      "sourceLengths": [
+        "151"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1356"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NL0": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1329",
+      "rowCount": 244,
+      "sourceLengths": [
+        "208"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1329"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NM3": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1316",
+      "rowCount": 6,
+      "sourceLengths": [
+        "345"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1316"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NN1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1308",
+      "rowCount": 302,
+      "sourceLengths": [
+        "355"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1308"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NP5": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1294",
+      "rowCount": 320,
+      "sourceLengths": [
+        "522"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1294"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31NR9": {
+      "comparisonCount": 38,
+      "pccLocus": "Synpcc7942_1270",
+      "rowCount": 46,
+      "sourceLengths": [
+        "98"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1270"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NS5": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1264",
+      "rowCount": 4,
+      "sourceLengths": [
+        "547"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1264"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31NS8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1261",
+      "rowCount": 378,
+      "sourceLengths": [
+        "263"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1261"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NT5": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1254",
+      "rowCount": 2,
+      "sourceLengths": [
+        "131"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1254"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NW0": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1229",
+      "rowCount": 116,
+      "sourceLengths": [
+        "264"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1229"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NY4": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1205",
+      "rowCount": 4,
+      "sourceLengths": [
+        "54"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1205"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31NY7": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_1202",
+      "rowCount": 86,
+      "sourceLengths": [
+        "822"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1202"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31NZ0": {
+      "comparisonCount": 26,
+      "pccLocus": "Synpcc7942_1199",
+      "rowCount": 28,
+      "sourceLengths": [
+        "234"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1199"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31P06": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_1183",
+      "rowCount": 22,
+      "sourceLengths": [
+        "244"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1183"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31P17": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_1172",
+      "rowCount": 4,
+      "sourceLengths": [
+        "482"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1172"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31P24": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1165",
+      "rowCount": 2,
+      "sourceLengths": [
+        "131"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1165"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31P43": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1146",
+      "rowCount": 2,
+      "sourceLengths": [
+        "88"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1146"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31P44": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1145",
+      "rowCount": 64,
+      "sourceLengths": [
+        "108"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1145"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31P51": {
+      "comparisonCount": 28,
+      "pccLocus": "Synpcc7942_1138",
+      "rowCount": 48,
+      "sourceLengths": [
+        "336"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1138"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31P71": {
+      "comparisonCount": 18,
+      "pccLocus": "Synpcc7942_1118",
+      "rowCount": 20,
+      "sourceLengths": [
+        "516"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1118"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31P79": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1110",
+      "rowCount": 328,
+      "sourceLengths": [
+        "208"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1110"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PA6": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_1083",
+      "rowCount": 44,
+      "sourceLengths": [
+        "458"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1083"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31PB1": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1078",
+      "rowCount": 2,
+      "sourceLengths": [
+        "302"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1078"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PB8": {
+      "comparisonCount": 32,
+      "pccLocus": "Synpcc7942_1071",
+      "rowCount": 54,
+      "sourceLengths": [
+        "188"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1071"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PC0": {
+      "comparisonCount": 12,
+      "pccLocus": "Synpcc7942_1069",
+      "rowCount": 12,
+      "sourceLengths": [
+        "242"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1069"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PG1": {
+      "comparisonCount": 28,
+      "pccLocus": "Synpcc7942_1028",
+      "rowCount": 46,
+      "sourceLengths": [
+        "318"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1028"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31PG4": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1025",
+      "rowCount": 62,
+      "sourceLengths": [
+        "156"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1025"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PI6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1003",
+      "rowCount": 606,
+      "sourceLengths": [
+        "517"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1003"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31PI8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1001",
+      "rowCount": 254,
+      "sourceLengths": [
+        "616"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1001"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PJ3": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0996",
+      "rowCount": 4,
+      "sourceLengths": [
+        "328"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0996"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PK7": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_0982",
+      "rowCount": 2,
+      "sourceLengths": [
+        "204"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0982"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PL6": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_0973",
+      "rowCount": 2,
+      "sourceLengths": [
+        "390"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0973"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31PL8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0971",
+      "rowCount": 236,
+      "sourceLengths": [
+        "452"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0971"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PM9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0960",
+      "rowCount": 258,
+      "sourceLengths": [
+        "417"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0960"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PN5": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0954",
+      "rowCount": 156,
+      "sourceLengths": [
+        "344"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0954"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PP6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0943",
+      "rowCount": 626,
+      "sourceLengths": [
+        "422"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0943"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31PQ6": {
+      "comparisonCount": 38,
+      "pccLocus": "Synpcc7942_0933",
+      "rowCount": 56,
+      "sourceLengths": [
+        "171"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0933"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PQ7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0932",
+      "rowCount": 226,
+      "sourceLengths": [
+        "399"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0932"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PS1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0918",
+      "rowCount": 414,
+      "sourceLengths": [
+        "649"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0918"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31PS6": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_0913",
+      "rowCount": 6,
+      "sourceLengths": [
+        "164"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0913"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31PT3": {
+      "comparisonCount": 10,
+      "pccLocus": "Synpcc7942_0906",
+      "rowCount": 10,
+      "sourceLengths": [
+        "161"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0906"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PU9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0890",
+      "rowCount": 1866,
+      "sourceLengths": [
+        "1536"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0890"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31PW1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0878",
+      "rowCount": 886,
+      "sourceLengths": [
+        "808"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0878"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PW4": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_0875",
+      "rowCount": 2,
+      "sourceLengths": [
+        "144"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0875"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PW8": {
+      "comparisonCount": 32,
+      "pccLocus": "Synpcc7942_0871",
+      "rowCount": 34,
+      "sourceLengths": [
+        "74"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0871"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PX1": {
+      "comparisonCount": 34,
+      "pccLocus": "Synpcc7942_0868",
+      "rowCount": 50,
+      "sourceLengths": [
+        "582"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0868"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PX2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0867",
+      "rowCount": 84,
+      "sourceLengths": [
+        "111"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0867"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PY4": {
+      "comparisonCount": 16,
+      "pccLocus": "Synpcc7942_0855",
+      "rowCount": 16,
+      "sourceLengths": [
+        "417"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0855"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PY9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0849",
+      "rowCount": 114,
+      "sourceLengths": [
+        "203"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0849"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31PZ2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0846",
+      "rowCount": 268,
+      "sourceLengths": [
+        "272"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0846"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31PZ3": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_0845",
+      "rowCount": 2,
+      "sourceLengths": [
+        "68"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0845"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31PZ7": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_0841",
+      "rowCount": 8,
+      "sourceLengths": [
+        "446"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0841"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q14": {
+      "comparisonCount": 14,
+      "pccLocus": "Synpcc7942_0823",
+      "rowCount": 16,
+      "sourceLengths": [
+        "348"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0823"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q28": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0809",
+      "rowCount": 102,
+      "sourceLengths": [
+        "580"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0809"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q38": {
+      "comparisonCount": 26,
+      "pccLocus": "Synpcc7942_0799",
+      "rowCount": 38,
+      "sourceLengths": [
+        "526"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0799"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q52": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0785",
+      "rowCount": 4,
+      "sourceLengths": [
+        "712"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0785"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q58": {
+      "comparisonCount": 30,
+      "pccLocus": "Synpcc7942_0779",
+      "rowCount": 66,
+      "sourceLengths": [
+        "820"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0779"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q64": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_0773",
+      "rowCount": 8,
+      "sourceLengths": [
+        "201"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0773"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q65": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0772",
+      "rowCount": 272,
+      "sourceLengths": [
+        "197"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0772"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31Q66": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0771",
+      "rowCount": 156,
+      "sourceLengths": [
+        "404"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0771"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31Q67": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0770",
+      "rowCount": 516,
+      "sourceLengths": [
+        "494"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0770"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31Q68": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0769",
+      "rowCount": 104,
+      "sourceLengths": [
+        "300"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0769"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31Q69": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0768",
+      "rowCount": 176,
+      "sourceLengths": [
+        "218"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0768"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31Q73": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0764",
+      "rowCount": 4,
+      "sourceLengths": [
+        "79"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0764"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31Q74": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_0763",
+      "rowCount": 2,
+      "sourceLengths": [
+        "109"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0763"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q80": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0757",
+      "rowCount": 240,
+      "sourceLengths": [
+        "226"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0757"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31Q98": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_0739",
+      "rowCount": 2,
+      "sourceLengths": [
+        "114"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0739"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31QA7": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0730",
+      "rowCount": 4,
+      "sourceLengths": [
+        "179"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0730"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QB4": {
+      "comparisonCount": 12,
+      "pccLocus": "Synpcc7942_0723",
+      "rowCount": 12,
+      "sourceLengths": [
+        "213"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0723"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31QC1": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0716",
+      "rowCount": 4,
+      "sourceLengths": [
+        "366"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0716"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QC2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0715",
+      "rowCount": 404,
+      "sourceLengths": [
+        "395"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0715"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QC7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0710",
+      "rowCount": 136,
+      "sourceLengths": [
+        "231"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0710"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QD2": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_0705",
+      "rowCount": 8,
+      "sourceLengths": [
+        "211"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0705"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QD7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0700",
+      "rowCount": 442,
+      "sourceLengths": [
+        "306"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0700"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QD9": {
+      "comparisonCount": 34,
+      "pccLocus": "Synpcc7942_0698",
+      "rowCount": 52,
+      "sourceLengths": [
+        "144"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0698"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31QE4": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0693",
+      "rowCount": 6,
+      "sourceLengths": [
+        "277"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0693"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31QG3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0674",
+      "rowCount": 554,
+      "sourceLengths": [
+        "317"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0674"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QH6": {
+      "comparisonCount": 12,
+      "pccLocus": "Synpcc7942_0661",
+      "rowCount": 16,
+      "sourceLengths": [
+        "534"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0661"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QH7": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_0660",
+      "rowCount": 72,
+      "sourceLengths": [
+        "323"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0660"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QI3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0654",
+      "rowCount": 188,
+      "sourceLengths": [
+        "188"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0654"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31QL8": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_0619",
+      "rowCount": 44,
+      "sourceLengths": [
+        "211"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0619"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QM6": {
+      "comparisonCount": 26,
+      "pccLocus": "Synpcc7942_0611",
+      "rowCount": 38,
+      "sourceLengths": [
+        "796"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0611"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31QM9": {
+      "comparisonCount": 38,
+      "pccLocus": "Synpcc7942_0608",
+      "rowCount": 126,
+      "sourceLengths": [
+        "198"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0608"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QN3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0604",
+      "rowCount": 242,
+      "sourceLengths": [
+        "247"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0604"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QN9": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0598",
+      "rowCount": 4,
+      "sourceLengths": [
+        "590"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0598"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QP8": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_0589",
+      "rowCount": 40,
+      "sourceLengths": [
+        "220"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0589"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31QQ1": {
+      "comparisonCount": 30,
+      "pccLocus": "Synpcc7942_0586",
+      "rowCount": 52,
+      "sourceLengths": [
+        "246"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0586"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QQ3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0584",
+      "rowCount": 306,
+      "sourceLengths": [
+        "241"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0584"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31QR1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0576",
+      "rowCount": 318,
+      "sourceLengths": [
+        "286"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0576"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31QR2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0575",
+      "rowCount": 112,
+      "sourceLengths": [
+        "187"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0575"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31QU3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0544",
+      "rowCount": 84,
+      "sourceLengths": [
+        "99"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0544"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QU7": {
+      "comparisonCount": 10,
+      "pccLocus": "Synpcc7942_0540",
+      "rowCount": 12,
+      "sourceLengths": [
+        "153"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0540"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QV8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0529",
+      "rowCount": 280,
+      "sourceLengths": [
+        "239"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0529"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QW5": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_0522",
+      "rowCount": 8,
+      "sourceLengths": [
+        "123"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0522"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31QX4": {
+      "comparisonCount": 10,
+      "pccLocus": "Synpcc7942_0513",
+      "rowCount": 10,
+      "sourceLengths": [
+        "250"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0513"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QX5": {
+      "comparisonCount": 22,
+      "pccLocus": "Synpcc7942_0512",
+      "rowCount": 42,
+      "sourceLengths": [
+        "394"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0512"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31QZ7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0490",
+      "rowCount": 184,
+      "sourceLengths": [
+        "681"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0490"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31R03": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_0484",
+      "rowCount": 82,
+      "sourceLengths": [
+        "480"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0484"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31R11": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_0476",
+      "rowCount": 20,
+      "sourceLengths": [
+        "136"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0476"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31R21": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_0466",
+      "rowCount": 6,
+      "sourceLengths": [
+        "749"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0466"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31R35": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0452",
+      "rowCount": 84,
+      "sourceLengths": [
+        "159"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0452"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31R47": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_0440",
+      "rowCount": 72,
+      "sourceLengths": [
+        "375"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0440"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31R56": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0431",
+      "rowCount": 4,
+      "sourceLengths": [
+        "422"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0431"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31R71": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0416",
+      "rowCount": 164,
+      "sourceLengths": [
+        "127"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0416"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31R83": {
+      "comparisonCount": 10,
+      "pccLocus": "Synpcc7942_0404",
+      "rowCount": 10,
+      "sourceLengths": [
+        "304"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0404"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RA0": {
+      "comparisonCount": 14,
+      "pccLocus": "Synpcc7942_0387",
+      "rowCount": 14,
+      "sourceLengths": [
+        "168"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0387"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RA2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0385",
+      "rowCount": 812,
+      "sourceLengths": [
+        "457"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0385"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RB9": {
+      "comparisonCount": 36,
+      "pccLocus": "Synpcc7942_0368",
+      "rowCount": 76,
+      "sourceLengths": [
+        "450"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0368"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RC2": {
+      "comparisonCount": 32,
+      "pccLocus": "Synpcc7942_0365",
+      "rowCount": 54,
+      "sourceLengths": [
+        "209"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0365"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RD5": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_0352",
+      "rowCount": 106,
+      "sourceLengths": [
+        "202"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0352"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RD7": {
+      "comparisonCount": 26,
+      "pccLocus": "Synpcc7942_0350",
+      "rowCount": 34,
+      "sourceLengths": [
+        "292"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0350"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RF1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0336",
+      "rowCount": 954,
+      "sourceLengths": [
+        "505"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0336"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31RF8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0329",
+      "rowCount": 174,
+      "sourceLengths": [
+        "414"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0329"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RI7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0300",
+      "rowCount": 340,
+      "sourceLengths": [
+        "345"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0300"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RI9": {
+      "comparisonCount": 6,
+      "pccLocus": "Synpcc7942_0298",
+      "rowCount": 6,
+      "sourceLengths": [
+        "215"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0298"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RL1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0276",
+      "rowCount": 144,
+      "sourceLengths": [
+        "490"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0276"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RL9": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_0268",
+      "rowCount": 76,
+      "sourceLengths": [
+        "160"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0268"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RM1": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_0266",
+      "rowCount": 8,
+      "sourceLengths": [
+        "185"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0266"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31RN1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0256",
+      "rowCount": 262,
+      "sourceLengths": [
+        "408"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0256"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31RP5": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0242",
+      "rowCount": 4,
+      "sourceLengths": [
+        "369"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0242"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31RP8": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_0239",
+      "rowCount": 66,
+      "sourceLengths": [
+        "112"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0239"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RS1": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0216",
+      "rowCount": 186,
+      "sourceLengths": [
+        "338"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0216"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q31RT3": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_0204",
+      "rowCount": 22,
+      "sourceLengths": [
+        "154"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0204"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31RU8": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0189",
+      "rowCount": 796,
+      "sourceLengths": [
+        "575"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0189"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RV9": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0178",
+      "rowCount": 316,
+      "sourceLengths": [
+        "325"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0178"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RW1": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_0176",
+      "rowCount": 8,
+      "sourceLengths": [
+        "133"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0176"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RW6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0171",
+      "rowCount": 576,
+      "sourceLengths": [
+        "372"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0171"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RX6": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0161",
+      "rowCount": 244,
+      "sourceLengths": [
+        "180"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0161"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RY4": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_0153",
+      "rowCount": 40,
+      "sourceLengths": [
+        "93"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0153"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31RZ7": {
+      "comparisonCount": 4,
+      "pccLocus": "Synpcc7942_0140",
+      "rowCount": 4,
+      "sourceLengths": [
+        "132"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0140"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31S11": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0126",
+      "rowCount": 420,
+      "sourceLengths": [
+        "258"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0126"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31S33": {
+      "comparisonCount": 26,
+      "pccLocus": "Synpcc7942_0104",
+      "rowCount": 34,
+      "sourceLengths": [
+        "258"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0104"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31S42": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0095",
+      "rowCount": 222,
+      "sourceLengths": [
+        "249"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0095"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31S49": {
+      "comparisonCount": 8,
+      "pccLocus": "Synpcc7942_0088",
+      "rowCount": 12,
+      "sourceLengths": [
+        "240"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0088"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31S69": {
+      "comparisonCount": 22,
+      "pccLocus": "Synpcc7942_0068",
+      "rowCount": 32,
+      "sourceLengths": [
+        "329"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0068"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31S77": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_0060",
+      "rowCount": 2,
+      "sourceLengths": [
+        "92"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0060"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31S82": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_0055",
+      "rowCount": 54,
+      "sourceLengths": [
+        "227"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0055"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31S88": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0049",
+      "rowCount": 52,
+      "sourceLengths": [
+        "144"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0049"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q31SB2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_0025",
+      "rowCount": 120,
+      "sourceLengths": [
+        "568"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0025"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q31SD5": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_0002",
+      "rowCount": 2,
+      "sourceLengths": [
+        "290"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0002"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q54775": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1954",
+      "rowCount": 340,
+      "sourceLengths": [
+        "546"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1954"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q54777": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1957",
+      "rowCount": 164,
+      "sourceLengths": [
+        "145"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1957"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q55039": {
+      "comparisonCount": 22,
+      "pccLocus": "Synpcc7942_2613",
+      "rowCount": 24,
+      "sourceLengths": [
+        "212"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2613"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q56207": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1286",
+      "rowCount": 128,
+      "sourceLengths": [
+        "403"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1286"
+      ],
+      "status": "refseq_disagreement",
+      "utexLocus": null
+    },
+    "Q56208": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1285",
+      "rowCount": 180,
+      "sourceLengths": [
+        "319"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1285"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q6BBK3": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 104,
+      "sourceLengths": [
+        "75"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0361"
+      ],
+      "status": "uniprot_no_locus",
+      "utexLocus": null
+    },
+    "Q79PF2": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1214",
+      "rowCount": 76,
+      "sourceLengths": [
+        "167"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1214"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q7X386": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 94,
+      "sourceLengths": [
+        "89"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2061"
+      ],
+      "status": "uniprot_no_locus",
+      "utexLocus": null
+    },
+    "Q8GIR9": {
+      "comparisonCount": 6,
+      "pccLocus": null,
+      "rowCount": 6,
+      "sourceLengths": [
+        "462"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2473"
+      ],
+      "status": "uniprot_no_locus",
+      "utexLocus": null
+    },
+    "Q8GIS6": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_2480",
+      "rowCount": 2,
+      "sourceLengths": [
+        "300"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2480"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q8GIS7": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_2481",
+      "rowCount": 282,
+      "sourceLengths": [
+        "410"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2481"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q8GIS8": {
+      "comparisonCount": 40,
+      "pccLocus": "Synpcc7942_2482",
+      "rowCount": 62,
+      "sourceLengths": [
+        "197"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_2482"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q8GJL0": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_1819",
+      "rowCount": 54,
+      "sourceLengths": [
+        "194"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1819"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q8GMR3": {
+      "comparisonCount": 38,
+      "pccLocus": "Synpcc7942_0441",
+      "rowCount": 76,
+      "sourceLengths": [
+        "222"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0441"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q8GMR9": {
+      "comparisonCount": 20,
+      "pccLocus": "Synpcc7942_0451",
+      "rowCount": 24,
+      "sourceLengths": [
+        "209"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_0451"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q8KPR2": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 92,
+      "sourceLengths": [
+        "78"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1196"
+      ],
+      "status": "uniprot_no_locus",
+      "utexLocus": null
+    },
+    "Q8KPU8": {
+      "comparisonCount": 2,
+      "pccLocus": "Synpcc7942_1578",
+      "rowCount": 2,
+      "sourceLengths": [
+        "279"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1578"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q8KUT3": {
+      "comparisonCount": 42,
+      "pccLocus": "Synpcc7942_B2655",
+      "rowCount": 80,
+      "sourceLengths": [
+        "278"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_B2655"
+      ],
+      "status": "refseq_unconfirmed",
+      "utexLocus": null
+    },
+    "Q8KUW7": {
+      "comparisonCount": 10,
+      "pccLocus": "Synpcc7942_B2635",
+      "rowCount": 14,
+      "sourceLengths": [
+        "319"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_B2635"
+      ],
+      "status": "crosswalk_missing",
+      "utexLocus": null
+    },
+    "Q9R6W2": {
+      "comparisonCount": 42,
+      "pccLocus": null,
+      "rowCount": 874,
+      "sourceLengths": [
+        "339"
+      ],
+      "sourceLoci": [
+        "Synpcc7942_1742"
+      ],
+      "status": "uniprot_no_locus",
+      "utexLocus": null
+    }
+  },
+  "groupCount": 67276,
+  "groupMappingStatuses": {
+    "crosswalk_missing": 1926,
+    "mapped": 58914,
+    "refseq_disagreement": 658,
+    "refseq_unconfirmed": 5394,
+    "uniprot_ambiguous": 168,
+    "uniprot_no_locus": 216
+  },
+  "mappedEvidenceStates": {
+    "no_significant_peptide_evidence": 55274,
+    "not_evaluated": 174,
+    "significant_peptide_evidence": 3466
+  },
+  "mappedLengthAgreementCount": 1849,
+  "mappedLengthDisagreements": {},
+  "perLabel": {
+    "2OG_1": {
+      "groupCount": 1679,
+      "mappedAmbiguousRows": 78,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1451,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 14
+      },
+      "mappedSignificantRows": 22,
+      "mappedSourceRows": 8865,
+      "mappingStatuses": {
+        "crosswalk_missing": 45,
+        "mapped": 1469,
+        "refseq_disagreement": 17,
+        "refseq_unconfirmed": 139,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "2OG_2": {
+      "groupCount": 1679,
+      "mappedAmbiguousRows": 78,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1412,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 53
+      },
+      "mappedSignificantRows": 65,
+      "mappedSourceRows": 8865,
+      "mappingStatuses": {
+        "crosswalk_missing": 45,
+        "mapped": 1469,
+        "refseq_disagreement": 17,
+        "refseq_unconfirmed": 139,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "2PG_1": {
+      "groupCount": 1556,
+      "mappedAmbiguousRows": 77,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1355,
+        "not_evaluated": 5
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 7421,
+      "mappingStatuses": {
+        "crosswalk_missing": 47,
+        "mapped": 1360,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 123,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 6
+      }
+    },
+    "2PG_2": {
+      "groupCount": 1556,
+      "mappedAmbiguousRows": 77,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1355,
+        "not_evaluated": 5
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 7421,
+      "mappingStatuses": {
+        "crosswalk_missing": 47,
+        "mapped": 1360,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 123,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 6
+      }
+    },
+    "3PGA_1": {
+      "groupCount": 1691,
+      "mappedAmbiguousRows": 76,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1473,
+        "not_evaluated": 3
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 9050,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1476,
+        "refseq_disagreement": 18,
+        "refseq_unconfirmed": 142,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "3PGA_2": {
+      "groupCount": 1691,
+      "mappedAmbiguousRows": 76,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1473,
+        "not_evaluated": 3
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 9050,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1476,
+        "refseq_disagreement": 18,
+        "refseq_unconfirmed": 142,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "ADP_1": {
+      "groupCount": 1600,
+      "mappedAmbiguousRows": 75,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1399,
+        "not_evaluated": 7,
+        "significant_peptide_evidence": 1
+      },
+      "mappedSignificantRows": 2,
+      "mappedSourceRows": 7686,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1407,
+        "refseq_disagreement": 15,
+        "refseq_unconfirmed": 123,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "ADP_2": {
+      "groupCount": 1600,
+      "mappedAmbiguousRows": 75,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1363,
+        "not_evaluated": 7,
+        "significant_peptide_evidence": 37
+      },
+      "mappedSignificantRows": 43,
+      "mappedSourceRows": 7686,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1407,
+        "refseq_disagreement": 15,
+        "refseq_unconfirmed": 123,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "AMP_1": {
+      "groupCount": 1524,
+      "mappedAmbiguousRows": 71,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1325,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 9
+      },
+      "mappedSignificantRows": 22,
+      "mappedSourceRows": 7400,
+      "mappingStatuses": {
+        "crosswalk_missing": 45,
+        "mapped": 1338,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 118,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "AMP_2": {
+      "groupCount": 1524,
+      "mappedAmbiguousRows": 71,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1199,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 135
+      },
+      "mappedSignificantRows": 193,
+      "mappedSourceRows": 7400,
+      "mappingStatuses": {
+        "crosswalk_missing": 45,
+        "mapped": 1338,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 118,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "ATP_1": {
+      "groupCount": 1513,
+      "mappedAmbiguousRows": 70,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1148,
+        "not_evaluated": 5,
+        "significant_peptide_evidence": 177
+      },
+      "mappedSignificantRows": 380,
+      "mappedSourceRows": 7163,
+      "mappingStatuses": {
+        "crosswalk_missing": 44,
+        "mapped": 1330,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 116,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "ATP_2": {
+      "groupCount": 1513,
+      "mappedAmbiguousRows": 70,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 996,
+        "not_evaluated": 5,
+        "significant_peptide_evidence": 329
+      },
+      "mappedSignificantRows": 703,
+      "mappedSourceRows": 7163,
+      "mappingStatuses": {
+        "crosswalk_missing": 44,
+        "mapped": 1330,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 116,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "AcCoA_1": {
+      "groupCount": 1428,
+      "mappedAmbiguousRows": 65,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1224,
+        "not_evaluated": 7,
+        "significant_peptide_evidence": 15
+      },
+      "mappedSignificantRows": 15,
+      "mappedSourceRows": 5705,
+      "mappingStatuses": {
+        "crosswalk_missing": 40,
+        "mapped": 1246,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 119,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "AcCoA_2": {
+      "groupCount": 1428,
+      "mappedAmbiguousRows": 65,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 980,
+        "not_evaluated": 7,
+        "significant_peptide_evidence": 259
+      },
+      "mappedSignificantRows": 315,
+      "mappedSourceRows": 5705,
+      "mappingStatuses": {
+        "crosswalk_missing": 40,
+        "mapped": 1246,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 119,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Cit_1": {
+      "groupCount": 1682,
+      "mappedAmbiguousRows": 79,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1450,
+        "not_evaluated": 2,
+        "significant_peptide_evidence": 20
+      },
+      "mappedSignificantRows": 32,
+      "mappedSourceRows": 9155,
+      "mappingStatuses": {
+        "crosswalk_missing": 50,
+        "mapped": 1472,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 135,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Cit_2": {
+      "groupCount": 1682,
+      "mappedAmbiguousRows": 79,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1395,
+        "not_evaluated": 2,
+        "significant_peptide_evidence": 75
+      },
+      "mappedSignificantRows": 187,
+      "mappedSourceRows": 9155,
+      "mappingStatuses": {
+        "crosswalk_missing": 50,
+        "mapped": 1472,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 135,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "FBP_1": {
+      "groupCount": 1623,
+      "mappedAmbiguousRows": 67,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1420,
+        "not_evaluated": 3,
+        "significant_peptide_evidence": 3
+      },
+      "mappedSignificantRows": 6,
+      "mappedSourceRows": 8922,
+      "mappingStatuses": {
+        "crosswalk_missing": 44,
+        "mapped": 1426,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 128,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "FBP_2": {
+      "groupCount": 1623,
+      "mappedAmbiguousRows": 67,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1411,
+        "not_evaluated": 3,
+        "significant_peptide_evidence": 12
+      },
+      "mappedSignificantRows": 18,
+      "mappedSourceRows": 8922,
+      "mappingStatuses": {
+        "crosswalk_missing": 44,
+        "mapped": 1426,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 128,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "G6P_1": {
+      "groupCount": 1596,
+      "mappedAmbiguousRows": 85,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1387,
+        "not_evaluated": 6,
+        "significant_peptide_evidence": 5
+      },
+      "mappedSignificantRows": 8,
+      "mappedSourceRows": 7864,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1398,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 129,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "G6P_2": {
+      "groupCount": 1596,
+      "mappedAmbiguousRows": 85,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1347,
+        "not_evaluated": 6,
+        "significant_peptide_evidence": 45
+      },
+      "mappedSignificantRows": 82,
+      "mappedSourceRows": 7864,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1398,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 129,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "GAP_1": {
+      "groupCount": 1524,
+      "mappedAmbiguousRows": 68,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1323,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 8
+      },
+      "mappedSignificantRows": 13,
+      "mappedSourceRows": 7513,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1335,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 120,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "GAP_2": {
+      "groupCount": 1524,
+      "mappedAmbiguousRows": 68,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 503,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 828
+      },
+      "mappedSignificantRows": 1842,
+      "mappedSourceRows": 7513,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1335,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 120,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "GTP_1": {
+      "groupCount": 1699,
+      "mappedAmbiguousRows": 71,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1450,
+        "not_evaluated": 2,
+        "significant_peptide_evidence": 36
+      },
+      "mappedSignificantRows": 85,
+      "mappedSourceRows": 9343,
+      "mappingStatuses": {
+        "crosswalk_missing": 49,
+        "mapped": 1488,
+        "refseq_disagreement": 18,
+        "refseq_unconfirmed": 135,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "GTP_2": {
+      "groupCount": 1699,
+      "mappedAmbiguousRows": 71,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 968,
+        "not_evaluated": 2,
+        "significant_peptide_evidence": 518
+      },
+      "mappedSignificantRows": 1017,
+      "mappedSourceRows": 9343,
+      "mappingStatuses": {
+        "crosswalk_missing": 49,
+        "mapped": 1488,
+        "refseq_disagreement": 18,
+        "refseq_unconfirmed": 135,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Glyc_1": {
+      "groupCount": 1635,
+      "mappedAmbiguousRows": 69,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1428,
+        "not_evaluated": 3
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 9287,
+      "mappingStatuses": {
+        "crosswalk_missing": 45,
+        "mapped": 1431,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 134,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Glyc_2": {
+      "groupCount": 1635,
+      "mappedAmbiguousRows": 69,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1428,
+        "not_evaluated": 3
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 9287,
+      "mappingStatuses": {
+        "crosswalk_missing": 45,
+        "mapped": 1431,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 134,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Glyx_1": {
+      "groupCount": 1635,
+      "mappedAmbiguousRows": 77,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1434,
+        "not_evaluated": 4
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 9175,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1438,
+        "refseq_disagreement": 15,
+        "refseq_unconfirmed": 127,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Glyx_2": {
+      "groupCount": 1635,
+      "mappedAmbiguousRows": 77,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1312,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 122
+      },
+      "mappedSignificantRows": 142,
+      "mappedSourceRows": 9175,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1438,
+        "refseq_disagreement": 15,
+        "refseq_unconfirmed": 127,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Mal_1": {
+      "groupCount": 1635,
+      "mappedAmbiguousRows": 72,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1427,
+        "not_evaluated": 4
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 7937,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1431,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 133,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Mal_2": {
+      "groupCount": 1635,
+      "mappedAmbiguousRows": 72,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1421,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 6
+      },
+      "mappedSignificantRows": 6,
+      "mappedSourceRows": 7937,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1431,
+        "refseq_disagreement": 16,
+        "refseq_unconfirmed": 133,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "NADPH_1": {
+      "groupCount": 1557,
+      "mappedAmbiguousRows": 68,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1350,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 9
+      },
+      "mappedSignificantRows": 13,
+      "mappedSourceRows": 7520,
+      "mappingStatuses": {
+        "crosswalk_missing": 47,
+        "mapped": 1363,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 124,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "NADPH_2": {
+      "groupCount": 1557,
+      "mappedAmbiguousRows": 68,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1196,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 163
+      },
+      "mappedSignificantRows": 199,
+      "mappedSourceRows": 7520,
+      "mappingStatuses": {
+        "crosswalk_missing": 47,
+        "mapped": 1363,
+        "refseq_disagreement": 14,
+        "refseq_unconfirmed": 124,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "NADP_1": {
+      "groupCount": 1524,
+      "mappedAmbiguousRows": 69,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1288,
+        "not_evaluated": 5,
+        "significant_peptide_evidence": 46
+      },
+      "mappedSignificantRows": 51,
+      "mappedSourceRows": 7280,
+      "mappingStatuses": {
+        "crosswalk_missing": 43,
+        "mapped": 1339,
+        "refseq_disagreement": 15,
+        "refseq_unconfirmed": 118,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "NADP_2": {
+      "groupCount": 1524,
+      "mappedAmbiguousRows": 69,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 915,
+        "not_evaluated": 5,
+        "significant_peptide_evidence": 419
+      },
+      "mappedSignificantRows": 683,
+      "mappedSourceRows": 7280,
+      "mappingStatuses": {
+        "crosswalk_missing": 43,
+        "mapped": 1339,
+        "refseq_disagreement": 15,
+        "refseq_unconfirmed": 118,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "PEP_1": {
+      "groupCount": 1684,
+      "mappedAmbiguousRows": 71,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1467,
+        "not_evaluated": 3
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 9369,
+      "mappingStatuses": {
+        "crosswalk_missing": 49,
+        "mapped": 1470,
+        "refseq_disagreement": 17,
+        "refseq_unconfirmed": 139,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "PEP_2": {
+      "groupCount": 1684,
+      "mappedAmbiguousRows": 71,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1355,
+        "not_evaluated": 3,
+        "significant_peptide_evidence": 112
+      },
+      "mappedSignificantRows": 152,
+      "mappedSourceRows": 9369,
+      "mappingStatuses": {
+        "crosswalk_missing": 49,
+        "mapped": 1470,
+        "refseq_disagreement": 17,
+        "refseq_unconfirmed": 139,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Ru5P_1": {
+      "groupCount": 1599,
+      "mappedAmbiguousRows": 76,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1394,
+        "not_evaluated": 5
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 8130,
+      "mappingStatuses": {
+        "crosswalk_missing": 45,
+        "mapped": 1399,
+        "refseq_disagreement": 17,
+        "refseq_unconfirmed": 128,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 6
+      }
+    },
+    "Ru5P_2": {
+      "groupCount": 1599,
+      "mappedAmbiguousRows": 76,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1394,
+        "not_evaluated": 5
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 8130,
+      "mappingStatuses": {
+        "crosswalk_missing": 45,
+        "mapped": 1399,
+        "refseq_disagreement": 17,
+        "refseq_unconfirmed": 128,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 6
+      }
+    },
+    "RuBP_1": {
+      "groupCount": 1592,
+      "mappedAmbiguousRows": 80,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1386,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 1
+      },
+      "mappedSignificantRows": 3,
+      "mappedSourceRows": 7757,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1391,
+        "refseq_disagreement": 18,
+        "refseq_unconfirmed": 128,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "RuBP_2": {
+      "groupCount": 1592,
+      "mappedAmbiguousRows": 80,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1378,
+        "not_evaluated": 4,
+        "significant_peptide_evidence": 9
+      },
+      "mappedSignificantRows": 13,
+      "mappedSourceRows": 7757,
+      "mappingStatuses": {
+        "crosswalk_missing": 46,
+        "mapped": 1391,
+        "refseq_disagreement": 18,
+        "refseq_unconfirmed": 128,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 5
+      }
+    },
+    "Suc_1": {
+      "groupCount": 1662,
+      "mappedAmbiguousRows": 74,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1447,
+        "not_evaluated": 3
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 8749,
+      "mappingStatuses": {
+        "crosswalk_missing": 48,
+        "mapped": 1450,
+        "refseq_disagreement": 15,
+        "refseq_unconfirmed": 139,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 6
+      }
+    },
+    "Suc_2": {
+      "groupCount": 1662,
+      "mappedAmbiguousRows": 74,
+      "mappedEvidenceStates": {
+        "no_significant_peptide_evidence": 1447,
+        "not_evaluated": 3
+      },
+      "mappedSignificantRows": 0,
+      "mappedSourceRows": 8749,
+      "mappingStatuses": {
+        "crosswalk_missing": 48,
+        "mapped": 1450,
+        "refseq_disagreement": 15,
+        "refseq_unconfirmed": 139,
+        "uniprot_ambiguous": 4,
+        "uniprot_no_locus": 6
+      }
+    }
+  },
+  "schemaVersion": 1,
+  "scope": "Independent exact-identity check of pinned S3; no browser admission or measured UTEX/confirmed-binding claim",
+  "sourceEvidenceStates": {
+    "no_significant_peptide_evidence": 63152,
+    "not_evaluated": 294,
+    "significant_peptide_evidence": 3830
+  },
+  "sources": [
+    {
+      "bytes": 395211418,
+      "path": "S3-pcc7942.tsv",
+      "sha256": "c6cb4794f0a1ff854899b83ddec2ebbef20577387c262b279a6f2519be9a06b5"
+    },
+    {
+      "bytes": 261893,
+      "path": "data/expression/ingest/uniprot_pcc7942_orf_names.tsv",
+      "sha256": "d3a018d87aa173c89468a068da5d71aa8c4166b9b5607c777354bab807bee515"
+    },
+    {
+      "bytes": 3333032,
+      "path": "data/annotation/releases/GCF_000817325.1-RS_2026_05_13/identifier-crosswalk-v1.tsv",
+      "sha256": "97e3022e53cd1e31f5931ead37f425e1d99c032704e5ff8f02c0d75d1755e9ae"
+    },
+    {
+      "bytes": 429726,
+      "path": "data/protein-evidence/releases/GCF_000817325.1-RS_2026_05_13-protein-evidence-v1/protein-identity-v1.tsv",
+      "sha256": "3e9b2b4dafab2ed7e88d09a6126e4464d83bf7929e9e5fc7f5ffdf70eb19e79a"
+    }
+  ]
+}

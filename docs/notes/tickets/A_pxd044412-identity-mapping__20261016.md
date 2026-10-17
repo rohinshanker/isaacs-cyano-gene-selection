@@ -15,7 +15,9 @@ Acceptance: checksum-pinned inputs; exact accession/locus/RefSeq agreement and m
 
 ## Verification
 
-Pending focused synthetic edge cases, full-source mapping audit, independent review, npm test, Python suite and contract validator. Browser admission/rendering remain with the parent; this task has no visible UI changes.
+Implementation `32003bcc` (DEM-450) passes 241 focused tests. Independent direct-TSV audit matches all 2,148 identities, all 42 per-label totals, all 67,276 original reader summaries and all 391,900 source rows. Assigned: 1,849 proteins / 58,914 comparisons; excluded: 299 / 8,362. All assigned protein lengths agree with the pinned UTEX identity artifact.
+
+Required gates: npm test 1,684 passed; Python suite 2,681 passed, 23 skipped, 51 subtests; contract 130 passed, 1 declared spliced-CDS exemption. Independent exact-patch review pending. No known unresolved findings yet; review must finish before closure. Browser admission/rendering remain with the parent; this task has no visible UI changes.
 
 ## Cleanup
 

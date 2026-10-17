@@ -5,6 +5,7 @@ Reusable contracts and runbooks for this repository.
 | Document | Covers |
 | --- | --- |
 | [pxd044412-peptides.md](pxd044412-peptides.md) | Pinned streaming reader for analyzed PCC 7942 peptide comparisons, lossless cells, conservative protein summaries, ambiguity/missingness and non-admission boundary |
+| [pxd044412-mapping.md](pxd044412-mapping.md) | Exact PCC 7942 accession/locus/RefSeq route, excluded identities, peptide-state preservation and independent source checks before UTEX browser admission |
 | [source-access.md](source-access.md) | Current public source routes, BioCyc Keychain/service versus download entitlement, calculator-account limits, nonblocking GEO challenges and dated quote/hash receipts |
 | [idog-locator-feasibility.md](idog-locator-feasibility.md) | Complete pinned iDOG source/bytecode inventory, missing-code necessity, design-versus-location boundary, and a native promoter-locator/evaluation proposal |
 | [pxd036717-enrichment.md](pxd036717-enrichment.md) | Pinned APEX2 supplement preservation, non-imputed LFQ reconstruction, detection and per-sample identification evidence, condition records, exact protein-to-gene mapping with group/RefSeq ambiguity preserved, and browser-admission boundary |
