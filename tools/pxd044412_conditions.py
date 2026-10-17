@@ -170,19 +170,24 @@ def _validate_context(metadata: dict[str, Any]) -> dict[str, Any]:
     _fields(contrast, {"status": "not verified", "numerator": None, "denominator": None}, "contrast")
     for key in ("design", "text"):
         _text(contrast.get(key), f"contrast.{key}")
-    assay = metadata.get("assay")
+    assay = _keys(metadata.get("assay"), {
+        "material", "method", "metaboliteAddition", "temperatureC", "durationMinutes",
+        "scope", "proteinConcentrationUgPerUl", "proteaseToProteinRatio", "control",
+        "biologicalCultivationsPooled", "groupsPerExperiment", "sharedExtract", "where",
+        "preparedTechnicalReplicatesPerGroup", "replicateScope",
+    }, "assay")
     _fields(assay, {
         "temperatureC": 25, "durationMinutes": 10, "proteinConcentrationUgPerUl": 1,
         "proteaseToProteinRatio": "1:100", "biologicalCultivationsPooled": 4,
         "preparedTechnicalReplicatesPerGroup": 4, "groupsPerExperiment": 3, "sharedExtract": True,
     }, "assay")
-    _require("technicalReplicatesPerGroup" not in assay,
-             "assay must distinguish prepared technical replicates from analyzed n")
     for key in ("material", "method", "metaboliteAddition", "scope", "where", "replicateScope"):
         _text(assay.get(key), f"assay.{key}")
     _fields(assay.get("control"), {"addedMetabolite": False}, "assay.control")
     _text(assay["control"].get("text"), "assay.control.text")
-    handling = metadata.get("preFreezingHandling")
+    handling = _keys(metadata.get("preFreezingHandling"), {
+        "lightIntensity", "unit", "approximate", "durationMinutes", "text", "where",
+    }, "preFreezingHandling")
     _fields(handling, {"lightIntensity": 400, "unit": "µmol photons m⁻² s⁻¹",
                        "approximate": True, "durationMinutes": 5}, "preFreezingHandling")
     for key in ("text", "where"):
@@ -209,7 +214,11 @@ def _validate_context(metadata: dict[str, Any]) -> dict[str, Any]:
             _text(excerpt.get(key), f"{name}.{key}")
     _validate_paper_evidence(metadata.get("paperEvidence"))
 
-    base = _object(metadata.get("record"), "record")
+    base = _keys(metadata.get("record"), {
+        "studyId", "dataType", "platform", "strain", "basis", "conditionSet", "samples",
+        "archiveUrl", "citation", "replicates", "treatments", "group", "conditionTableRow",
+        "conditions",
+    }, "record")
     validate_record(base, "PXD044412 source conditions")
     _fields(base, {"studyId": "PXD044412", "dataType": "proteomics", "platform": "LC-MS/MS",
                    "strain": "Synechococcus elongatus PCC 7942", "basis": "transferred",
