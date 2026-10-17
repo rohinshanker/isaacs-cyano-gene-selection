@@ -40,6 +40,11 @@ candidate routes and reasons; recovering them requires a separate identity
 check and does not hold other eligible comparisons. All source evidence states
 remain unchanged, including 174 assigned-but-not-evaluated comparisons with
 only ambiguous peptides. Mapping is preparation, not browser admission.
+**PXD044-TRANSFER remains open for browser admission:** disclose that peptide
+ambiguity is assessed in the source PCC 7942 search space, not independently in
+UTEX. A mapped identity cannot be presented as UTEX-specific peptide evidence.
+The mapping contract also requires a cross-entry source-locus collision check
+before any revised source pin is accepted; the current S3 has none.
 
 Owner decisions, 2026-10-15 (D12): PXD036717 browser release requires a
 reconstruction from raw LFQ intensities before admission; expose twelve

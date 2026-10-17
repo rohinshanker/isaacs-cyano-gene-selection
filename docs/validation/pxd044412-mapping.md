@@ -16,7 +16,8 @@ in this experiment and flagged edges. No accession aliases, fuzzy matches,
 source-order winner, or inferred missing comparisons are allowed.
 
 The source ordered-locus annotation must identify one supported PCC locus and
-agree with the independent UniProt route. Missing, multiple, inconsistent or
+be byte-equal to the independent UniProt route locus; whitespace and trailing
+delimiters are not repaired. Missing, multiple, inconsistent or
 unsupported source annotations cannot authorize assignment. Missing or
 non-overlapping versioned RefSeq references remain excluded. A disagreement
 between records is not proof of a biological mismatch; resolving it requires a
@@ -85,6 +86,20 @@ The audit was computed directly from the pinned TSVs without importing the
 project reader or mapper. Recheck all per-label totals, not only the global sum.
 It retains every excluded accession, source locus/length and comparison count.
 
+The committed [independent reproducer](../../data/audits/pxd044412/reproduce_identity_audit.py)
+(SHA-256 `6cd9207c2f3229ab848b3602b36ed8be2a5c18a88eeb91563bff68f1b0911692`) verifies the four pinned
+inputs and directly checks all eight statistics, p-value bounds, issue and
+ambiguity fields. It accepts only that reviewed source version and refuses an
+existing output. Reproduce the audit and compare it byte for byte:
+
+```sh
+.venv/bin/python data/audits/pxd044412/reproduce_identity_audit.py \
+  --input data/interim/pxd044412/S3-pcc7942.tsv \
+  --output data/interim/pxd044412/identity-audit.json
+cmp data/audits/pxd044412/identity-summary.json \
+  data/interim/pxd044412/identity-audit.json
+```
+
 | Identity route | Distinct source accessions | Observed Entry/Label comparisons |
 | --- | ---: | ---: |
 | Assigned | 1,849 | 58,914 |
@@ -114,3 +129,11 @@ retains the separate condition records, browser admission, interaction-specific
 quantity/missingness display, citations and rendered verification. Mapping
 output stays `releaseEligible: false`. A future consumer must honor both the
 mapping assignment and the preserved peptide evidence state.
+
+The source `ambig` flag describes the study's PCC 7942 search space. Peptide
+uniqueness has not been independently checked against the UTEX proteome; an
+identity link must not be labelled as UTEX-specific peptide evidence. Browser
+admission must retain this transfer caveat. Before accepting revised source
+pins, also recheck source-locus uniqueness across observed Entries; the pinned
+S3 has no such cross-entry collision, but the mapper does not diagnose that
+potential conflict against excluded identities.

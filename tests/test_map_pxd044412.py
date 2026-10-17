@@ -93,6 +93,9 @@ def test_success_preserves_reader_summary_and_all_observed_rows(tmp_path):
     ("NA", ["source_locus_missing"]),
     ("alien_1", ["source_locus_unsupported", "source_locus_disagreement"]),
     ("Synpcc7942_0002", ["source_locus_disagreement"]),
+    (" Synpcc7942_0001 ", ["source_locus_disagreement"]),
+    ("Synpcc7942_0001;", ["source_locus_disagreement"]),
+    ("Synpcc7942_0001\u00a0", ["source_locus_disagreement"]),
     ("Synpcc7942_0001; Synpcc7942_0002", ["source_locus_multiple", "source_locus_disagreement"]),
     ("Synpcc7942_0001 Synpcc7942_0001", ["source_locus_multiple", "source_locus_disagreement"]),
     ("Synpcc7942_0001; alien_1", ["source_locus_multiple", "source_locus_unsupported", "source_locus_disagreement"]),
@@ -122,7 +125,8 @@ def test_any_conflicting_row_excludes_entry_across_all_labels(tmp_path):
 def test_literal_variants_are_preserved_and_conservatively_excluded(tmp_path):
     doc = report(tmp_path, [row(), row(PeptideSequence="OTHER", **{
         mapping.SOURCE_LOCUS: " Synpcc7942_0001 "})])
-    assert doc["identities"][0]["exclusionReasons"] == ["source_locus_conflict"]
+    assert doc["identities"][0]["exclusionReasons"] == [
+        "source_locus_disagreement", "source_locus_conflict"]
 
 
 @pytest.mark.parametrize("locus", ["Synpcc7942_B2615", "Synpcc7942_1912a"])

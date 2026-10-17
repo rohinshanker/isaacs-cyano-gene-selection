@@ -1,7 +1,8 @@
 """Map pinned S3 Entry/Label evidence through exact PCC 7942/UTEX identities.
 
 The new output directory contains mapping.json, a deterministic non-release
-companion to the original S3. No source cells or protein fold changes are copied.
+companion to the original S3. Only identity labels and row references are copied;
+peptide measurements and protein fold changes are not exported.
 """
 
 from __future__ import annotations
@@ -58,7 +59,7 @@ def _identity(entry: str, loci: dict[str, list[dict[str, int]]],
             if any(not identities.PCC_LOCUS.fullmatch(token) for token in tokens):
                 reasons.append("source_locus_unsupported")
             if len(members) == 1 and members[0]["pccLocus"] is not None:
-                if tokens != [members[0]["pccLocus"]]:
+                if literal != members[0]["pccLocus"]:
                     reasons.append("source_locus_disagreement")
     # Identity is entry-wide, independent of comparison label or peptide quality.
     if len(source_loci) > 1:
