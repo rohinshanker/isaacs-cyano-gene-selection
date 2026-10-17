@@ -101,10 +101,93 @@ peptides, three significant), and `Q9KHA8/FBP_1` (eight ambiguous rows, not
 evaluated for unique-protein evidence). These are source comparisons, not counts
 of confirmed interactions or UTEX genes.
 
+## Condition records
+
+`tools/pxd044412_conditions.py` prepares **42 separate candidate condition
+records** from [reviewed condition metadata](../../data/audits/pxd044412/conditions.json).
+It checks exact label coverage against the pinned native inventory. No low/high
+comparisons or metabolites are pooled, and source row counts are coverage counts,
+not replicate counts.
+
+The metadata records the source table's selected low/high concentrations in mM,
+with the original cell strings, row/column locations and PDF hash. These are the
+**Chosen concentrations** columns of Supplementary Table S1 (PDF pages 29–30),
+not its adjacent literature or modeling ranges. Examples are ATP 2/32 mM,
+2-phosphoglycolate 0.2/4 mM and phosphoenolpyruvate 0.5/10 mM. The table spans
+25 metabolites; only the 21 candidate names corresponding to observed S3 labels
+are used.
+
+The label assignments remain **inferred**. S1 has no S3 label column; its full
+names are associated with source prefixes by curated abbreviation interpretation.
+The pinned author's `ms_analysis_20220405.R:289` maps code 1 to Low and 2 to High,
+but that example uses a PCC 6803 layout. No PCC 7942 sample layout establishes the
+complete S3 correspondence. Each comparison therefore preserves its literal
+label, candidate name/dose and mapping status. These fields must not be presented
+as verified sample-level metadata without additional evidence.
+
+The study describes metabolite-treated extract versus a buffer control with no
+added metabolite. The inspected code subtracts the first group level, but the
+missing PCC 7942 layout leaves S3 numeric `log2FC` polarity unverified. Numerator
+and denominator remain null; the condition builder does not flip values or call
+positive changes activation, protection or confirmed binding. A no-added-
+metabolite control is not a measurement of zero endogenous metabolite.
+
+Cultivation and assay metadata remain separate:
+
+- PCC 7942 cultures used BG-11, 1% CO2 and approximately 70 µmol photons m⁻² s⁻¹,
+  in 500 mL flasks with 100 mL liquid, harvested near OD730 1.0. Results Sec3
+  reports exponential growth. Cultivation temperature, photoperiod and light
+  spectrum remain unknown.
+- Four biological cultivations were pooled before harvest. The prepared design
+  used four technical aliquots per assay group from the same extract. The paper
+  requires detection in at least three replicates per group, describes removing
+  outliers and repeating abnormal experiments, and reports two 10 mM glyoxylate
+  experiments. The S3 `Glyx_2` run correspondence is unknown. Analyzed technical
+  n and independent biological n per comparison stay null; neither prepared
+  aliquots nor the constant source `BioReplicate=1` supplies those counts.
+- Approximately 400 µmol photons m⁻² s⁻¹ for five minutes is pre-freezing
+  handling, separate from cultivation illumination. Its placement before harvest
+  is not established.
+- The 25 °C, ten-minute interval describes limited proteolysis with proteinase K
+  in the extracted proteome. It is neither a growth temperature nor a measured
+  live-cell metabolite exposure. Supplement concentrations describe additions to
+  the extract, not intracellular metabolite measurements.
+
+Records follow the existing condition schema with PCC 7942 source identity.
+`basis: transferred` describes preparation for a future UTEX view; the explicit
+basis scope does not establish any gene mapping. Every output remains
+`releaseEligible: false`, retains the candidate/unknown states and records input
+hashes plus the article and versioned dataset attribution.
+
+`paperEvidence` retains structured facts and exact source-span receipts for the
+growth, cultivation, pooling, assay, control and replicate claims. To verify a
+receipt against the pinned article XML, select its `sectionId`, then the
+one-based `paragraph` among that section's direct `p` children. Join the
+paragraph's XML `itertext()` with no separator, then collapse whitespace to
+single spaces. Hash the UTF-8 text for `paragraphSha256`; slice Python character
+offsets `[start:end]` and hash that text for `excerptSha256`. The short literal
+quotes use this same normalization. Review the located source span against its
+structured facts. Hash matching identifies the evidence; it does not itself
+establish that an interpretation is correct.
+
+```sh
+mkdir -p data/interim/pxd044412
+.venv/bin/python tools/pxd044412_conditions.py \
+  --output data/interim/pxd044412/condition-records.json
+```
+
+The output destination must be new and its parent must exist. The builder
+validates exact source hashes and sizes, UTC retrieval timestamps, evidence
+receipt structure, label coverage and dose cells. The mapping, contrast,
+replicate and metabolite objects reject extra fields and preserve the explicit
+inferred/unknown states. This is a metadata contract, not a fresh source audit:
+the builder does not download sources, recheck the PDF cells or interpret prose.
+
 ## Admission boundary
 
 The owner approved a separate interaction evidence type (D11). Browser admission
-still needs the source-specific condition record, identity/crosswalk validation,
+still needs confirmation of candidate condition assignments and contrast direction,
+identity/crosswalk validation,
 review of excluded/ambiguous evidence, a distinct interaction quantity and
 missingness presentation, citations/terms, and rendered checks. The reader
 performs none of those approvals. The [data-sources ticket](../notes/tickets/O_data-sources-selection__20261005.md)

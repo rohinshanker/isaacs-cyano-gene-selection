@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from copy import deepcopy
+from datetime import datetime
 import hashlib
 import json
 import math
@@ -33,6 +34,29 @@ CODES = (
 LABELS = {f"{code}_{suffix}" for code in CODES for suffix in (1, 2)}
 DATASET_DOI = "https://doi.org/10.6084/m9.figshare.23939604.v1"
 LICENCE_URL = "https://creativecommons.org/licenses/by/4.0/"
+SOURCE_PINS = {
+    "article": {
+        "sha256": "daf158707f78a74ff507ec5fbda0f767df239aea8cf41b0bdda2a7298d633109",
+        "bytes": 185562,
+    },
+    "supplement": {
+        "sha256": "9fdf5707e5d45194ba119957864e2085a604beb4fda0692a44df1ff3e04bf522",
+        "bytes": 5772013,
+        "archiveSha256": "ae96e1419c81f77ed98794abca454252a9eaf281b8448796684fc760a3ded6be",
+        "archiveBytes": 14050460,
+    },
+    "analysisCode": {
+        "sha256": "3afc8f333064f1328331fbc28e95f64e4d06ad7f1c661c5697ffe3270ef43386",
+        "bytes": 12981,
+        "commit": "67af07959aa25dfe98b827965c5f745527c19a3b",
+    },
+}
+PAPER_SPANS = {
+    "growthPhase", "cultivation", "pooledCultivations", "preFreezing", "assayDesign",
+    "assayExposure", "sharedExtract", "control", "analyzedReplicates", "outlierHandling",
+    "repeatGlyoxylate",
+}
+PAPER_NORMALIZATION = "Join itertext with no separator, then collapse whitespace to single spaces"
 LIMITS = [
     "Candidate prefix/name and suffix/dose assignments are inferred, not verified sample joins.",
     "S3 log2FC polarity is unknown; positive values do not establish activation or protection.",
@@ -42,6 +66,11 @@ LIMITS = [
     "Native row counts establish label coverage only; no comparisons or dose tiers are pooled.",
     "Source organism is PCC 7942; future UTEX context establishes no gene mapping or browser admission.",
     "LiP-SMap peptide evidence is not protein abundance or confirmed binding.",
+    "Four prepared technical aliquots per group do not establish analyzed n. Peptide screening "
+    "required detection in at least three replicates; outlier removal and repeated experiments "
+    "can alter analyzed sets. Correspondence of S3 Glyx_2 to the repeated 10 mM glyoxylate runs is unknown.",
+    "The builder validates receipt structure and source pins; source rehashing and paper-span "
+    "matching remain coordinator/reviewer audit tasks.",
 ]
 
 
@@ -79,6 +108,47 @@ def _fields(value: Any, expected: dict[str, Any], label: str) -> None:
         _equal(obj[key], wanted, f"{label}.{key}")
 
 
+def _keys(value: Any, expected: set[str], label: str) -> dict[str, Any]:
+    obj = _object(value, label)
+    _require(set(obj) == expected, f"{label} must have exactly the allowed keys {sorted(expected)}")
+    return obj
+
+
+def _utc_timestamp(value: Any, label: str) -> None:
+    _require(isinstance(value, str) and re.fullmatch(
+        r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?(?:Z|\+00:00)",
+        value) is not None, f"{label} must be a UTC ISO timestamp with Z or +00:00")
+    try:
+        datetime.fromisoformat(value)
+    except ValueError as error:
+        raise ValueError(f"{label} must be a valid UTC ISO timestamp") from error
+
+
+def _validate_paper_evidence(value: Any) -> None:
+    """Validate receipts only; no source text is read or rehashed here."""
+    spans = _keys(value, PAPER_SPANS, "paperEvidence")
+    for name, span in spans.items():
+        label = f"paperEvidence.{name}"
+        span = _object(span, label)
+        _fields(span, {"source": "article", "normalization": PAPER_NORMALIZATION}, label)
+        _require(isinstance(span.get("sectionId"), str)
+                 and re.fullmatch(r"Sec[1-9][0-9]*", span["sectionId"]) is not None,
+                 f"{label}.sectionId must name an article section")
+        _require(type(span.get("paragraph")) is int and span["paragraph"] > 0,
+                 f"{label}.paragraph must be a positive 1-based integer")
+        for key in ("paragraphSha256", "excerptSha256"):
+            _require(isinstance(span.get(key), str)
+                     and re.fullmatch(r"[0-9a-f]{64}", span[key]) is not None,
+                     f"{label}.{key} must be a SHA-256 digest")
+        _require(type(span.get("start")) is int and span["start"] >= 0
+                 and type(span.get("end")) is int and span["end"] > span["start"],
+                 f"{label} needs integer offsets 0 <= start < end")
+        facts = _object(span.get("facts"), f"{label}.facts")
+        _require(bool(facts), f"{label}.facts must not be empty")
+        for key in facts:
+            _text(key, f"{label}.facts key")
+
+
 def _dose(raw: Any, label: str) -> float:
     _require(isinstance(raw, str) and re.fullmatch(r"(?:\d+(?:\.\d*)?|\.\d+)", raw) is not None,
              f"{label} must preserve a numeric source cell string")
@@ -92,10 +162,11 @@ def _validate_context(metadata: dict[str, Any]) -> dict[str, Any]:
     _fields(metadata, {"schemaVersion": 1, "accession": "PXD044412",
                        "sourceSha256": SOURCE_SHA256, "releaseEligible": False}, "metadata")
     _text(metadata.get("basisScope"), "basisScope")
-    mapping = metadata.get("labelMapping")
+    mapping = _keys(metadata.get("labelMapping"), {"status", "doseCodes", "text"}, "labelMapping")
     _fields(mapping, {"status": "inferred", "doseCodes": {"1": "low", "2": "high"}}, "labelMapping")
     _text(mapping.get("text"), "labelMapping.text")
-    contrast = metadata.get("contrast")
+    contrast = _keys(metadata.get("contrast"),
+                     {"status", "design", "numerator", "denominator", "text"}, "contrast")
     _fields(contrast, {"status": "not verified", "numerator": None, "denominator": None}, "contrast")
     for key in ("design", "text"):
         _text(contrast.get(key), f"contrast.{key}")
@@ -103,9 +174,11 @@ def _validate_context(metadata: dict[str, Any]) -> dict[str, Any]:
     _fields(assay, {
         "temperatureC": 25, "durationMinutes": 10, "proteinConcentrationUgPerUl": 1,
         "proteaseToProteinRatio": "1:100", "biologicalCultivationsPooled": 4,
-        "technicalReplicatesPerGroup": 4, "groupsPerExperiment": 3, "sharedExtract": True,
+        "preparedTechnicalReplicatesPerGroup": 4, "groupsPerExperiment": 3, "sharedExtract": True,
     }, "assay")
-    for key in ("material", "method", "metaboliteAddition", "scope", "where"):
+    _require("technicalReplicatesPerGroup" not in assay,
+             "assay must distinguish prepared technical replicates from analyzed n")
+    for key in ("material", "method", "metaboliteAddition", "scope", "where", "replicateScope"):
         _text(assay.get(key), f"assay.{key}")
     _fields(assay.get("control"), {"addedMetabolite": False}, "assay.control")
     _text(assay["control"].get("text"), "assay.control.text")
@@ -116,17 +189,14 @@ def _validate_context(metadata: dict[str, Any]) -> dict[str, Any]:
         _text(handling.get(key), f"preFreezingHandling.{key}")
 
     sources = _object(metadata.get("sources"), "sources")
-    for name in ("article", "supplement", "analysisCode"):
+    for name, pins in SOURCE_PINS.items():
         source = _object(sources.get(name), f"sources.{name}")
         _require(_text(source.get("url"), name).startswith("https://"), f"{name} URL must be https")
-        _require(isinstance(source.get("sha256"), str)
-                 and re.fullmatch(r"[0-9a-f]{64}", source["sha256"]) is not None,
-                 f"{name} needs a SHA-256 source pin")
+        _fields(source, pins, f"sources.{name}")
+        if "retrieved" in source:
+            _utc_timestamp(source["retrieved"], f"{name}.retrieved")
     for name in ("article", "supplement"):
-        source = sources[name]
-        _text(source.get("retrieved"), f"{name}.retrieved")
-        _require(type(source.get("bytes")) is int and source["bytes"] > 0,
-                 f"{name} needs a positive byte size")
+        _require("retrieved" in sources[name], f"{name} needs retrieved timestamp")
     _fields(sources["supplement"], {"table": "S1", "pdfPages": [29, 30]}, "supplement")
     for key in ("member", "verification"):
         _text(sources["supplement"].get(key), f"supplement.{key}")
@@ -137,13 +207,19 @@ def _validate_context(metadata: dict[str, Any]) -> dict[str, Any]:
         excerpt = _object(excerpts.get(name), name)
         for key in ("where", "quote", "verification"):
             _text(excerpt.get(key), f"{name}.{key}")
+    _validate_paper_evidence(metadata.get("paperEvidence"))
 
     base = _object(metadata.get("record"), "record")
     validate_record(base, "PXD044412 source conditions")
     _fields(base, {"studyId": "PXD044412", "dataType": "proteomics", "platform": "LC-MS/MS",
                    "strain": "Synechococcus elongatus PCC 7942", "basis": "transferred",
                    "group": "other", "conditionTableRow": None}, "record")
-    _fields(base["replicates"], {"count": None, "status": "not reported"}, "replicates")
+    _keys(base["replicates"], {"count", "status", "text", "preparedTechnicalCount",
+                              "analyzedTechnicalCount", "minimumDetectedTechnicalCount"}, "replicates")
+    _fields(base["replicates"], {
+        "count": None, "status": "not reported", "preparedTechnicalCount": 4,
+        "analyzedTechnicalCount": None, "minimumDetectedTechnicalCount": 3,
+    }, "replicates")
     citation = _object(base.get("citation"), "citation")
     _equal(citation.get("url"), "https://doi.org/10.1038/s42003-023-05318-8", "citation.url")
     axes = base["conditions"]
@@ -156,13 +232,14 @@ def _validate_context(metadata: dict[str, Any]) -> dict[str, Any]:
         "medium": {"status": "reported", "base": "BG-11", "modified": False,
                    "conditioned": False, "nitrogenAltered": False},
         "format": {"status": "reported", "value": "planktonic liquid"},
-        "phase": {"status": "reported", "label": "OD stated", "od": [1, 1],
+        "phase": {"status": "reported", "label": "exponential", "od": [1, 1],
                   "odNm": 730, "approximate": True},
     }.items():
         _fields(axes[name], fields, f"conditions.{name}")
         _text(axes[name]["where"], f"{name}.where")
         if axes[name]["status"] == "reported":
             _text(axes[name]["quote"], f"{name}.quote")
+            _text(axes[name].get("verification"), f"{name}.verification")
     return base
 
 
@@ -188,7 +265,8 @@ def build_records(metadata: dict[str, Any], inventory: dict[str, Any]) -> dict[s
              "metadata needs exactly 21 metabolites")
     by_code = {}
     for metabolite in metabolites:
-        metabolite = _object(metabolite, "metabolite")
+        metabolite = _keys(metabolite, {"code", "name", "kegg", "sourceLabels", "low", "high",
+                                        "unit", "where", "mappingStatus"}, "metabolite")
         code = _text(metabolite.get("code"), "metabolite.code")
         _require(code in CODES and code not in by_code, f"duplicate or unknown metabolite code: {code}")
         for key in ("name", "kegg", "where"):
@@ -218,7 +296,7 @@ def build_records(metadata: dict[str, Any], inventory: dict[str, Any]) -> dict[s
             }
             record["metabolite"] = deepcopy(metabolite)
             for key in ("assay", "contrast", "preFreezingHandling", "sources", "paperExcerpts",
-                        "labelMapping", "basisScope"):
+                        "paperEvidence", "labelMapping", "basisScope"):
                 record[key] = deepcopy(metadata[key])
             record["releaseEligible"] = False
             validate_record(record, label)

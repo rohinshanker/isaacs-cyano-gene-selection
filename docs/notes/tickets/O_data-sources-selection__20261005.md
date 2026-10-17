@@ -17,7 +17,7 @@ Owner decision, 2026-10-14 (D11): retain **PXD036717 proximity-label enrichment
 ratios** and **PXD044412 metabolite–protein interaction measurements** as separate
 evidence types. Neither is protein abundance, and neither is admitted by this
 decision alone. The source-specific readers are now implemented; identifier,
-condition and browser-admission checks remain. The owner has settled whether
+condition-assignment confirmation and browser-admission checks remain. The owner has settled whether
 these evidence types are wanted.
 
 PXD044412 reader preparation is complete (cyano-regulatory-sites, 2026-10-16):
@@ -28,9 +28,10 @@ comparison labels, preserves every source cell, and provides conservative
 source-protein summaries without averaging fold changes. Ambiguous-only groups
 are not evaluated, not negative. This supersedes the assumption that the seven
 PRIDE intensity reports must be the reader input. S3's CC BY 4.0 terms are
-separate from PRIDE's CC0. Remaining PXD044412 admission work: comparison/condition metadata, distinct interaction
-presentation, citations and rendered validation. No PXD044412 browser values
-are admitted by this reader.
+separate from PRIDE's CC0. Remaining PXD044412 admission work: confirmation of
+candidate condition assignments and numeric contrast direction, excluded-identity
+recovery, distinct interaction presentation, citations and rendered validation.
+No PXD044412 browser values are admitted by this reader.
 
 PXD044412 identity mapping is implemented by `cyano-lit-unreach` (2026-10-16)
 under the [mapping contract](../../validation/pxd044412-mapping.md). Exact
@@ -45,6 +46,15 @@ ambiguity is assessed in the source PCC 7942 search space, not independently in
 UTEX. A mapped identity cannot be presented as UTEX-specific peptide evidence.
 The mapping contract also requires a cross-entry source-locus collision check
 before any revised source pin is accepted; the current S3 has none.
+
+PXD044412 condition preparation is implemented (cyano-regulatory-sites,
+2026-10-16): [42 separate candidate records](../../validation/pxd044412-peptides.md#condition-records)
+retain S1 low/high mM cells, exponential growth versus extract-assay conditions,
+four cultivations pooled before harvest and a prepared design of four technical
+aliquots per group. Analyzed technical n remains unknown after exclusions/repeats.
+Source prefix/dose associations remain inferred from author conventions;
+independent biological replicate count and numeric contrast polarity are unknown.
+The records are not browser admission or verified PCC 7942 sample-layout joins.
 
 Owner decisions, 2026-10-15 (D12): PXD036717 browser release requires a
 reconstruction from raw LFQ intensities before admission; expose twelve
@@ -367,7 +377,7 @@ on 2026-10-12. Metadata only; nothing was downloaded.
 | PXD027430 | PCC 7942 | 9 files: three mzIdentML with their MGFs and raws | the same reader, three runs | its condition record, and that this is a TMT study whose reporter-ion quantification is not in the deposit, so counts are the only quantity it can yield. Conditions and the 0 h baseline assignments are open depositor questions, deferred |
 | PXD014590 | **UTEX 2973, native** | 135 files: 27 top-down runs as `.raw`, 27 `.ms1ft` MS1 feature files, 27 search archives and 54 `*_MSAlign_Results_XML.zip` | no protein-level table; an MSAlign result-XML reader would be new | top-down results identify proteoforms, not gene-level amounts. Roadmap item 7 directs a presence overlay first; define/validate that output contract before a layer ships |
 | PXD036717 | PCC 7942 CscB-SPS, engineered | 24 archive files; four APEX2 baits against CscB-SPS. Owner-supplied publisher `mmc1.xlsx` provides LFQ intensities and ratios directly, without extracting the search/peak RARs | pinned workbook reader and non-imputed reconstruction; identifier/condition/release checks above remain | separate enrichment approved D11; D12 requires raw-LFQ reconstruction, twelve replicate comparisons and optional within-bait means; not protein abundance |
-| PXD044412 | multi-organism archive; S3 is PCC 7942 | 2,002 PRIDE entries include seven PCC 7942 intensity reports; paper-linked Figshare v1 S3 supplies 391,900 analyzed peptide rows across 42 labels | pinned streaming S3 reader and conservative source-protein evidence summaries implemented; full cell preservation and ambiguity/missingness checks | distinct interaction type approved D11; exact identity mapping implemented with exclusions retained; condition validation, browser admission and rendering remain; no protein-abundance interpretation |
+| PXD044412 | multi-organism archive; S3 is PCC 7942 | 2,002 PRIDE entries include seven PCC 7942 intensity reports; paper-linked Figshare v1 S3 supplies 391,900 analyzed peptide rows across 42 labels | pinned streaming S3 reader and conservative source-protein evidence summaries implemented; full cell preservation and ambiguity/missingness checks | distinct interaction type approved D11; exact identity mapping and 42 candidate condition records implemented with exclusions retained; dose-assignment/contrast confirmation, browser admission and rendering remain; no protein-abundance interpretation |
 
 Unchanged and still outside the shortlist: PXD019731 and PXD074299 deposit no
 proteome-wide table and wait on reprocessing; PXD011485 is PCC 11801, outside

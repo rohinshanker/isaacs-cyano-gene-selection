@@ -13,6 +13,11 @@ verifies all four input pins plus source statistic validity. The
 [mapping contract](../../../docs/validation/pxd044412-mapping.md) gives the command,
 expected counts and assignment limits.
 
+`conditions.json` retains the independently inspected S1 dose cells and source
+receipts, candidate label assignments, cultivation/assay distinction, pooled
+biological inputs, prepared technical replication, unknown analyzed n and
+contrast direction, and reconstructable article evidence spans.
+
 The full source and generated row exports are not committed. This directory
 contains reproducibility receipts and non-release checks, not site data. For
 reader use, output semantics, counts and source limits, see the

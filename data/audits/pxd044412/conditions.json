@@ -1,0 +1,671 @@
+{
+  "schemaVersion": 1,
+  "accession": "PXD044412",
+  "sourceSha256": "c6cb4794f0a1ff854899b83ddec2ebbef20577387c262b279a6f2519be9a06b5",
+  "sources": {
+    "article": {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10507043/fullTextXML",
+      "retrieved": "2026-10-16T20:32:07.751298+00:00",
+      "sha256": "daf158707f78a74ff507ec5fbda0f767df239aea8cf41b0bdda2a7298d633109",
+      "bytes": 185562
+    },
+    "supplement": {
+      "url": "https://www.ebi.ac.uk/europepmc/webservices/rest/PMC10507043/supplementaryFiles",
+      "retrieved": "2026-10-17T01:07:59.432960+00:00",
+      "archiveSha256": "ae96e1419c81f77ed98794abca454252a9eaf281b8448796684fc760a3ded6be",
+      "archiveBytes": 14050460,
+      "member": "42003_2023_5318_MOESM2_ESM.pdf",
+      "sha256": "9fdf5707e5d45194ba119957864e2085a604beb4fda0692a44df1ff3e04bf522",
+      "bytes": 5772013,
+      "table": "S1",
+      "pdfPages": [
+        29,
+        30
+      ],
+      "verification": "Table cells extracted with pdftotext and both pages visually checked"
+    },
+    "analysisCode": {
+      "url": "https://raw.githubusercontent.com/emilsporre/lipsmap-comp/67af07959aa25dfe98b827965c5f745527c19a3b/source/ms_analysis_20220405.R",
+      "commit": "67af07959aa25dfe98b827965c5f745527c19a3b",
+      "sha256": "3afc8f333064f1328331fbc28e95f64e4d06ad7f1c661c5697ffe3270ef43386",
+      "doseCodeLocation": "line 289",
+      "contrastLocation": "lines 167-178",
+      "scope": "PCC 6803 configured example; no PCC 7942 layout or proof of exact S3 execution",
+      "bytes": 12981
+    }
+  },
+  "paperExcerpts": {
+    "pooled": {
+      "where": "Sec9",
+      "quote": "replicates were pooled",
+      "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; full claim context is pinned by paperEvidence spans."
+    },
+    "technical": {
+      "where": "Sec11",
+      "quote": "four technical replicates",
+      "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; full claim context is pinned by paperEvidence spans."
+    },
+    "assay": {
+      "where": "Sec11",
+      "quote": "25 °C",
+      "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; full claim context is pinned by paperEvidence spans."
+    },
+    "duration": {
+      "where": "Sec11",
+      "quote": "10 min",
+      "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; full claim context is pinned by paperEvidence spans."
+    }
+  },
+  "labelMapping": {
+    "status": "inferred",
+    "doseCodes": {
+      "1": "low",
+      "2": "high"
+    },
+    "text": "Dose tiers follow pinned author-code convention; prefix-to-metabolite names are curated abbreviation interpretations of Table S1. S1 does not contain S3 label strings, and no PCC 7942 layout establishes the full correspondence. These are candidate condition assignments, not verified sample-level joins."
+  },
+  "contrast": {
+    "status": "not verified",
+    "design": "Metabolite-treated versus no-added-metabolite buffer control",
+    "numerator": null,
+    "denominator": null,
+    "text": "The study reports treatment/control comparisons. Code subtracts the first GROUP level; the PCC 7942 layout is unavailable, so S3 log2FC polarity is not established. Preserve signed values without interpreting positive as activation or protection."
+  },
+  "assay": {
+    "material": "Desalted cell extract from pooled cultivations",
+    "method": "Limited proteolysis small-molecule mapping (LiP-SMap), LC-MS/MS",
+    "metaboliteAddition": "In vitro addition to extract; not an intracellular concentration or live-cell treatment",
+    "temperatureC": 25,
+    "durationMinutes": 10,
+    "scope": "Proteinase K limited proteolysis; not cultivation temperature or metabolite preincubation time",
+    "proteinConcentrationUgPerUl": 1,
+    "proteaseToProteinRatio": "1:100",
+    "control": {
+      "addedMetabolite": false,
+      "text": "Buffer added instead of metabolite; not a measured zero endogenous metabolite concentration"
+    },
+    "biologicalCultivationsPooled": 4,
+    "groupsPerExperiment": 3,
+    "sharedExtract": true,
+    "where": "Article Methods Sec9-Sec11; Results Assessment of LiP-SMap method and data",
+    "preparedTechnicalReplicatesPerGroup": 4,
+    "replicateScope": "Prepared design only. Analyzed technical n is not available per S3 comparison; source screening required peptide detection in at least three replicates per group and removed outliers."
+  },
+  "record": {
+    "studyId": "PXD044412",
+    "dataType": "proteomics",
+    "platform": "LC-MS/MS",
+    "strain": "Synechococcus elongatus PCC 7942",
+    "basis": "transferred",
+    "conditionSet": "PCC 7942 LiP-SMap comparison; candidate dose assignment",
+    "samples": "Source S3 comparison labels; no sample/run pairing inferred",
+    "archiveUrl": "https://www.ebi.ac.uk/pride/archive/projects/PXD044412",
+    "citation": {
+      "text": "Sporre E, Karlsen J, Schriever K, et al. Metabolite interactions in the bacterial Calvin cycle and implications for flux regulation. Communications Biology 6, 947 (2023).",
+      "url": "https://doi.org/10.1038/s42003-023-05318-8",
+      "pmid": "37723200"
+    },
+    "replicates": {
+      "count": null,
+      "status": "not reported",
+      "text": "Independent biological n and analyzed technical n per S3 comparison are not established. Four source cultivations were pooled before harvest; the prepared design used four technical aliquots per group sharing one extract. Peptides required detection in at least three replicates per group; outliers were removed and abnormal experiments repeated. Two 10 mM glyoxylate runs are described, but S3 Glyx_2 run identity is not established. BioReplicate=1 is not a biological n.",
+      "preparedTechnicalCount": 4,
+      "analyzedTechnicalCount": null,
+      "minimumDetectedTechnicalCount": 3
+    },
+    "treatments": [
+      "In vitro metabolite addition to pooled extract followed by limited proteolysis"
+    ],
+    "group": "other",
+    "conditionTableRow": null,
+    "conditions": {
+      "temperature": {
+        "status": "not reported",
+        "text": "PCC 7942 cultivation temperature not stated; 25 °C describes proteolysis only",
+        "where": "Article Methods, Cultivations and harvest (Sec9)",
+        "quote": "",
+        "lo": null,
+        "hi": null,
+        "unit": "°C"
+      },
+      "lightIntensity": {
+        "status": "reported",
+        "text": "Approximately 70 µmol photons m⁻² s⁻¹ during cultivation; separate 400 pre-freezing exposure",
+        "where": "Article Methods, Cultivations and harvest (Sec9)",
+        "quote": "~70 µmol/s·m2",
+        "lo": 70,
+        "hi": 70,
+        "unit": "µmol photons m⁻² s⁻¹",
+        "approximate": true,
+        "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; context in paperEvidence."
+      },
+      "lightRegime": {
+        "status": "not reported",
+        "text": "Photoperiod and spectrum not stated for PCC 7942",
+        "where": "Article Methods, Cultivations and harvest (Sec9)",
+        "quote": "",
+        "kind": null,
+        "photoperiod": null,
+        "spectrumClass": null,
+        "entrained": false
+      },
+      "co2": {
+        "status": "reported",
+        "text": "1% CO2 during cultivation",
+        "where": "Article Methods, Cultivations and harvest (Sec9)",
+        "quote": "1% CO2",
+        "lo": 1,
+        "hi": 1,
+        "unit": "%",
+        "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; context in paperEvidence."
+      },
+      "medium": {
+        "status": "reported",
+        "text": "BG-11 media",
+        "where": "Article Methods, Cultivations and harvest (Sec9)",
+        "quote": "BG-11 media",
+        "base": "BG-11",
+        "modified": false,
+        "conditioned": false,
+        "nitrogenAltered": false,
+        "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; context in paperEvidence."
+      },
+      "format": {
+        "status": "reported",
+        "text": "500 mL flasks containing 100 mL culture",
+        "where": "Article Methods, Cultivations and harvest (Sec9)",
+        "quote": "500 mL flasks",
+        "value": "planktonic liquid",
+        "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; context in paperEvidence."
+      },
+      "phase": {
+        "status": "reported",
+        "text": "Stable exponential growth reported for all four cultures in Results; Methods adds PCC 7942 OD730 approximately 1.0.",
+        "where": "Article Results Sec3, paragraph 1; Methods Sec9, paragraph 3",
+        "quote": "stable exponential growth",
+        "label": "exponential",
+        "od": [
+          1,
+          1
+        ],
+        "odNm": 730,
+        "approximate": true,
+        "verification": "Exact match after joining XML itertext without separators and normalizing whitespace; context in paperEvidence."
+      }
+    }
+  },
+  "metabolites": [
+    {
+      "code": "2OG",
+      "name": "2-oxoglutarate",
+      "kegg": "C00026",
+      "sourceLabels": [
+        "2OG_1",
+        "2OG_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=2-oxoglutarate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "2PG",
+      "name": "2-phosphoglycolate",
+      "kegg": "C00988",
+      "sourceLabels": [
+        "2PG_1",
+        "2PG_2"
+      ],
+      "low": "0.2",
+      "high": "4",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=2-phosphoglycolate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "3PGA",
+      "name": "3-phosphoglycerate",
+      "kegg": "C00597",
+      "sourceLabels": [
+        "3PGA_1",
+        "3PGA_2"
+      ],
+      "low": "2",
+      "high": "20",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=3-phosphoglycerate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "ADP",
+      "name": "ADP",
+      "kegg": "C00008",
+      "sourceLabels": [
+        "ADP_1",
+        "ADP_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=ADP, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "AMP",
+      "name": "AMP",
+      "kegg": "C00020",
+      "sourceLabels": [
+        "AMP_1",
+        "AMP_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=AMP, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "ATP",
+      "name": "ATP",
+      "kegg": "C00002",
+      "sourceLabels": [
+        "ATP_1",
+        "ATP_2"
+      ],
+      "low": "2",
+      "high": "32",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=ATP, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "AcCoA",
+      "name": "Acetyl-CoA",
+      "kegg": "C00024",
+      "sourceLabels": [
+        "AcCoA_1",
+        "AcCoA_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=Acetyl-CoA, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "Cit",
+      "name": "Citrate",
+      "kegg": "C00158",
+      "sourceLabels": [
+        "Cit_1",
+        "Cit_2"
+      ],
+      "low": "2",
+      "high": "20",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=Citrate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "FBP",
+      "name": "Fructose-1,6-bisphosphate",
+      "kegg": "C00354",
+      "sourceLabels": [
+        "FBP_1",
+        "FBP_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=Fructose-1,6-bisphosphate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "G6P",
+      "name": "Glucose-6-phosphate",
+      "kegg": "C00668",
+      "sourceLabels": [
+        "G6P_1",
+        "G6P_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=Glucose-6-phosphate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "GAP",
+      "name": "Glyceraldehyde-3-phosphate",
+      "kegg": "C00118",
+      "sourceLabels": [
+        "GAP_1",
+        "GAP_2"
+      ],
+      "low": "0.5",
+      "high": "5",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 29, row=Glyceraldehyde-3-phosphate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "GTP",
+      "name": "GTP",
+      "kegg": "C00044",
+      "sourceLabels": [
+        "GTP_1",
+        "GTP_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=GTP, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "Glyc",
+      "name": "Glycolate",
+      "kegg": "C00160",
+      "sourceLabels": [
+        "Glyc_1",
+        "Glyc_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=Glycolate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "Glyx",
+      "name": "Glyoxylate",
+      "kegg": "C00048",
+      "sourceLabels": [
+        "Glyx_1",
+        "Glyx_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=Glyoxylate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "Mal",
+      "name": "Malate",
+      "kegg": "C00149",
+      "sourceLabels": [
+        "Mal_1",
+        "Mal_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=Malate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "NADP",
+      "name": "NADP",
+      "kegg": "C00006",
+      "sourceLabels": [
+        "NADP_1",
+        "NADP_2"
+      ],
+      "low": "0.5",
+      "high": "5",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=NADP, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "NADPH",
+      "name": "NADPH",
+      "kegg": "C00005",
+      "sourceLabels": [
+        "NADPH_1",
+        "NADPH_2"
+      ],
+      "low": "0.5",
+      "high": "5",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=NADPH, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "PEP",
+      "name": "Phosphoenolpyruvate",
+      "kegg": "C00074",
+      "sourceLabels": [
+        "PEP_1",
+        "PEP_2"
+      ],
+      "low": "0.5",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=Phosphoenolpyruvate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "Ru5P",
+      "name": "Ribulose-5-phosphate",
+      "kegg": "C00199",
+      "sourceLabels": [
+        "Ru5P_1",
+        "Ru5P_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=Ribulose-5-phosphate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "RuBP",
+      "name": "Ribulose-1,5-bisphosphate",
+      "kegg": "C01182",
+      "sourceLabels": [
+        "RuBP_1",
+        "RuBP_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=Ribulose-1,5-bisphosphate, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    },
+    {
+      "code": "Suc",
+      "name": "Sucrose",
+      "kegg": "C00089",
+      "sourceLabels": [
+        "Suc_1",
+        "Suc_2"
+      ],
+      "low": "1",
+      "high": "10",
+      "unit": "mM",
+      "where": "Table S1, PDF p. 30, row=Sucrose, columns=Chosen concentrations: Low / High",
+      "mappingStatus": "inferred"
+    }
+  ],
+  "releaseEligible": false,
+  "basisScope": "Condition records are prepared for potential transfer into the UTEX view; source organism remains PCC 7942. This metadata does not establish a gene mapping or admit a browser layer.",
+  "preFreezingHandling": {
+    "lightIntensity": 400,
+    "unit": "µmol photons m⁻² s⁻¹",
+    "approximate": true,
+    "durationMinutes": 5,
+    "text": "Cyanobacteria exposed before snap-freezing; separate from cultivation illumination",
+    "where": "Article Methods Sec9"
+  },
+  "paperEvidence": {
+    "growthPhase": {
+      "source": "article",
+      "sectionId": "Sec3",
+      "paragraph": 1,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "a3ca9f887eba052cc021d06fa1718912b122b5e3c8d3521bc6d45d288022f19a",
+      "start": 347,
+      "end": 414,
+      "excerptSha256": "2de87d2f2c32026393c4f81b3ac4e6731da36770c1adb08a225f2bda5a6ba8cb",
+      "facts": {
+        "phase": "stable exponential",
+        "scope": "all four cultures"
+      }
+    },
+    "cultivation": {
+      "source": "article",
+      "sectionId": "Sec9",
+      "paragraph": 3,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "5205f62a567d994f969952b237669f78f9a04dfd0aaae37c73d476de20f94b63",
+      "start": 0,
+      "end": 298,
+      "excerptSha256": "5205f62a567d994f969952b237669f78f9a04dfd0aaae37c73d476de20f94b63",
+      "facts": {
+        "source": "PCC 7942 and PCC 6803",
+        "medium": "BG-11",
+        "co2Percent": 1,
+        "lightApprox": 70,
+        "flaskMl": 500,
+        "cultureMl": 100,
+        "od730Approx": 1
+      }
+    },
+    "pooledCultivations": {
+      "source": "article",
+      "sectionId": "Sec9",
+      "paragraph": 4,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "03c0a23fd4155afeeb70568b1b0ab0315bc6ab1c6cc34642416a370ee8ebc18c",
+      "start": 0,
+      "end": 132,
+      "excerptSha256": "f47cca83223cec3fed7e2a25de5adfbaa2460a15e6f597881ef8c07acbf81c95",
+      "facts": {
+        "count": 4,
+        "pooled": true,
+        "timing": "immediately before harvest"
+      }
+    },
+    "preFreezing": {
+      "source": "article",
+      "sectionId": "Sec9",
+      "paragraph": 4,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "03c0a23fd4155afeeb70568b1b0ab0315bc6ab1c6cc34642416a370ee8ebc18c",
+      "start": 344,
+      "end": 451,
+      "excerptSha256": "b1a2bfbe2b6fced60c757acec3a2597a45c924be6cc2854c436a66c5b484266a",
+      "facts": {
+        "lightApprox": 400,
+        "minutes": 5,
+        "timing": "prior to snap-freezing"
+      }
+    },
+    "assayDesign": {
+      "source": "article",
+      "sectionId": "Sec11",
+      "paragraph": 1,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "b7ef48e5c940e71ff38c2b38b96cfdecf482d81c073b58e2f61bb986b705b3bd",
+      "start": 0,
+      "end": 265,
+      "excerptSha256": "91cd73adc4d6b69afa3e968c53945187a7c9262df0cfbb0987f98c9d08f64d89",
+      "facts": {
+        "groups": 3,
+        "technicalPreparedPerGroup": 4,
+        "proteinUgPerUl": 1
+      }
+    },
+    "assayExposure": {
+      "source": "article",
+      "sectionId": "Sec11",
+      "paragraph": 1,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "b7ef48e5c940e71ff38c2b38b96cfdecf482d81c073b58e2f61bb986b705b3bd",
+      "start": 409,
+      "end": 571,
+      "excerptSha256": "c359021b0304787813585cb1ca65bac5e328f78f8a848ca4e43aacf547290b7d",
+      "facts": {
+        "ratio": "1:100",
+        "temperatureC": 25,
+        "minutes": 10
+      }
+    },
+    "sharedExtract": {
+      "source": "article",
+      "sectionId": "Sec11",
+      "paragraph": 1,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "b7ef48e5c940e71ff38c2b38b96cfdecf482d81c073b58e2f61bb986b705b3bd",
+      "start": 572,
+      "end": 724,
+      "excerptSha256": "6e8c0c187851c624f3341c0b3dd489326655ad62ccb1660716e372887a6e200a",
+      "facts": {
+        "sharedExtract": true,
+        "parallelTreatment": true,
+        "samePlate": true
+      }
+    },
+    "control": {
+      "source": "article",
+      "sectionId": "Sec3",
+      "paragraph": 1,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "a3ca9f887eba052cc021d06fa1718912b122b5e3c8d3521bc6d45d288022f19a",
+      "start": 415,
+      "end": 759,
+      "excerptSha256": "7bfd0c51b373169743fd255401fd70337c5590d4ba4d7fe715c96c3e09a155e6",
+      "facts": {
+        "bufferControl": true,
+        "endogenousReductionPercent": ">90",
+        "endogenousZeroEstablished": false
+      }
+    },
+    "analyzedReplicates": {
+      "source": "article",
+      "sectionId": "Sec15",
+      "paragraph": 1,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "5dc730d55c153a1b3d609cc8d95cee58e0aa6b735a7a86d3e9afcd04420b24a7",
+      "start": 0,
+      "end": 180,
+      "excerptSha256": "c6b1dbe1bce4b8726c6b0ddf30d2d66127cdb3a7ab0cc0807e54d512ff2b9270",
+      "facts": {
+        "minimumDetectedPerGroup": 3
+      }
+    },
+    "outlierHandling": {
+      "source": "article",
+      "sectionId": "Sec30",
+      "paragraph": 1,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "275ec69fb8d151955baaf4636f680beb0b605b075289cc784165a6f53a7394cc",
+      "start": 288,
+      "end": 378,
+      "excerptSha256": "9e7fdaea5518a523c9835f5fe0373cf85663dc8fa1affbff506e562ffb685879",
+      "facts": {
+        "outliersRemoved": true,
+        "abnormalExperimentsRepeated": true
+      }
+    },
+    "repeatGlyoxylate": {
+      "source": "article",
+      "sectionId": "Sec3",
+      "paragraph": 3,
+      "normalization": "Join itertext with no separator, then collapse whitespace to single spaces",
+      "paragraphSha256": "d452e92a6a5017380af49b7fee54d51bd7c1528ba8a383cd03af5442224c32ef",
+      "start": 636,
+      "end": 875,
+      "excerptSha256": "dfbe5f69a0f1a0c76003599c82f65b5fc015b6d7d9c13103173130c749c783d3",
+      "facts": {
+        "experiments": 2,
+        "sameLysate": true,
+        "glyoxylateMm": 10,
+        "s3RunIdentity": "not established"
+      }
+    }
+  }
+}
