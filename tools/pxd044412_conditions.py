@@ -183,8 +183,9 @@ def _validate_context(metadata: dict[str, Any]) -> dict[str, Any]:
     }, "assay")
     for key in ("material", "method", "metaboliteAddition", "scope", "where", "replicateScope"):
         _text(assay.get(key), f"assay.{key}")
-    _fields(assay.get("control"), {"addedMetabolite": False}, "assay.control")
-    _text(assay["control"].get("text"), "assay.control.text")
+    control = _keys(assay.get("control"), {"addedMetabolite", "text"}, "assay.control")
+    _fields(control, {"addedMetabolite": False}, "assay.control")
+    _text(control.get("text"), "assay.control.text")
     handling = _keys(metadata.get("preFreezingHandling"), {
         "lightIntensity", "unit", "approximate", "durationMinutes", "text", "where",
     }, "preFreezingHandling")

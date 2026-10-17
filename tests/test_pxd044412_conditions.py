@@ -141,6 +141,8 @@ def replace_at(obj, path, value):
     (("assay", "analyzedTechnicalReplicatesPerGroup"), 4),
     (("assay", "where"), "DELETE"),
     (("assay", "control", "addedMetabolite"), True),
+    (("assay", "control", "endogenousZero"), True),
+    (("assay", "control", "text"), "DELETE"),
     (("assay", "control", "text"), ""), (("preFreezingHandling", "lightIntensity"), 70),
     (("preFreezingHandling", "where"), ""), (("sources",), []),
     (("preFreezingHandling", "beforeHarvest"), True),

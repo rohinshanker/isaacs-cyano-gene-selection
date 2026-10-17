@@ -179,7 +179,7 @@ mkdir -p data/interim/pxd044412
 The output destination must be new and its parent must exist. The builder
 validates exact source hashes and sizes, UTC retrieval timestamps, evidence
 receipt structure, label coverage and dose cells. The mapping, contrast,
-replicate, metabolite, assay, pre-freezing handling and base-record objects
+replicate, metabolite, assay, assay-control, pre-freezing handling and base-record objects
 reject extra fields and preserve the explicit inferred/unknown states.
 This is a metadata contract, not a fresh source audit:
 the builder does not download sources, recheck the PDF cells or interpret prose.
