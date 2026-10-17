@@ -11,7 +11,6 @@ finding is reverted rather than argued about.
 
 | Ticket | Scope |
 | --- | --- |
-| [A_pxd044412-conditions__20261016](A_pxd044412-conditions__20261016.md) | cyano-regulatory-sites: source-pinned condition records for 42 PCC 7942 interaction comparisons; independent backend preparation |
 | [O_pichea-lab-data-integration__20261009](O_pichea-lab-data-integration__20261009.md) | Add Pichea using the lab's own data; data intake/integration await the owner's later download, with exact organism identity and source permissions to establish from the handoff |
 | [O_yfr1-transcript-interaction-evidence__20261014](O_yfr1-transcript-interaction-evidence__20261014.md) | I-SCI-1 remains open: establish full native Yfr1 transcript boundaries and target evidence before any such claim; separate from the admitted RF01116 family interval |
 | [A_add-ecoli-organism__20261005](A_add-ecoli-organism__20261005.md) | MG1655 view shipped; show/flag selenoproteins, review newest CDS and publication evidence, and CAI primary-source review recorded with current membership retained. Additional E. coli source choices remain open; SRI notification was sent 2026-10-07 |
